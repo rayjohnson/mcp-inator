@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:developers.openai.com)",
+      "WebFetch(domain:www.dolthub.com)",
+      "WebFetch(domain:blog.xojo.com)",
+      "WebFetch(domain:www.appcoda.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:support.claude.com)",
+      "WebFetch(domain:inventivehq.com)",
+      "WebFetch(domain:mcpcat.io)",
+      "WebFetch(domain:codebit-inc.com)",
+      "WebFetch(domain:chrispaynter.medium.com)",
+      "WebFetch(domain:audrey.feldroy.com)",
+      "WebFetch(domain:lapcatsoftware.com)",
+      "WebFetch(domain:eclecticlight.co)",
+      "WebFetch(domain:geminicli.com)",
+      "WebFetch(domain:vladimirsiedykh.com)"
+    ]
+  }
+}
