@@ -1,0 +1,249 @@
+import SwiftUI
+
+struct AddEditConfigView: View {
+    @EnvironmentObject private var store: ConfigStore
+    @Environment(\.dismiss) private var dismiss
+
+    // nil = add mode; non-nil = edit mode
+    let existing: MCPServerConfig?
+
+    @State private var displayName: String
+    @State private var serverKey: String
+    @State private var serverKeyEdited: Bool
+    @State private var command: String
+    @State private var args: [String]
+    @State private var newArg: String = ""
+    @State private var envVars: [EnvVar]
+    @State private var newEnvKey: String = ""
+    @State private var newEnvValue: String = ""
+    @State private var notes: String
+    @State private var revealedEnvIds: Set<UUID> = []
+    @State private var validationError: String?
+    @State private var showPropagation = false
+    @State private var savedConfig: MCPServerConfig?
+
+    init(existing: MCPServerConfig? = nil) {
+        self.existing = existing
+        _displayName   = State(initialValue: existing?.displayName ?? "")
+        _serverKey     = State(initialValue: existing?.serverKey ?? "")
+        _serverKeyEdited = State(initialValue: existing != nil)
+        _command       = State(initialValue: existing?.command ?? "")
+        _args          = State(initialValue: existing?.args ?? [])
+        _envVars       = State(initialValue: existing?.envVars ?? [])
+        _notes         = State(initialValue: existing?.notes ?? "")
+    }
+
+    private var isEditMode: Bool { existing != nil }
+    private var title: String { isEditMode ? "Edit Server" : "Add Server" }
+
+    var body: some View {
+        Form {
+            Section("Server Identity") {
+                TextField("Display Name", text: $displayName)
+                    .onChange(of: displayName) { newValue in
+                        if !serverKeyEdited {
+                            serverKey = MCPServerConfig.generateKey(from: newValue)
+                        }
+                    }
+
+                HStack {
+                    TextField("Server Key", text: $serverKey)
+                        .onChange(of: serverKey) { _ in serverKeyEdited = true }
+                    if !serverKey.isEmpty {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .opacity(serverKey == MCPServerConfig.generateKey(from: displayName) ? 0 : 1)
+                    }
+                }
+                .help("Used as the key in the agent config file. Auto-generated from display name.")
+            }
+
+            Section("Command") {
+                TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
+            }
+
+            Section("Arguments") {
+                ForEach(args.indices, id: \.self) { i in
+                    HStack {
+                        Text(args[i])
+                            .font(.system(.body, design: .monospaced))
+                        Spacer()
+                        Button(role: .destructive) { args.remove(at: i) } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                HStack {
+                    TextField("Add argument…", text: $newArg)
+                        .onSubmit { addArg() }
+                    Button("Add", action: addArg)
+                        .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+
+            Section("Environment Variables") {
+                ForEach($envVars) { $env in
+                    EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
+                        if revealedEnvIds.contains(env.id) {
+                            revealedEnvIds.remove(env.id)
+                        } else {
+                            revealedEnvIds.insert(env.id)
+                        }
+                    } onDelete: {
+                        envVars.removeAll { $0.id == env.id }
+                    }
+                }
+                HStack {
+                    TextField("Key", text: $newEnvKey)
+                    TextField("Value", text: $newEnvValue)
+                    Button("Add") { addEnvVar() }
+                        .disabled(newEnvKey.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+
+            Section("Notes") {
+                TextEditor(text: $notes)
+                    .frame(minHeight: 60)
+            }
+
+            if let error = validationError {
+                Section {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.callout)
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .navigationTitle(title)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") { save() }
+                    .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty ||
+                              command.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .sheet(isPresented: $showPropagation) {
+            if let saved = savedConfig {
+                PropagationView(config: saved)
+                    .environmentObject(store)
+            }
+        }
+    }
+
+    // MARK: - Actions
+
+    private func addArg() {
+        let trimmed = newArg.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        args.append(trimmed)
+        newArg = ""
+    }
+
+    private func addEnvVar() {
+        let key = newEnvKey.trimmingCharacters(in: .whitespaces)
+        guard !key.isEmpty else { return }
+        let value = newEnvValue
+        envVars.append(EnvVar(key: key, value: value))
+        newEnvKey = ""
+        newEnvValue = ""
+    }
+
+    private func save() {
+        validationError = nil
+        let trimmedName = displayName.trimmingCharacters(in: .whitespaces)
+        let trimmedCmd  = command.trimmingCharacters(in: .whitespaces)
+        let trimmedKey  = serverKey.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmedName.isEmpty else { validationError = "Display name is required."; return }
+        guard !trimmedCmd.isEmpty  else { validationError = "Command is required."; return }
+        guard !trimmedKey.isEmpty  else { validationError = "Server key is required."; return }
+
+        do {
+            if var config = existing {
+                config.displayName = trimmedName
+                config.serverKey   = trimmedKey
+                config.command     = trimmedCmd
+                config.args        = args
+                config.envVars     = envVars
+                config.notes       = notes
+                try store.update(config)
+                savedConfig = config
+            } else {
+                var config = MCPServerConfig(
+                    displayName: trimmedName,
+                    serverKey: trimmedKey,
+                    command: trimmedCmd,
+                    args: args,
+                    envVars: envVars,
+                    notes: notes
+                )
+                config = try store.insert(config)
+                savedConfig = config
+            }
+            // Offer propagation if enabled agents exist
+            if let saved = savedConfig, isEditMode,
+               let enabledAgents = try? store.findEnabledAgents(for: saved.uuid),
+               !enabledAgents.isEmpty {
+                showPropagation = true
+            } else {
+                dismiss()
+            }
+        } catch {
+            validationError = "Save failed: \(error.localizedDescription)"
+        }
+    }
+}
+
+// MARK: - EnvVarRow
+
+private struct EnvVarRow: View {
+    @Binding var envVar: EnvVar
+    let isRevealed: Bool
+    let onToggleReveal: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(envVar.key)
+                .font(.system(.body, design: .monospaced))
+                .foregroundColor(.secondary)
+            Spacer()
+            if envVar.isSensitive && !isRevealed {
+                Text("••••••••")
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.secondary)
+            } else {
+                Text(envVar.value)
+                    .font(.system(.body, design: .monospaced))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            if envVar.isSensitive {
+                Button(action: onToggleReveal) {
+                    Image(systemName: isRevealed ? "eye.slash" : "eye")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help(isRevealed ? "Hide value" : "Reveal value")
+            }
+            Button(role: .destructive, action: onDelete) {
+                Image(systemName: "minus.circle.fill")
+                    .foregroundColor(.red)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        AddEditConfigView()
+            .environmentObject(try! ConfigStore())
+    }
+}

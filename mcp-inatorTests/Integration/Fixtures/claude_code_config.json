@@ -1,0 +1,21 @@
+{
+  "mcpServers" : {
+    "github-mcp" : {
+      "args" : [
+        "@modelcontextprotocol/server-github"
+      ],
+      "command" : "npx",
+      "env" : {
+        "GITHUB_TOKEN" : "ghp_testtoken123"
+      }
+    },
+    "obsidian-mcp" : {
+      "args" : [
+        "--vault",
+        "/Users/test/Notes"
+      ],
+      "command" : "/usr/local/bin/mcp-obsidian"
+    }
+  },
+  "otherClaudeCodeSetting" : "should-be-preserved"
+}

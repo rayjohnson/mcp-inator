@@ -22,11 +22,11 @@ for UI tasks.
 
 **Purpose**: Create the Xcode project, wire up dependencies, and establish the build target.
 
-- [ ] T001 Create Xcode project: macOS App, SwiftUI lifecycle, bundle ID `io.moov.mcp-inator`, deployment target macOS 13.0, in `mcp-inator/mcp-inator.xcodeproj`
-- [ ] T002 Add Swift Package dependencies via SPM: GRDB.swift 6.x, Sparkle 2.x, TOMLKit (latest) in `mcp-inator/mcp-inator.xcodeproj`
-- [ ] T003 [P] Create app target directory structure per plan.md: `mcp-inator/App/`, `mcp-inator/UI/`, `mcp-inator/Models/`, `mcp-inator/Store/`, `mcp-inator/Store/Migrations/`, `mcp-inator/Adapters/`
-- [ ] T004 [P] Create test target directory structure: `mcp-inatorTests/Unit/`, `mcp-inatorTests/Integration/`, `mcp-inatorTests/Integration/Fixtures/`
-- [ ] T005 [P] Configure Hardened Runtime entitlements: enable Hardened Runtime in build settings, add `.entitlements` file with `com.apple.security.get-task-allow = false` in `mcp-inator/Resources/mcp-inator.entitlements`
+- [X] T001 Create Xcode project: macOS App, SwiftUI lifecycle, bundle ID `io.moov.mcp-inator`, deployment target macOS 13.0, in `mcp-inator/mcp-inator.xcodeproj`
+- [X] T002 Add Swift Package dependencies via SPM: GRDB.swift 6.x, Sparkle 2.x, TOMLKit (latest) in `mcp-inator/mcp-inator.xcodeproj`
+- [X] T003 [P] Create app target directory structure per plan.md: `mcp-inator/App/`, `mcp-inator/UI/`, `mcp-inator/Models/`, `mcp-inator/Store/`, `mcp-inator/Store/Migrations/`, `mcp-inator/Adapters/`
+- [X] T004 [P] Create test target directory structure: `mcp-inatorTests/Unit/`, `mcp-inatorTests/Integration/`, `mcp-inatorTests/Integration/Fixtures/`
+- [X] T005 [P] Configure Hardened Runtime entitlements: enable Hardened Runtime in build settings, add `.entitlements` file with `com.apple.security.get-task-allow = false` in `mcp-inator/Resources/mcp-inator.entitlements`
 
 **Checkpoint**: Project builds (empty app) with all SPM packages resolved.
 
@@ -41,37 +41,37 @@ shell. Nothing user-visible works until this phase is complete.
 
 ### Core Models
 
-- [ ] T006 Implement `MCPServerConfig` + `EnvVar` structs (Codable, FetchableRecord, PersistableRecord, Identifiable; args/envVars stored as JSON TEXT; uuid as TEXT) in `mcp-inator/Models/MCPServerConfig.swift`
-- [ ] T007 [P] Implement `AgentRecord` + `AgentType` enum + `AssignmentState` enum in `mcp-inator/Models/AgentRecord.swift`
-- [ ] T008 Implement `ConfigAgentAssignment` struct (with `lastWrittenSnapshot: MCPServerConfig?` stored as JSON TEXT) in `mcp-inator/Models/ConfigAgentAssignment.swift`
+- [X] T006 Implement `MCPServerConfig` + `EnvVar` structs (Codable, FetchableRecord, PersistableRecord, Identifiable; args/envVars stored as JSON TEXT; uuid as TEXT) in `mcp-inator/Models/MCPServerConfig.swift`
+- [X] T007 [P] Implement `AgentRecord` + `AgentType` enum + `AssignmentState` enum in `mcp-inator/Models/AgentRecord.swift`
+- [X] T008 Implement `ConfigAgentAssignment` struct (with `lastWrittenSnapshot: MCPServerConfig?` stored as JSON TEXT) in `mcp-inator/Models/ConfigAgentAssignment.swift`
 
 ### Database Layer
 
-- [ ] T009 Implement Migration 001 SQL schema (mcp_server_configs, agents, config_agent_assignments tables + indexes per data-model.md) in `mcp-inator/Store/Migrations/Migration001.swift`
-- [ ] T010 Implement `ConfigStore`: open GRDB DatabasePool at `~/Library/Application Support/mcp-inator/mcp-inator.db`, register and run DatabaseMigrator, expose db handle in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T011 Add `ConfigStore` CRUD for `MCPServerConfig`: `insert`, `update`, `delete` (cascade to assignments), `fetchAll`, `fetch(byUUID:)` in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T012 Add `ConfigStore` CRUD for `AgentRecord` and `ConfigAgentAssignment`: `upsertAgent`, `fetchAllAgents`, `setAssignmentState`, `fetchAssignment(configUUID:agentId:)`, `fetchEnabledConfigs(for:)` in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T013 [P] Unit test ConfigStore CRUD (insert/fetch/delete round-trips, cascade delete, assignment state transitions) in `mcp-inatorTests/Unit/ConfigStoreTests.swift`
+- [X] T009 Implement Migration 001 SQL schema (mcp_server_configs, agents, config_agent_assignments tables + indexes per data-model.md) in `mcp-inator/Store/Migrations/Migration001.swift`
+- [X] T010 Implement `ConfigStore`: open GRDB DatabasePool at `~/Library/Application Support/mcp-inator/mcp-inator.db`, register and run DatabaseMigrator, expose db handle in `mcp-inator/Store/ConfigStore.swift`
+- [X] T011 Add `ConfigStore` CRUD for `MCPServerConfig`: `insert`, `update`, `delete` (cascade to assignments), `fetchAll`, `fetch(byUUID:)` in `mcp-inator/Store/ConfigStore.swift`
+- [X] T012 Add `ConfigStore` CRUD for `AgentRecord` and `ConfigAgentAssignment`: `upsertAgent`, `fetchAllAgents`, `setAssignmentState`, `fetchAssignment(configUUID:agentId:)`, `fetchEnabledConfigs(for:)` in `mcp-inator/Store/ConfigStore.swift`
+- [X] T013 [P] Unit test ConfigStore CRUD (insert/fetch/delete round-trips, cascade delete, assignment state transitions) in `mcp-inatorTests/Unit/ConfigStoreTests.swift`
 
 ### Adapter Protocol
 
-- [ ] T014 Implement `AgentAdapter` protocol, `WriteResult`, `KeyValidationResult`, `AdapterError` per contracts/AgentAdapter.md in `mcp-inator/Adapters/AgentAdapter.swift`
+- [X] T014 Implement `AgentAdapter` protocol, `WriteResult`, `KeyValidationResult`, `AdapterError` per contracts/AgentAdapter.md in `mcp-inator/Adapters/AgentAdapter.swift`
 
 ### Integration Test Fixtures
 
-- [ ] T015 [P] Create fixture files with realistic multi-entry configs: `claude_code_config.json`, `claude_desktop_config.json`, `gemini_config.json`, `codex_config.toml` in `mcp-inatorTests/Integration/Fixtures/`
+- [X] T015 [P] Create fixture files with realistic multi-entry configs: `claude_code_config.json`, `claude_desktop_config.json`, `gemini_config.json`, `codex_config.toml` in `mcp-inatorTests/Integration/Fixtures/`
 
 ### Concrete Adapters (T016–T019 parallelizable after T014 + T015)
 
-- [ ] T016 [P] Implement `ClaudeCodeAdapter` (JSON, `~/.claude.json`, `mcpServers` key, reject `workspace` key, preserve non-mcpServers keys, atomic write, pre-flight on managed keys only) + all integration tests from contracts/AgentAdapter.md in `mcp-inator/Adapters/ClaudeCodeAdapter.swift` + `mcp-inatorTests/Integration/ClaudeCodeAdapterTests.swift`
-- [ ] T017 [P] Implement `ClaudeDesktopAdapter` (JSON, `~/Library/Application Support/Claude/claude_desktop_config.json`, `mcpServers` key, preserve unrelated keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/ClaudeDesktopAdapter.swift` + `mcp-inatorTests/Integration/ClaudeDesktopAdapterTests.swift`
-- [ ] T018 [P] Implement `GeminiCLIAdapter` (JSON, `~/.gemini/settings.json`, `mcpServers` key, reject `_` in server keys, preserve unrelated keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/GeminiCLIAdapter.swift` + `mcp-inatorTests/Integration/GeminiCLIAdapterTests.swift`
-- [ ] T019 Implement `CodexCLIAdapter` (TOML via TOMLKit, `~/.codex/config.toml`, `mcp_servers` section, preserve all non-mcp_servers TOML keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/CodexCLIAdapter.swift` + `mcp-inatorTests/Integration/CodexCLIAdapterTests.swift`
+- [X] T016 [P] Implement `ClaudeCodeAdapter` (JSON, `~/.claude.json`, `mcpServers` key, reject `workspace` key, preserve non-mcpServers keys, atomic write, pre-flight on managed keys only) + all integration tests from contracts/AgentAdapter.md in `mcp-inator/Adapters/ClaudeCodeAdapter.swift` + `mcp-inatorTests/Integration/ClaudeCodeAdapterTests.swift`
+- [X] T017 [P] Implement `ClaudeDesktopAdapter` (JSON, `~/Library/Application Support/Claude/claude_desktop_config.json`, `mcpServers` key, preserve unrelated keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/ClaudeDesktopAdapter.swift` + `mcp-inatorTests/Integration/ClaudeDesktopAdapterTests.swift`
+- [X] T018 [P] Implement `GeminiCLIAdapter` (JSON, `~/.gemini/settings.json`, `mcpServers` key, reject `_` in server keys, preserve unrelated keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/GeminiCLIAdapter.swift` + `mcp-inatorTests/Integration/GeminiCLIAdapterTests.swift`
+- [X] T019 Implement `CodexCLIAdapter` (TOML via TOMLKit, `~/.codex/config.toml`, `mcp_servers` section, preserve all non-mcp_servers TOML keys, atomic write, pre-flight on managed keys only) + all integration tests in `mcp-inator/Adapters/CodexCLIAdapter.swift` + `mcp-inatorTests/Integration/CodexCLIAdapterTests.swift`
 
 ### App Shell
 
-- [ ] T020 Implement `mcp_inatorApp` (@main, `NSStatusItem` setup, popover lifecycle, icon in menu bar) in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T021 Implement `MenuBarView` shell (root popover SwiftUI view, placeholder content, navigation structure) in `mcp-inator/UI/MenuBarView.swift`
+- [X] T020 Implement `mcp_inatorApp` (@main, `NSStatusItem` setup, popover lifecycle, icon in menu bar) in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T021 Implement `MenuBarView` shell (root popover SwiftUI view, placeholder content, navigation structure) in `mcp-inator/UI/MenuBarView.swift`
 
 **Checkpoint**: All four adapters pass their integration test suites. App launches and shows a
 menubar icon with an empty popover. Database initializes correctly.
@@ -88,14 +88,14 @@ The config library is the single source of truth; this phase makes it usable.
 appears in the list with server key `github-mcp` and env var value is masked → edit it → delete it
 with confirmation → library is empty. No agent integration needed.
 
-- [ ] T022 Implement server key auto-population transform (`displayName` → lowercase → spaces to hyphens → strip non-`[a-z0-9-]`) in `mcp-inator/Models/MCPServerConfig.swift`
-- [ ] T023 [P] Unit test server key transform (basic cases, edge cases: leading/trailing spaces, unicode, already-valid key, reserved-word passthrough) in `mcp-inatorTests/Unit/ServerKeyTransformTests.swift`
-- [ ] T024 [P] Implement `EnvVar.isSensitive` heuristic (literal values = sensitive by default; values matching `^\$\{[A-Z_][A-Z0-9_]*\}$` = not sensitive; user-overridable flag) in `mcp-inator/Models/MCPServerConfig.swift`
-- [ ] T025 [P] Unit test sensitive field heuristic (literal string, `${VAR}` reference, lowercase `${var}` reference, empty value) in `mcp-inatorTests/Unit/SensitiveFieldTests.swift`
-- [ ] T026 [US1] Implement `AddEditConfigView`: form fields for displayName, serverKey (auto-populated, editable), command, args (dynamic list), envVars (key/value/sensitive pairs with `••••` masking and per-field reveal toggle FR-016), validation errors inline, Save/Cancel in `mcp-inator/UI/AddEditConfigView.swift`
-- [ ] T027 [P] [US1] Implement `ConfigLibraryView`: scrollable list of configs, actionable empty state ("Add your first MCP server" CTA, FR-029), delete swipe action with confirmation prompt (FR-004) in `mcp-inator/UI/ConfigLibraryView.swift`
-- [ ] T028 [US1] Wire `ConfigLibraryView` ↔ `AddEditConfigView` (add button opens form, tap-to-edit, delete confirmation cascade) and connect both to `ConfigStore` in `mcp-inator/UI/ConfigLibraryView.swift`
-- [ ] T029 [US1] Connect `MenuBarView` to show `ConfigLibraryView` as root content; wire `ConfigStore` as environment object in `mcp-inator/UI/MenuBarView.swift` + `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T022 Implement server key auto-population transform (`displayName` → lowercase → spaces to hyphens → strip non-`[a-z0-9-]`) in `mcp-inator/Models/MCPServerConfig.swift`
+- [X] T023 [P] Unit test server key transform (basic cases, edge cases: leading/trailing spaces, unicode, already-valid key, reserved-word passthrough) in `mcp-inatorTests/Unit/ServerKeyTransformTests.swift`
+- [X] T024 [P] Implement `EnvVar.isSensitive` heuristic (literal values = sensitive by default; values matching `^\$\{[A-Z_][A-Z0-9_]*\}$` = not sensitive; user-overridable flag) in `mcp-inator/Models/MCPServerConfig.swift`
+- [X] T025 [P] Unit test sensitive field heuristic (literal string, `${VAR}` reference, lowercase `${var}` reference, empty value) in `mcp-inatorTests/Unit/SensitiveFieldTests.swift`
+- [X] T026 [US1] Implement `AddEditConfigView`: form fields for displayName, serverKey (auto-populated, editable), command, args (dynamic list), envVars (key/value/sensitive pairs with `••••` masking and per-field reveal toggle FR-016), validation errors inline, Save/Cancel in `mcp-inator/UI/AddEditConfigView.swift`
+- [X] T027 [P] [US1] Implement `ConfigLibraryView`: scrollable list of configs, actionable empty state ("Add your first MCP server" CTA, FR-029), delete swipe action with confirmation prompt (FR-004) in `mcp-inator/UI/ConfigLibraryView.swift`
+- [X] T028 [US1] Wire `ConfigLibraryView` ↔ `AddEditConfigView` (add button opens form, tap-to-edit, delete confirmation cascade) and connect both to `ConfigStore` in `mcp-inator/UI/ConfigLibraryView.swift`
+- [X] T029 [US1] Connect `MenuBarView` to show `ConfigLibraryView` as root content; wire `ConfigStore` as environment object in `mcp-inator/UI/MenuBarView.swift` + `mcp-inator/App/mcp_inatorApp.swift`
 
 **Checkpoint**: User can add, edit, delete configs in the library. Server key auto-populates.
 Sensitive values are masked. Empty state shows correct CTA. No agent writes yet.
@@ -112,12 +112,12 @@ Launch mcp-inator fresh (empty DB). Discovery screen appears listing Claude Code
 import → ImportReviewView shows the two entries as "new". Import one, skip one. Library has
 one entry, agent file unchanged. Quit and relaunch → no discovery screen (agent already known).
 
-- [ ] T030 [US5] Implement `ConfigStore.discoverAgents()`: iterate `AgentType.allCases`, call `adapter.isInstalled()`, upsert `AgentRecord` for found agents (set `isAvailable`), return list of newly discovered agents (not previously in `agents` table) in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T031 [US5] Implement first-run detection: check if `agents` table is empty at launch → call `discoverAgents()` → present `DiscoveryView` in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T032 [US5] Implement new-agent detection on subsequent launches (FR-019): after first run, check each `AgentType` not yet in `agents` table → if found, offer discovery-import for that agent only in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T033 [US5] Implement `DiscoveryView`: list of found/not-found agents, per-agent "Import" button, "Skip" option, empty state message when no agents found with link to path-override (FR-029 + FR-013) in `mcp-inator/UI/DiscoveryView.swift`
-- [ ] T034 [US5] Implement `ImportReviewView`: three-category display (new entries with import/skip, exact matches shown as "already in library", conflicts with side-by-side diff and keep-library/use-agent/skip choice), per-entry decisions, confirm button writes only approved entries to `ConfigStore` (FR-025) in `mcp-inator/UI/ImportReviewView.swift`
-- [ ] T035 [US5] Implement `ConfigStore.categorizeImport(from:agentId:)`: read adapter entries, compare against library, return `[ImportEntry]` with `.new`, `.exactMatch`, `.conflict(library:onDisk:)` categories in `mcp-inator/Store/ConfigStore.swift`
+- [X] T030 [US5] Implement `ConfigStore.discoverAgents()`: iterate `AgentType.allCases`, call `adapter.isInstalled()`, upsert `AgentRecord` for found agents (set `isAvailable`), return list of newly discovered agents (not previously in `agents` table) in `mcp-inator/Store/ConfigStore.swift`
+- [X] T031 [US5] Implement first-run detection: check if `agents` table is empty at launch → call `discoverAgents()` → present `DiscoveryView` in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T032 [US5] Implement new-agent detection on subsequent launches (FR-019): after first run, check each `AgentType` not yet in `agents` table → if found, offer discovery-import for that agent only in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T033 [US5] Implement `DiscoveryView`: list of found/not-found agents, per-agent "Import" button, "Skip" option, empty state message when no agents found with link to path-override (FR-029 + FR-013) in `mcp-inator/UI/DiscoveryView.swift`
+- [X] T034 [US5] Implement `ImportReviewView`: three-category display (new entries with import/skip, exact matches shown as "already in library", conflicts with side-by-side diff and keep-library/use-agent/skip choice), per-entry decisions, confirm button writes only approved entries to `ConfigStore` (FR-025) in `mcp-inator/UI/ImportReviewView.swift`
+- [X] T035 [US5] Implement `ConfigStore.categorizeImport(from:agentId:)`: read adapter entries, compare against library, return `[ImportEntry]` with `.new`, `.exactMatch`, `.conflict(library:onDisk:)` categories in `mcp-inator/Store/ConfigStore.swift`
 
 **Checkpoint**: On fresh launch, app scans for agents and shows discovery screen. Per-entry
 import UI works with all three categories. Relaunching does not re-trigger discovery for
@@ -136,16 +136,16 @@ from disabled ones.
 it → verify entry removed from file → config still in library. Simulate file edited externally →
 attempt re-enable → drift diff is shown before write proceeds.
 
-- [ ] T036 [US2] Add `ConfigStore.enableConfig(uuid:agentId:)`: validate server key via adapter, check FR-024 conflict, build full enabled-config set, call `adapter.writeConfigs(_:to:expectedExisting:)` using `lastWrittenSnapshot` from existing assignments, update `ConfigAgentAssignment` state + `lastWrittenSnapshot` on success in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T037 [US2] Add `ConfigStore.disableConfig(uuid:agentId:)`: call `adapter.removeConfig(key:from:expectedValue:)` using `lastWrittenSnapshot`, update assignment state (clear `lastWrittenSnapshot`) on success in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T038 [US2] Implement drift-detection flow: on `WriteResult.driftDetected`, present a diff confirmation sheet (on-disk vs. expected values); user must confirm before a forced write proceeds; forced write passes `nil` for `expectedExisting` in `mcp-inator/UI/AgentListView.swift`
-- [ ] T039 [US2] Implement conflict-detection flow (FR-024): if `enableConfig` detects an existing on-disk key not written by mcp-inator, present both values and require user to choose before writing in `mcp-inator/UI/AgentListView.swift`
-- [ ] T040 [US2] Implement `AgentListView`: per-agent list of all library configs, enable/disable toggle per config, "unavailable" badge (distinct from disabled) for inaccessible agents (FR-014), agent display name + config path in `mcp-inator/UI/AgentListView.swift`
-- [ ] T041 [US2] Implement restart notification (FR-022): consolidated per-agent sheet/alert after successful write; for Gemini include "(or run `/mcp reload` in an active session)" in `mcp-inator/UI/AgentListView.swift`
-- [ ] T042 [US2] Implement agent path-override prompt (FR-021 + FR-013): when agent is unavailable, show explanation + path browse/enter sheet; persist `isCustomPath = true` and new path to `AgentRecord` in `mcp-inator/UI/AgentListView.swift`
-- [ ] T043 [US2] Implement availability refresh: call `ConfigStore.refreshAvailability()` (update `AgentRecord.isAvailable` for all agents) on popover open and before any write in `mcp-inator/Store/ConfigStore.swift` + `mcp-inator/UI/MenuBarView.swift`
-- [ ] T044 [US2] Wire `AgentListView` into navigation: accessible from `MenuBarView` and from individual config entries in `ConfigLibraryView` in `mcp-inator/UI/MenuBarView.swift`
-- [ ] T045 [US2] Implement error message surface (FR-012): all `AdapterError.writeFailure` cases produce specific, user-readable messages with file path and cause (not generic "failed") in `mcp-inator/UI/AgentListView.swift`
+- [X] T036 [US2] Add `ConfigStore.enableConfig(uuid:agentId:)`: validate server key via adapter, check FR-024 conflict, build full enabled-config set, call `adapter.writeConfigs(_:to:expectedExisting:)` using `lastWrittenSnapshot` from existing assignments, update `ConfigAgentAssignment` state + `lastWrittenSnapshot` on success in `mcp-inator/Store/ConfigStore.swift`
+- [X] T037 [US2] Add `ConfigStore.disableConfig(uuid:agentId:)`: call `adapter.removeConfig(key:from:expectedValue:)` using `lastWrittenSnapshot`, update assignment state (clear `lastWrittenSnapshot`) on success in `mcp-inator/Store/ConfigStore.swift`
+- [X] T038 [US2] Implement drift-detection flow: on `WriteResult.driftDetected`, present a diff confirmation sheet (on-disk vs. expected values); user must confirm before a forced write proceeds; forced write passes `nil` for `expectedExisting` in `mcp-inator/UI/AgentListView.swift`
+- [X] T039 [US2] Implement conflict-detection flow (FR-024): if `enableConfig` detects an existing on-disk key not written by mcp-inator, present both values and require user to choose before writing in `mcp-inator/UI/AgentListView.swift`
+- [X] T040 [US2] Implement `AgentListView`: per-agent list of all library configs, enable/disable toggle per config, "unavailable" badge (distinct from disabled) for inaccessible agents (FR-014), agent display name + config path in `mcp-inator/UI/AgentListView.swift`
+- [X] T041 [US2] Implement restart notification (FR-022): consolidated per-agent sheet/alert after successful write; for Gemini include "(or run `/mcp reload` in an active session)" in `mcp-inator/UI/AgentListView.swift`
+- [X] T042 [US2] Implement agent path-override prompt (FR-021 + FR-013): when agent is unavailable, show explanation + path browse/enter sheet; persist `isCustomPath = true` and new path to `AgentRecord` in `mcp-inator/UI/AgentListView.swift`
+- [X] T043 [US2] Implement availability refresh: call `ConfigStore.refreshAvailability()` (update `AgentRecord.isAvailable` for all agents) on popover open and before any write in `mcp-inator/Store/ConfigStore.swift` + `mcp-inator/UI/MenuBarView.swift`
+- [X] T044 [US2] Wire `AgentListView` into navigation: accessible from `MenuBarView` and from individual config entries in `ConfigLibraryView` in `mcp-inator/UI/MenuBarView.swift`
+- [X] T045 [US2] Implement error message surface (FR-012): all `AdapterError.writeFailure` cases produce specific, user-readable messages with file path and cause (not generic "failed") in `mcp-inator/UI/AgentListView.swift`
 
 **Checkpoint**: Enabling a config writes the correct entry to the agent file. Disabling removes
 it. Pre-flight drift detection presents a diff. Restart notification fires after every write.
@@ -162,9 +162,9 @@ operation with a single consolidated restart notification.
 → "Apply all" → pre-flight runs per config → conflict check runs → all write → single Gemini
 restart notification. Verify `~/.gemini/settings.json` has all 3 entries.
 
-- [ ] T046 [US3] Implement `ConfigStore.bulkEnableConfigs(uuids:agentId:)`: iterate selected configs, validate + write each (using enable flow from T036), collect errors per config, return aggregate result; on completion fire single consolidated restart notification in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T047 [US3] Add bulk-apply UI to `AgentListView`: multi-select mode or "Apply all" action, show per-config conflict/drift inline during bulk operation, confirm before writing in `mcp-inator/UI/AgentListView.swift`
-- [ ] T048 [US3] Handle partial-success in bulk apply: if some configs succeed and others fail/conflict, show summary of what was applied and what was skipped with reasons in `mcp-inator/UI/AgentListView.swift`
+- [X] T046 [US3] Implement `ConfigStore.bulkEnableConfigs(uuids:agentId:)`: iterate selected configs, validate + write each (using enable flow from T036), collect errors per config, return aggregate result; on completion fire single consolidated restart notification in `mcp-inator/Store/ConfigStore.swift`
+- [X] T047 [US3] Add bulk-apply UI to `AgentListView`: multi-select mode or "Apply all" action, show per-config conflict/drift inline during bulk operation, confirm before writing in `mcp-inator/UI/AgentListView.swift`
+- [X] T048 [US3] Handle partial-success in bulk apply: if some configs succeed and others fail/conflict, show summary of what was applied and what was skipped with reasons in `mcp-inator/UI/AgentListView.swift`
 
 **Checkpoint**: Bulk-apply writes selected configs to the agent file with one restart prompt.
 Partial failures are surfaced per-config without aborting the whole operation.
@@ -182,9 +182,9 @@ Save. PropagationView appears listing both agents with diffs. Accept. Both files
 Quit without accepting → files unchanged → re-open agent view and attempt any write → drift
 detected, diff shown.
 
-- [ ] T049 [US6] Implement `ConfigStore.findEnabledAgentsForConfig(uuid:)`: returns `[AgentRecord]` where assignment state is enabled for the given config in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T050 [US6] Implement `PropagationView`: per-agent diff preview (old value from `lastWrittenSnapshot` vs. new DB value), confirm/decline, on confirm calls `enableConfig` flow for each agent (uses drift detection naturally), consolidated restart notification in `mcp-inator/UI/PropagationView.swift`
-- [ ] T051 [US6] Wire `PropagationView` into `AddEditConfigView` save action: after saving an edit, check for enabled agents (T049) → if any, present `PropagationView` as sheet before dismissing in `mcp-inator/UI/AddEditConfigView.swift`
+- [X] T049 [US6] Implement `ConfigStore.findEnabledAgentsForConfig(uuid:)`: returns `[AgentRecord]` where assignment state is enabled for the given config in `mcp-inator/Store/ConfigStore.swift`
+- [X] T050 [US6] Implement `PropagationView`: per-agent diff preview (old value from `lastWrittenSnapshot` vs. new DB value), confirm/decline, on confirm calls `enableConfig` flow for each agent (uses drift detection naturally), consolidated restart notification in `mcp-inator/UI/PropagationView.swift`
+- [X] T051 [US6] Wire `PropagationView` into `AddEditConfigView` save action: after saving an edit, check for enabled agents (T049) → if any, present `PropagationView` as sheet before dismissing in `mcp-inator/UI/AddEditConfigView.swift`
 
 **Checkpoint**: Editing a config and saving immediately presents the propagation offer with
 diffs. Accepting updates affected agent files. Declining is safe with no state tracked.
@@ -201,9 +201,9 @@ Claude's agent view → "Import from Claude Code". ImportReviewView shows the ne
 "new". Import it. Entry is in the library. Repeat with an entry that conflicts with an
 existing library entry — diff shown.
 
-- [ ] T052 [US7] Add "Import from [Agent]" action button to `AgentListView` (visible for any agent, triggers `ConfigStore.categorizeImport` from T035, opens `ImportReviewView`) in `mcp-inator/UI/AgentListView.swift`
-- [ ] T053 [US7] Confirm `ImportReviewView` handles the manually-triggered case (same component as T034, already built; verify agent assignment is created as `enabled` for entries the user imports as "use agent version") in `mcp-inator/UI/ImportReviewView.swift`
-- [ ] T054 [US7] Implement `ConfigStore.applyImportDecisions(_:agentId:)`: for each approved import entry, insert or update `MCPServerConfig` in library, create `ConfigAgentAssignment` with `state = enabled` and `lastWrittenSnapshot` set to the imported values in `mcp-inator/Store/ConfigStore.swift`
+- [X] T052 [US7] Add "Import from [Agent]" action button to `AgentListView` (visible for any agent, triggers `ConfigStore.categorizeImport` from T035, opens `ImportReviewView`) in `mcp-inator/UI/AgentListView.swift`
+- [X] T053 [US7] Confirm `ImportReviewView` handles the manually-triggered case (same component as T034, already built; verify agent assignment is created as `enabled` for entries the user imports as "use agent version") in `mcp-inator/UI/ImportReviewView.swift`
+- [X] T054 [US7] Implement `ConfigStore.applyImportDecisions(_:agentId:)`: for each approved import entry, insert or update `MCPServerConfig` in library, create `ConfigAgentAssignment` with `state = enabled` and `lastWrittenSnapshot` set to the imported values in `mcp-inator/Store/ConfigStore.swift`
 
 **Checkpoint**: "Import from agent" action appears for any agent. All three import categories
 display correctly. Approved imports appear in library and are marked enabled for that agent.
@@ -219,8 +219,8 @@ agents visually distinguished from simply-disabled ones.
 Gemini's config file. Open status view: GitHub MCP shows enabled/enabled/unavailable/disabled
 for the 4 agents. "Unavailable" has a distinct visual treatment with a diagnostic hint.
 
-- [ ] T055 [US4] Implement `ConfigStore.fetchStatusMatrix()`: returns `[(MCPServerConfig, [(AgentRecord, EffectiveState)])]` where `EffectiveState` is `enabled`, `disabled`, or `unavailable` (computed from assignment state + `AgentRecord.isAvailable`) in `mcp-inator/Store/ConfigStore.swift`
-- [ ] T056 [US4] Update `ConfigLibraryView` to show per-agent status badges inline for each config (enabled/disabled/unavailable with distinct colors, FR-009; "unavailable" includes short diagnostic hint) in `mcp-inator/UI/ConfigLibraryView.swift`
+- [X] T055 [US4] Implement `ConfigStore.fetchStatusMatrix()`: returns `[(MCPServerConfig, [(AgentRecord, EffectiveState)])]` where `EffectiveState` is `enabled`, `disabled`, or `unavailable` (computed from assignment state + `AgentRecord.isAvailable`) in `mcp-inator/Store/ConfigStore.swift`
+- [X] T056 [US4] Update `ConfigLibraryView` to show per-agent status badges inline for each config (enabled/disabled/unavailable with distinct colors, FR-009; "unavailable" includes short diagnostic hint) in `mcp-inator/UI/ConfigLibraryView.swift`
 
 **Checkpoint**: Status matrix renders correctly. Unavailable is visually distinct from
 disabled with a diagnostic hint explaining the cause.
@@ -231,11 +231,11 @@ disabled with a diagnostic hint explaining the cause.
 
 **Purpose**: Recovery paths, schema upgrade validation, error polish, Sparkle setup.
 
-- [ ] T057 Implement store corruption recovery (FR-028): on `ConfigStore` init failure (missing or unreadable DB), start with new empty database, show one-time alert "Your previous config library was not found", immediately offer to re-import from detected agent files in `mcp-inator/App/mcp_inatorApp.swift` + `mcp-inator/Store/ConfigStore.swift`
-- [ ] T058 [P] Implement delete-cascade for unavailable agents (FR-004): when deleting a config enabled for one or more unavailable agents, warn user and proceed with partial delete; show summary of which agents were updated and which were not in `mcp-inator/Store/ConfigStore.swift` + `mcp-inator/UI/ConfigLibraryView.swift`
-- [ ] T059 [P] Validate schema migration path end-to-end: add a real (non-no-op) Migration 002 that adds a nullable `notes` column to `agents` table (or equivalent low-risk change), seed a v1 test database fixture, verify it opens and migrates cleanly, commit both the migration and the v1 fixture permanently in `mcp-inator/Store/Migrations/` + `mcp-inatorTests/Integration/Fixtures/v1_seed.db`
-- [ ] T060 [P] Audit all `AdapterError.writeFailure` surfaces (FR-012): verify every error shown to the user includes the file path, the specific cause, and an actionable suggestion; eliminate any generic "operation failed" messages across `mcp-inator/UI/`
-- [ ] T061 Configure Sparkle 2.x: add `SUFeedURL` key to `Info.plist`, create `sparkle-appcast.xml` placeholder, add Sparkle updater to `mcp_inatorApp` lifecycle in `mcp-inator/App/mcp_inatorApp.swift` + `mcp-inator/Resources/`
+- [X] T057 Implement store corruption recovery (FR-028): on `ConfigStore` init failure (missing or unreadable DB), start with new empty database, show one-time alert "Your previous config library was not found", immediately offer to re-import from detected agent files in `mcp-inator/App/mcp_inatorApp.swift` + `mcp-inator/Store/ConfigStore.swift`
+- [X] T058 [P] Implement delete-cascade for unavailable agents (FR-004): when deleting a config enabled for one or more unavailable agents, warn user and proceed with partial delete; show summary of which agents were updated and which were not in `mcp-inator/Store/ConfigStore.swift` + `mcp-inator/UI/ConfigLibraryView.swift`
+- [X] T059 [P] Validate schema migration path end-to-end: add a real (non-no-op) Migration 002 that adds a nullable `notes` column to `agents` table (or equivalent low-risk change), seed a v1 test database fixture, verify it opens and migrates cleanly, commit both the migration and the v1 fixture permanently in `mcp-inator/Store/Migrations/` + `mcp-inatorTests/Integration/Fixtures/v1_seed.db`
+- [X] T060 [P] Audit all `AdapterError.writeFailure` surfaces (FR-012): verify every error shown to the user includes the file path, the specific cause, and an actionable suggestion; eliminate any generic "operation failed" messages across `mcp-inator/UI/`
+- [X] T061 Configure Sparkle 2.x: add `SUFeedURL` key to `Info.plist`, create `sparkle-appcast.xml` placeholder, add Sparkle updater to `mcp_inatorApp` lifecycle in `mcp-inator/App/mcp_inatorApp.swift` + `mcp-inator/Resources/`
 
 **Checkpoint**: App recovers gracefully from a missing store. All error messages are specific
 and actionable. Sparkle updater is wired (URL is a placeholder until first release).

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sparkle appcast — placeholder until first release. Hosted at SUFeedURL in Info.plist. -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>mcp-inator</title>
+        <link>https://rayjohnson.github.io/mcp-inator/appcast.xml</link>
+        <description>mcp-inator update feed</description>
+        <language>en</language>
+        <!-- Items will be added here at release time -->
+    </channel>
+</rss>
