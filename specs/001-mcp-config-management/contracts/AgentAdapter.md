@@ -50,8 +50,16 @@ protocol AgentAdapter {
     ///
     /// Contract:
     /// - Reads the current on-disk content first (pre-flight, FR-023)
-    /// - If on-disk content differs from `expectedExisting`, returns `.driftDetected`
-    ///   without writing; caller shows diff UI
+    /// - Pre-flight scope: compare ONLY the keys present in `expectedExisting` against
+    ///   the same keys on disk. Keys in the file that are NOT in `expectedExisting`
+    ///   (i.e., entries mcp-inator doesn't manage) are IGNORED in the comparison —
+    ///   their presence never triggers `.driftDetected`. This prevents a user's manually
+    ///   added entries from causing spurious drift alerts on every write.
+    /// - If any key in `expectedExisting` has a different value on disk (or is missing),
+    ///   returns `.driftDetected` without writing; caller shows diff UI
+    /// - `expectedExisting` should be the `lastWrittenSnapshot` from ConfigAgentAssignment,
+    ///   NOT the current DB values — these diverge when a user edits a config and declines
+    ///   propagation (DB updated, file still has old values).
     /// - Merges `configs` into existing file content (preserves unrelated keys)
     /// - Writes via temp file + atomic rename (FR-027)
     /// - Creates parent directory if missing
@@ -67,8 +75,17 @@ protocol AgentAdapter {
     /// Removes a single config entry (by server key) from the config file at `path`.
     /// Atomically rewrites the file with the entry absent.
     /// No-op if the key is not present.
+    ///
+    /// Pre-flight: reads the current on-disk value for `key` and compares it to
+    /// `expectedValue`. If they differ (entry was externally modified), returns
+    /// `.driftDetected` without writing. Pass `nil` to skip the pre-flight check.
+    ///
     /// Throws `AdapterError.writeFailure` on I/O errors.
-    func removeConfig(key: String, from path: URL) throws
+    func removeConfig(
+        key: String,
+        from path: URL,
+        expectedValue: MCPServerConfig?
+    ) throws -> WriteResult
 
     // MARK: - Validation
 
@@ -173,8 +190,9 @@ Each test suite MUST cover:
 | `testWrite_createsFileIfMissing` | Creates file + parent dir; content is correct |
 | `testWrite_mergesIntoExistingFile` | Adds new key without disturbing existing keys |
 | `testWrite_removesDisabledConfig` | `removeConfig` deletes the key; file still valid |
+| `testWrite_removeConfig_driftDetected` | `removeConfig` returns `.driftDetected` when on-disk != expectedValue |
 | `testWrite_atomicOnCrash` | Write to read-only dir throws `writeFailure`; no partial file |
-| `testWrite_driftDetected` | Returns `.driftDetected` when on-disk != expected |
+| `testWrite_driftDetected_managedKeyOnly` | Returns `.driftDetected` only when a key in `expectedExisting` differs; unmanaged keys in file do NOT trigger drift |
 | `testValidateServerKey_valid` | Returns `.valid` for conforming key |
 | `testValidateServerKey_invalid` | Returns `.invalid` for agent-specific violations |
 

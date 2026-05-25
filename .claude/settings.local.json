@@ -16,7 +16,8 @@
       "WebFetch(domain:lapcatsoftware.com)",
       "WebFetch(domain:eclecticlight.co)",
       "WebFetch(domain:geminicli.com)",
-      "WebFetch(domain:vladimirsiedykh.com)"
+      "WebFetch(domain:vladimirsiedykh.com)",
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_plan *)"
     ]
   }
 }

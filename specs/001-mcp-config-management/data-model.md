@@ -103,6 +103,8 @@ struct ConfigAgentAssignment: Codable, FetchableRecord, PersistableRecord {
     let configUUID: UUID                 // FK → MCPServerConfig.uuid
     let agentId: Int64                   // FK → AgentRecord.id
     var state: AssignmentState
+    var lastWrittenSnapshot: MCPServerConfig?  // Values last successfully written to disk;
+                                               // nil if never written (disabled from birth)
     var assignedAt: Date
     var updatedAt: Date
 }
@@ -117,6 +119,12 @@ enum AssignmentState: String, Codable {
 - No `pending` state — deferred propagation is surfaced by FR-023 pre-flight diff check on next write
 - `unavailable` is a computed property derived from `AgentRecord.isAvailable`, not a stored state
 - Unique constraint: `(configUUID, agentId)` — one assignment record per config+agent pair
+- `lastWrittenSnapshot` is the source of truth for pre-flight comparison: pass it as
+  `expectedExisting` to `writeConfigs` / `expectedValue` to `removeConfig`. Using the
+  current DB values instead would produce false drift alerts whenever a user edits a config
+  and declines propagation (the DB is updated but the file still has the old values).
+  Updated to the new values only after a successful write; never updated on a declined
+  propagation or drift-detected result.
 
 ---
 
@@ -150,12 +158,13 @@ CREATE TABLE agents (
 );
 
 CREATE TABLE config_agent_assignments (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    configUUID  TEXT    NOT NULL REFERENCES mcp_server_configs(uuid) ON DELETE CASCADE,
-    agentId     INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
-    state       TEXT    NOT NULL DEFAULT 'disabled',
-    assignedAt  REAL    NOT NULL,
-    updatedAt   REAL    NOT NULL,
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    configUUID           TEXT    NOT NULL REFERENCES mcp_server_configs(uuid) ON DELETE CASCADE,
+    agentId              INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    state                TEXT    NOT NULL DEFAULT 'disabled',
+    lastWrittenSnapshot  TEXT,           -- JSON-encoded MCPServerConfig; NULL if never written
+    assignedAt           REAL    NOT NULL,
+    updatedAt            REAL    NOT NULL,
     UNIQUE(configUUID, agentId)
 );
 
@@ -248,3 +257,40 @@ KEY = "value"
 ```
 
 mcp-inator reads/writes only the `mcp_servers` section. Other TOML keys are preserved.
+
+---
+
+## Database File Location
+
+The SQLite database is stored at:
+
+```
+~/Library/Application Support/mcp-inator/mcp-inator.db
+```
+
+This directory is created on first launch if it doesn't exist. The path is never user-configurable. On store corruption or deletion (FR-028), the app starts fresh from a new empty database at this path and immediately offers to re-import from detected agent config files.
+
+---
+
+## First-Run and Rescan Logic (FR-018, FR-019)
+
+### First-run detection
+
+First-run is detected by checking whether the `agents` table is empty at launch. If empty, the full discovery scan runs and the discovery screen is shown.
+
+### Rescan on subsequent launches (FR-019)
+
+On every launch after first-run, the app checks each `AgentType` case against the `agents` table:
+
+```
+for each AgentType in AgentType.allCases:
+    if no AgentRecord exists with agentType == type:
+        run discovery for that type → add to agents table if found
+        if newly found agent has existing MCP entries → trigger import offer for that agent only
+```
+
+Agents already in the `agents` table are not re-scanned at launch. This prevents re-prompting for agents the user has already addressed.
+
+### Availability refresh
+
+`AgentRecord.isAvailable` is a persisted cache refreshed at: app launch, popover open, and before any write operation. It is NOT refreshed continuously in the background (no file watching in Spec 001).
