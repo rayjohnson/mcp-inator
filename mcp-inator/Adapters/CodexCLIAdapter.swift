@@ -149,7 +149,7 @@ struct CodexCLIAdapter: AgentAdapter {
                 at: url.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            let output = toml.debugDescription  // TOMLKit serialization
+            let output = toml.description  // TOMLTable.description returns valid TOML
             let tempURL = url.deletingLastPathComponent()
                 .appendingPathComponent(UUID().uuidString + ".tmp")
             try output.write(to: tempURL, atomically: false, encoding: .utf8)

@@ -24,7 +24,7 @@ struct AgentListView: View {
         let driftResult: WriteResult?
     }
 
-    private var adapter: (any AgentAdapter)? {
+    private var adapter: any AgentAdapter {
         switch agent.agentType {
         case .claudeCode:    return ClaudeCodeAdapter()
         case .claudeDesktop: return ClaudeDesktopAdapter()
@@ -175,14 +175,14 @@ struct AgentListView: View {
         guard agent.isAvailable, let agentId = agent.id else { return }
         let wasEnabled = enabledUUIDs.contains(config.uuid)
         do {
-            try store.refreshAvailability(adapters: [adapter!])
+            try store.refreshAvailability(adapters: [adapter])
             if wasEnabled {
                 let result = try store.disableConfig(uuid: config.uuid, agentId: agentId,
-                                                     adapter: adapter!, configPath: configPath)
+                                                     adapter: adapter, configPath: configPath)
                 handleResult(result, uuid: config.uuid, enable: false)
             } else {
                 let result = try store.enableConfig(uuid: config.uuid, agentId: agentId,
-                                                    adapter: adapter!, configPath: configPath)
+                                                    adapter: adapter, configPath: configPath)
                 handleResult(result, uuid: config.uuid, enable: true)
             }
         } catch {
@@ -277,10 +277,10 @@ struct AgentListView: View {
         do {
             if pending.enable {
                 _ = try store.enableConfig(uuid: pending.uuid, agentId: agentId,
-                                           adapter: adapter!, configPath: configPath, force: true)
+                                           adapter: adapter, configPath: configPath, force: true)
             } else {
                 _ = try store.disableConfig(uuid: pending.uuid, agentId: agentId,
-                                            adapter: adapter!, configPath: configPath, force: true)
+                                            adapter: adapter, configPath: configPath, force: true)
             }
             refreshEnabledSet()
             showRestartNotice = true

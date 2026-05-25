@@ -376,7 +376,7 @@ final class ConfigStore: ObservableObject {
                 .filter(Column("configUUID") == configUUID.uuidString)
                 .filter(Column("state") == AssignmentState.enabled.rawValue)
                 .fetchAll(db)
-                .compactMap(\.agentId as Int64?)
+                .map(\.agentId)
             return try AgentRecord
                 .filter(agentIds.contains(Column("id")))
                 .fetchAll(db)
