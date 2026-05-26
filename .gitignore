@@ -51,3 +51,6 @@ build/
 .idea/
 *.swp
 *.swo
+
+# Claude Code (local machine-specific settings)
+.claude/settings.local.json
