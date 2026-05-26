@@ -28,6 +28,7 @@ struct AgentListView: View {
         case .claudeDesktop: return ClaudeDesktopAdapter()
         case .geminiCLI:     return GeminiCLIAdapter()
         case .codexCLI:      return CodexCLIAdapter()
+        case .geminiDesktop: return GeminiDesktopAdapter()
         }
     }
 
@@ -39,6 +40,8 @@ struct AgentListView: View {
             Divider()
             if let pending = pendingWrite {
                 driftView(pending: pending)
+            } else if adapter.isAppManaged {
+                appManagedBanner
             } else if !agent.isAvailable {
                 unavailableBanner
             } else if store.configs.isEmpty {
@@ -122,22 +125,45 @@ struct AgentListView: View {
 
     private var agentHeader: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            if agent.agentType.isAppManaged {
+                Text("MCP configuration is managed inside \(agent.displayName)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
                 Text(agent.configPath)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
-            }
-            Spacer()
-            if agent.isAvailable {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .help("Agent config file is accessible")
+                Spacer()
+                if agent.isAvailable {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .help("Agent config file is accessible")
+                }
             }
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
+    }
+
+    private var appManagedBanner: some View {
+        VStack {
+            Spacer()
+            VStack(spacing: 12) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 36))
+                    .foregroundColor(.secondary)
+                Text("Managed In-App")
+                    .font(.title3).fontWeight(.semibold)
+                Text("\(agent.displayName) stores MCP server configuration internally. Use \(agent.displayName) settings to manage MCP servers.")
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            .frame(maxWidth: .infinity)
+            Spacer()
+        }
     }
 
     private var unavailableBanner: some View {
@@ -183,11 +209,13 @@ struct AgentListView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button("Import from \(agent.displayName)…") { triggerImport() }
-            } label: {
-                Image(systemName: "ellipsis.circle")
+        if !agent.agentType.isAppManaged {
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button("Import from \(agent.displayName)…") { triggerImport() }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
             }
         }
     }

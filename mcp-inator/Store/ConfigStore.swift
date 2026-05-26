@@ -47,6 +47,7 @@ final class ConfigStore: ObservableObject {
         Migration001.register(in: &migrator)
         Migration002.register(in: &migrator)
         Migration003.register(in: &migrator)
+        Migration004.register(in: &migrator)
         try migrator.migrate(pool)
     }
 
@@ -56,6 +57,8 @@ final class ConfigStore: ObservableObject {
         configs = try pool.read { db in try MCPServerConfig.fetchAll(db) }
         agents  = try pool.read { db in try AgentRecord.fetchAll(db) }
     }
+
+    var visibleAgents: [AgentRecord] { agents.filter(\.isVisible) }
 
     // MARK: - MCPServerConfig CRUD (T011)
 
@@ -119,6 +122,16 @@ final class ConfigStore: ObservableObject {
             try db.execute(
                 sql: "UPDATE agents SET configPath = ?, isCustomPath = 1 WHERE id = ?",
                 arguments: [path, agentId]
+            )
+        }
+        try reload()
+    }
+
+    func setAgentVisibility(agentId: Int64, visible: Bool) throws {
+        try pool.write { db in
+            try db.execute(
+                sql: "UPDATE agents SET isVisible = ? WHERE id = ?",
+                arguments: [visible ? 1 : 0, agentId]
             )
         }
         try reload()
@@ -346,7 +359,7 @@ final class ConfigStore: ObservableObject {
     func fetchStatusMatrix() throws -> [StatusRow] {
         try pool.read { db in
             let allConfigs = try MCPServerConfig.fetchAll(db)
-            let allAgents  = try AgentRecord.fetchAll(db)
+            let allAgents  = try AgentRecord.fetchAll(db).filter(\.isVisible)
             let allAssignments = try ConfigAgentAssignment.fetchAll(db)
 
             return allConfigs.map { config in

@@ -8,6 +8,7 @@ enum AgentType: String, Codable, CaseIterable {
     case claudeDesktop = "claude_desktop"
     case geminiCLI     = "gemini_cli"
     case codexCLI      = "codex_cli"
+    case geminiDesktop = "gemini_desktop"
 
     var displayName: String {
         switch self {
@@ -15,6 +16,14 @@ enum AgentType: String, Codable, CaseIterable {
         case .claudeDesktop: return "Claude Desktop"
         case .geminiCLI:     return "Gemini CLI"
         case .codexCLI:      return "Codex CLI"
+        case .geminiDesktop: return "Gemini Desktop"
+        }
+    }
+
+    var isAppManaged: Bool {
+        switch self {
+        case .geminiDesktop: return true
+        default: return false
         }
     }
 
@@ -29,6 +38,8 @@ enum AgentType: String, Codable, CaseIterable {
             return "\(home)/.gemini/settings.json"
         case .codexCLI:
             return "\(home)/.codex/config.toml"
+        case .geminiDesktop:
+            return "\(home)/Library/Application Support/Google/Gemini/mcp_servers.json"
         }
     }
 }
@@ -42,6 +53,7 @@ struct AgentRecord: Identifiable {
     var configPath: String
     var isCustomPath: Bool
     var isAvailable: Bool
+    var isVisible: Bool
     let discoveredAt: Date
     var lastSeenAt: Date
 
@@ -52,6 +64,7 @@ struct AgentRecord: Identifiable {
         self.configPath = configPath ?? agentType.defaultConfigPath
         self.isCustomPath = configPath != nil
         self.isAvailable = false
+        self.isVisible = true
         let now = Date()
         self.discoveredAt = now
         self.lastSeenAt = now
@@ -71,6 +84,7 @@ extension AgentRecord: FetchableRecord, MutablePersistableRecord {
         configPath = row["configPath"]
         isCustomPath = (row["isCustomPath"] as Int) != 0
         isAvailable = (row["isAvailable"] as Int) != 0
+        isVisible = (row["isVisible"] as Int? ?? 1) != 0
 
         let disc: Double = row["discoveredAt"]
         discoveredAt = Date(timeIntervalSince1970: disc)
@@ -85,6 +99,7 @@ extension AgentRecord: FetchableRecord, MutablePersistableRecord {
         container["configPath"] = configPath
         container["isCustomPath"] = isCustomPath ? 1 : 0
         container["isAvailable"] = isAvailable ? 1 : 0
+        container["isVisible"] = isVisible ? 1 : 0
         container["discoveredAt"] = discoveredAt.timeIntervalSince1970
         container["lastSeenAt"] = lastSeenAt.timeIntervalSince1970
     }
