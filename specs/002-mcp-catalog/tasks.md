@@ -89,7 +89,7 @@
 
 - [X] T021 Verify `CatalogCategory` badge styling in `CatalogView` and `CatalogDetailView` is visually consistent with existing `AgentStateBadge` and transport type badge patterns in `AgentListView.swift`
 - [X] T022 [P] Add `.help()` tooltips to "Add to Library" and "Edit in Library" buttons in `mcp-inator/UI/CatalogDetailView.swift`
-- [ ] T023 [P] Update `specs/002-mcp-catalog/quickstart.md` to reflect any implementation details that diverged from the original plan
+- [X] T023 [P] Update `specs/002-mcp-catalog/quickstart.md` to reflect any implementation details that diverged from the original plan
 - [X] T024 Run `make sync-catalog` and `make build` end-to-end; verify bundle contains `catalog.json` and all ≥15 entries appear in the Catalog tab; run through the independent test scenarios for US1 and US2 from this file
 
 ---
