@@ -127,19 +127,30 @@ private struct ConfigRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: 4))
             }
             HStack(spacing: 4) {
-                Image(systemName: "terminal")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text(config.command)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                if !config.args.isEmpty {
-                    Text(config.args.joined(separator: " "))
+                if config.isHTTP {
+                    Image(systemName: "network")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(config.url)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
-                        .truncationMode(.tail)
+                        .truncationMode(.middle)
+                } else {
+                    Image(systemName: "terminal")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(config.command)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                    if !config.args.isEmpty {
+                        Text(config.args.joined(separator: " "))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
                 }
             }
             if !config.envVars.isEmpty {

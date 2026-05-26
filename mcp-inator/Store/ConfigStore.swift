@@ -46,6 +46,7 @@ final class ConfigStore: ObservableObject {
         var migrator = DatabaseMigrator()
         Migration001.register(in: &migrator)
         Migration002.register(in: &migrator)
+        Migration003.register(in: &migrator)
         try migrator.migrate(pool)
     }
 

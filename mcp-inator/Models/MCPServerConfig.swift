@@ -1,18 +1,29 @@
 import Foundation
 import GRDB
 
+// MARK: - TransportType
+
+enum TransportType: String, Codable, CaseIterable {
+    case stdio = "stdio"
+    case http  = "http"
+    case sse   = "sse"
+}
+
 struct MCPServerConfig: Identifiable {
     var id: Int64?
     var uuid: UUID
     var displayName: String
     var serverKey: String
-    var command: String
-    var args: [String]
-    var envVars: [EnvVar]
+    var transportType: TransportType
+    var command: String       // stdio only
+    var args: [String]        // stdio only
+    var url: String           // http/sse only
+    var envVars: [EnvVar]     // stdio: env vars; http/sse: request headers
     var notes: String
     var createdAt: Date
     var updatedAt: Date
 
+    // stdio initializer (default)
     init(
         displayName: String,
         serverKey: String? = nil,
@@ -25,39 +36,68 @@ struct MCPServerConfig: Identifiable {
         self.uuid = UUID()
         self.displayName = displayName
         self.serverKey = serverKey ?? MCPServerConfig.generateKey(from: displayName)
+        self.transportType = .stdio
         self.command = command
         self.args = args
+        self.url = ""
         self.envVars = envVars
         self.notes = notes
         let now = Date()
         self.createdAt = now
         self.updatedAt = now
     }
+
+    // http/sse initializer
+    init(
+        displayName: String,
+        serverKey: String? = nil,
+        transportType: TransportType,
+        url: String,
+        headers: [EnvVar] = [],
+        notes: String = ""
+    ) {
+        self.id = nil
+        self.uuid = UUID()
+        self.displayName = displayName
+        self.serverKey = serverKey ?? MCPServerConfig.generateKey(from: displayName)
+        self.transportType = transportType
+        self.command = ""
+        self.args = []
+        self.url = url
+        self.envVars = headers
+        self.notes = notes
+        let now = Date()
+        self.createdAt = now
+        self.updatedAt = now
+    }
+
+    var isHTTP: Bool { transportType == .http || transportType == .sse }
 }
 
-// MARK: - Server Key Transform (FR-001, T022)
+// MARK: - Server Key Transform
 
 extension MCPServerConfig {
     static func generateKey(from displayName: String) -> String {
         let lowercased = displayName.lowercased()
         let hyphenated = lowercased.replacingOccurrences(of: " ", with: "-")
-        // Keep only a-z, 0-9, hyphen
         let filtered = hyphenated.unicodeScalars.filter { s in
-            (s.value >= 97 && s.value <= 122) || // a-z
-            (s.value >= 48 && s.value <= 57) ||  // 0-9
-            s.value == 45                         // hyphen
+            (s.value >= 97 && s.value <= 122) ||
+            (s.value >= 48 && s.value <= 57) ||
+            s.value == 45
         }
         return String(String.UnicodeScalarView(filtered))
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
     }
 }
 
-// MARK: - Equatable (for drift comparison — compares agent-file fields only)
+// MARK: - Equatable (compares agent-file fields only for drift detection)
 
 extension MCPServerConfig: Equatable {
     static func == (lhs: MCPServerConfig, rhs: MCPServerConfig) -> Bool {
+        lhs.transportType == rhs.transportType &&
         lhs.command == rhs.command &&
         lhs.args == rhs.args &&
+        lhs.url == rhs.url &&
         lhs.envVars == rhs.envVars
     }
 }
@@ -73,7 +113,12 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         uuid = UUID(uuidString: uuidString) ?? UUID()
         displayName = row["displayName"]
         serverKey = row["serverKey"]
-        command = row["command"]
+
+        let transportRaw: String = row["transportType"] ?? "stdio"
+        transportType = TransportType(rawValue: transportRaw) ?? .stdio
+
+        command = row["command"] ?? ""
+        url = row["url"] ?? ""
 
         let argsJSON: String = row["args"]
         args = (try? JSONDecoder().decode([String].self, from: Data(argsJSON.utf8))) ?? []
@@ -94,7 +139,9 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         container["uuid"] = uuid.uuidString
         container["displayName"] = displayName
         container["serverKey"] = serverKey
+        container["transportType"] = transportType.rawValue
         container["command"] = command
+        container["url"] = url
         container["args"] = String(data: try JSONEncoder().encode(args), encoding: .utf8) ?? "[]"
         container["envVars"] = String(data: try JSONEncoder().encode(envVars), encoding: .utf8) ?? "[]"
         container["notes"] = notes
@@ -107,11 +154,11 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
     }
 }
 
-// MARK: - Codable (for lastWrittenSnapshot JSON storage in ConfigAgentAssignment)
+// MARK: - Codable (for lastWrittenSnapshot storage)
 
 extension MCPServerConfig: Codable {
     enum CodingKeys: String, CodingKey {
-        case uuid, displayName, serverKey, command, args, envVars, notes, createdAt, updatedAt
+        case uuid, displayName, serverKey, transportType, command, args, url, envVars, notes, createdAt, updatedAt
     }
 }
 
@@ -135,7 +182,6 @@ struct EnvVar: Codable, Equatable, Identifiable {
         return value.range(of: pattern, options: .regularExpression) == nil
     }
 
-    // Coding: exclude auto-generated id from persistence
     enum CodingKeys: String, CodingKey { case key, value, isSensitive }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)

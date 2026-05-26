@@ -42,23 +42,40 @@ struct CodexCLIAdapter: AgentAdapter {
     private func parseConfigs(from table: TOMLTable) -> [String: MCPServerConfig] {
         var result: [String: MCPServerConfig] = [:]
         for (key, value) in table {
-            guard let entry = value.table,
-                  let command = entry["command"]?.string else { continue }
-            let args: [String] = {
-                guard let arr = entry["args"]?.array else { return [] }
-                return arr.compactMap { $0.string }
-            }()
-            let envVars: [EnvVar] = {
-                guard let envTable = entry["env"]?.table else { return [] }
-                return envTable.keys.sorted().compactMap { k in
-                    guard let str = envTable[k]?.string else { return nil }
-                    return EnvVar(key: k, value: str)
-                }
-            }()
-            result[key] = MCPServerConfig(
-                displayName: key, serverKey: key,
-                command: command, args: args, envVars: envVars
-            )
+            guard let entry = value.table else { continue }
+            let typeStr = entry["type"]?.string ?? "stdio"
+            if typeStr == "http" || typeStr == "sse" {
+                guard let url = entry["url"]?.string else { continue }
+                let transport = TransportType(rawValue: typeStr) ?? .http
+                let headers: [EnvVar] = {
+                    guard let headersTable = entry["headers"]?.table else { return [] }
+                    return headersTable.keys.sorted().compactMap { k in
+                        guard let str = headersTable[k]?.string else { return nil }
+                        return EnvVar(key: k, value: str)
+                    }
+                }()
+                result[key] = MCPServerConfig(
+                    displayName: key, serverKey: key,
+                    transportType: transport, url: url, headers: headers
+                )
+            } else {
+                guard let command = entry["command"]?.string else { continue }
+                let args: [String] = {
+                    guard let arr = entry["args"]?.array else { return [] }
+                    return arr.compactMap { $0.string }
+                }()
+                let envVars: [EnvVar] = {
+                    guard let envTable = entry["env"]?.table else { return [] }
+                    return envTable.keys.sorted().compactMap { k in
+                        guard let str = envTable[k]?.string else { return nil }
+                        return EnvVar(key: k, value: str)
+                    }
+                }()
+                result[key] = MCPServerConfig(
+                    displayName: key, serverKey: key,
+                    command: command, args: args, envVars: envVars
+                )
+            }
         }
         return result
     }
@@ -132,14 +149,24 @@ struct CodexCLIAdapter: AgentAdapter {
 
     private func serializeConfig(_ config: MCPServerConfig) -> TOMLTable {
         let table = TOMLTable()
-        table["command"] = config.command
-        if !config.args.isEmpty {
-            table["args"] = TOMLArray(config.args)
-        }
-        if !config.envVars.isEmpty {
-            let envTable = TOMLTable()
-            for ev in config.envVars { envTable[ev.key] = ev.value }
-            table["env"] = envTable
+        if config.isHTTP {
+            table["type"] = config.transportType.rawValue
+            table["url"] = config.url
+            if !config.envVars.isEmpty {
+                let headersTable = TOMLTable()
+                for ev in config.envVars { headersTable[ev.key] = ev.value }
+                table["headers"] = headersTable
+            }
+        } else {
+            table["command"] = config.command
+            if !config.args.isEmpty {
+                table["args"] = TOMLArray(config.args)
+            }
+            if !config.envVars.isEmpty {
+                let envTable = TOMLTable()
+                for ev in config.envVars { envTable[ev.key] = ev.value }
+                table["env"] = envTable
+            }
         }
         return table
     }

@@ -1,12 +1,17 @@
 import SwiftUI
 import Sparkle
 
+// Wraps discovery results for sheet(item:) so data and presentation are atomic.
+private struct DiscoveryContext: Identifiable {
+    let id = UUID()
+    let results: [ConfigStore.DiscoveryResult]
+}
+
 @main
 struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
-    @State private var showDiscovery = false
-    @State private var discoveredAgents: [ConfigStore.DiscoveryResult] = []
+    @State private var discoveryContext: DiscoveryContext?
 
     private let updaterController = SPUStandardUpdaterController(
         startingUpdater: true,
@@ -27,8 +32,8 @@ struct mcp_inatorApp: App {
                 MenuBarView()
                     .environmentObject(store)
                     .onAppear { runAgentScan(store: store) }
-                    .sheet(isPresented: $showDiscovery) {
-                        DiscoveryView(results: discoveredAgents)
+                    .sheet(item: $discoveryContext) { ctx in
+                        DiscoveryView(results: ctx.results)
                             .environmentObject(store)
                     }
             } else {
@@ -48,8 +53,7 @@ struct mcp_inatorApp: App {
                 let results = try store.discoverAgents(adapters: adapters)
                 let newlyFound = results.filter(\.isNew)
                 if !newlyFound.isEmpty {
-                    discoveredAgents = newlyFound
-                    showDiscovery = true
+                    discoveryContext = DiscoveryContext(results: newlyFound)
                 }
             } catch {
                 // Discovery errors are non-fatal

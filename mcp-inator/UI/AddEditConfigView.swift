@@ -4,15 +4,19 @@ struct AddEditConfigView: View {
     @EnvironmentObject private var store: ConfigStore
     @Environment(\.dismiss) private var dismiss
 
-    // nil = add mode; non-nil = edit mode
     let existing: MCPServerConfig?
 
     @State private var displayName: String
     @State private var serverKey: String
     @State private var serverKeyEdited: Bool
+    @State private var transportType: TransportType
+    // stdio fields
     @State private var command: String
     @State private var args: [String]
     @State private var newArg: String = ""
+    // http/sse fields
+    @State private var url: String
+    // shared: env vars (stdio) or headers (http/sse)
     @State private var envVars: [EnvVar]
     @State private var newEnvKey: String = ""
     @State private var newEnvValue: String = ""
@@ -24,17 +28,21 @@ struct AddEditConfigView: View {
 
     init(existing: MCPServerConfig? = nil) {
         self.existing = existing
-        _displayName   = State(initialValue: existing?.displayName ?? "")
-        _serverKey     = State(initialValue: existing?.serverKey ?? "")
+        _displayName     = State(initialValue: existing?.displayName ?? "")
+        _serverKey       = State(initialValue: existing?.serverKey ?? "")
         _serverKeyEdited = State(initialValue: existing != nil)
-        _command       = State(initialValue: existing?.command ?? "")
-        _args          = State(initialValue: existing?.args ?? [])
-        _envVars       = State(initialValue: existing?.envVars ?? [])
-        _notes         = State(initialValue: existing?.notes ?? "")
+        _transportType   = State(initialValue: existing?.transportType ?? .stdio)
+        _command         = State(initialValue: existing?.command ?? "")
+        _args            = State(initialValue: existing?.args ?? [])
+        _url             = State(initialValue: existing?.url ?? "")
+        _envVars         = State(initialValue: existing?.envVars ?? [])
+        _notes           = State(initialValue: existing?.notes ?? "")
     }
 
     private var isEditMode: Bool { existing != nil }
     private var title: String { isEditMode ? "Edit Server" : "Add Server" }
+    private var isHTTP: Bool { transportType == .http || transportType == .sse }
+    private var envLabel: String { isHTTP ? "Request Headers" : "Environment Variables" }
 
     var body: some View {
         Form {
@@ -56,34 +64,47 @@ struct AddEditConfigView: View {
                     }
                 }
                 .help("Used as the key in the agent config file. Auto-generated from display name.")
+
+                Picker("Transport", selection: $transportType) {
+                    Text("stdio (command)").tag(TransportType.stdio)
+                    Text("HTTP").tag(TransportType.http)
+                    Text("SSE").tag(TransportType.sse)
+                }
+                .pickerStyle(.segmented)
             }
 
-            Section("Command") {
-                TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
-            }
+            if isHTTP {
+                Section("URL") {
+                    TextField("https://…", text: $url)
+                }
+            } else {
+                Section("Command") {
+                    TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
+                }
 
-            Section("Arguments") {
-                ForEach(args.indices, id: \.self) { i in
-                    HStack {
-                        Text(args[i])
-                            .font(.system(.body, design: .monospaced))
-                        Spacer()
-                        Button(role: .destructive) { args.remove(at: i) } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .foregroundColor(.red)
+                Section("Arguments") {
+                    ForEach(args.indices, id: \.self) { i in
+                        HStack {
+                            Text(args[i])
+                                .font(.system(.body, design: .monospaced))
+                            Spacer()
+                            Button(role: .destructive) { args.remove(at: i) } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.red)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                    }
+                    HStack {
+                        TextField("Add argument…", text: $newArg)
+                            .onSubmit { addArg() }
+                        Button("Add", action: addArg)
+                            .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
-                HStack {
-                    TextField("Add argument…", text: $newArg)
-                        .onSubmit { addArg() }
-                    Button("Add", action: addArg)
-                        .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
             }
 
-            Section("Environment Variables") {
+            Section(envLabel) {
                 ForEach($envVars) { $env in
                     EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
                         if revealedEnvIds.contains(env.id) {
@@ -124,8 +145,7 @@ struct AddEditConfigView: View {
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") { save() }
-                    .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty ||
-                              command.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(isSaveDisabled)
             }
         }
         .sheet(isPresented: $showPropagation) {
@@ -134,6 +154,13 @@ struct AddEditConfigView: View {
                     .environmentObject(store)
             }
         }
+    }
+
+    private var isSaveDisabled: Bool {
+        let name = displayName.trimmingCharacters(in: .whitespaces)
+        if name.isEmpty { return true }
+        if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
+        return command.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     // MARK: - Actions
@@ -148,8 +175,7 @@ struct AddEditConfigView: View {
     private func addEnvVar() {
         let key = newEnvKey.trimmingCharacters(in: .whitespaces)
         guard !key.isEmpty else { return }
-        let value = newEnvValue
-        envVars.append(EnvVar(key: key, value: value))
+        envVars.append(EnvVar(key: key, value: newEnvValue))
         newEnvKey = ""
         newEnvValue = ""
     }
@@ -157,36 +183,41 @@ struct AddEditConfigView: View {
     private func save() {
         validationError = nil
         let trimmedName = displayName.trimmingCharacters(in: .whitespaces)
-        let trimmedCmd  = command.trimmingCharacters(in: .whitespaces)
         let trimmedKey  = serverKey.trimmingCharacters(in: .whitespaces)
 
         guard !trimmedName.isEmpty else { validationError = "Display name is required."; return }
-        guard !trimmedCmd.isEmpty  else { validationError = "Command is required."; return }
         guard !trimmedKey.isEmpty  else { validationError = "Server key is required."; return }
 
         do {
             if var config = existing {
-                config.displayName = trimmedName
-                config.serverKey   = trimmedKey
-                config.command     = trimmedCmd
-                config.args        = args
-                config.envVars     = envVars
-                config.notes       = notes
+                config.displayName    = trimmedName
+                config.serverKey      = trimmedKey
+                config.transportType  = transportType
+                config.command        = isHTTP ? "" : command.trimmingCharacters(in: .whitespaces)
+                config.args           = isHTTP ? [] : args
+                config.url            = isHTTP ? url.trimmingCharacters(in: .whitespaces) : ""
+                config.envVars        = envVars
+                config.notes          = notes
                 try store.update(config)
                 savedConfig = config
             } else {
-                var config = MCPServerConfig(
-                    displayName: trimmedName,
-                    serverKey: trimmedKey,
-                    command: trimmedCmd,
-                    args: args,
-                    envVars: envVars,
-                    notes: notes
-                )
-                config = try store.insert(config)
-                savedConfig = config
+                let config: MCPServerConfig
+                if isHTTP {
+                    config = MCPServerConfig(
+                        displayName: trimmedName, serverKey: trimmedKey,
+                        transportType: transportType,
+                        url: url.trimmingCharacters(in: .whitespaces),
+                        headers: envVars, notes: notes
+                    )
+                } else {
+                    config = MCPServerConfig(
+                        displayName: trimmedName, serverKey: trimmedKey,
+                        command: command.trimmingCharacters(in: .whitespaces),
+                        args: args, envVars: envVars, notes: notes
+                    )
+                }
+                savedConfig = try store.insert(config)
             }
-            // Offer propagation if enabled agents exist
             if let saved = savedConfig, isEditMode,
                let enabledAgents = try? store.findEnabledAgents(for: saved.uuid),
                !enabledAgents.isEmpty {

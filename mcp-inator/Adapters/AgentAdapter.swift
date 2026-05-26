@@ -94,28 +94,51 @@ enum JSONAdapterHelper {
     static func parseMCPConfigs(from serverDict: [String: Any]) -> [String: MCPServerConfig] {
         var result: [String: MCPServerConfig] = [:]
         for (key, value) in serverDict {
-            guard let entry = value as? [String: Any],
-                  let command = entry["command"] as? String else { continue }
-            let args = entry["args"] as? [String] ?? []
-            let env = entry["env"] as? [String: String] ?? [:]
-            let envVars = env.sorted(by: { $0.key < $1.key }).map {
-                EnvVar(key: $0.key, value: $0.value)
+            guard let entry = value as? [String: Any] else { continue }
+            let typeStr = entry["type"] as? String ?? "stdio"
+            if typeStr == "http" || typeStr == "sse" {
+                guard let url = entry["url"] as? String else { continue }
+                let transport = TransportType(rawValue: typeStr) ?? .http
+                let headers = (entry["headers"] as? [String: String] ?? [:])
+                    .sorted(by: { $0.key < $1.key })
+                    .map { EnvVar(key: $0.key, value: $0.value) }
+                result[key] = MCPServerConfig(
+                    displayName: key, serverKey: key,
+                    transportType: transport, url: url, headers: headers
+                )
+            } else {
+                guard let command = entry["command"] as? String else { continue }
+                let args = entry["args"] as? [String] ?? []
+                let env = entry["env"] as? [String: String] ?? [:]
+                let envVars = env.sorted(by: { $0.key < $1.key })
+                    .map { EnvVar(key: $0.key, value: $0.value) }
+                result[key] = MCPServerConfig(
+                    displayName: key, serverKey: key,
+                    command: command, args: args, envVars: envVars
+                )
             }
-            result[key] = MCPServerConfig(
-                displayName: key, serverKey: key,
-                command: command, args: args, envVars: envVars
-            )
         }
         return result
     }
 
     static func serializeConfig(_ config: MCPServerConfig) -> [String: Any] {
-        var result: [String: Any] = ["command": config.command]
-        if !config.args.isEmpty { result["args"] = config.args }
-        if !config.envVars.isEmpty {
-            result["env"] = Dictionary(uniqueKeysWithValues: config.envVars.map { ($0.key, $0.value) })
+        if config.isHTTP {
+            var result: [String: Any] = [
+                "type": config.transportType.rawValue,
+                "url": config.url
+            ]
+            if !config.envVars.isEmpty {
+                result["headers"] = Dictionary(uniqueKeysWithValues: config.envVars.map { ($0.key, $0.value) })
+            }
+            return result
+        } else {
+            var result: [String: Any] = ["command": config.command]
+            if !config.args.isEmpty { result["args"] = config.args }
+            if !config.envVars.isEmpty {
+                result["env"] = Dictionary(uniqueKeysWithValues: config.envVars.map { ($0.key, $0.value) })
+            }
+            return result
         }
-        return result
     }
 
     // MARK: Pre-flight Diff

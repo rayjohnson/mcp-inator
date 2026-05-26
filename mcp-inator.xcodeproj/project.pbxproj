@@ -18,6 +18,7 @@
 		400927860892CA6B0842C128 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */; };
 		478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */; };
 		4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AA0D309B195442D289C705 /* AddEditConfigView.swift */; };
+		522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */; };
 		544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E57B58837265AE3A8812BC /* ClaudeCodeAdapterTests.swift */; };
 		55EDE08B968A9932A5100EF8 /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = A8A575E8E03CFB9812734877 /* TOMLKit */; };
 		5E93AE6C06C1F2916D5724A2 /* GeminiCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */; };
@@ -88,6 +89,7 @@
 		E6AA0D309B195442D289C705 /* AddEditConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditConfigView.swift; sourceTree = "<group>"; };
 		E75736D0388AAACA14315CAE /* ClaudeCodeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCodeAdapter.swift; sourceTree = "<group>"; };
 		E7CB9545A4BAAA3E5D7B3892 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
+		EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration003.swift; sourceTree = "<group>"; };
 		F1A4408041C07C9921071598 /* Migration002.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration002.swift; sourceTree = "<group>"; };
 		F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */ = {isa = PBXFileReference; path = codex_config.toml; sourceTree = "<group>"; };
 		F97CA2C41585DD4CD516D00B /* claude_code_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_code_config.json; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 			children = (
 				30560F888607C8CDB96E1EDA /* Migration001.swift */,
 				F1A4408041C07C9921071598 /* Migration002.swift */,
+				EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -381,6 +384,7 @@
 				400927860892CA6B0842C128 /* MenuBarView.swift in Sources */,
 				D541D6822382E172DE600A9E /* Migration001.swift in Sources */,
 				EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */,
+				522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */,
 				18386C1473590D124F999EF6 /* PropagationView.swift in Sources */,
 				EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */,
 				0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */,

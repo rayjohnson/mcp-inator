@@ -44,9 +44,13 @@ struct AgentListView: View {
             }
             if store.configs.isEmpty {
                 Spacer()
-                Text("No configs in your library yet.")
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 12) {
+                    Text("No configs in your library yet.")
+                        .foregroundColor(.secondary)
+                    Button("Import from \(agent.displayName)…") { triggerImport() }
+                        .buttonStyle(.borderedProminent)
+                }
+                .frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 configRows

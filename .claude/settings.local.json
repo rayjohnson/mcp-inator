@@ -17,7 +17,27 @@
       "WebFetch(domain:eclecticlight.co)",
       "WebFetch(domain:geminicli.com)",
       "WebFetch(domain:vladimirsiedykh.com)",
-      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_plan *)"
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_plan *)",
+      "Bash(.specify/scripts/bash/setup-tasks.sh *)",
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_tasks *)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh *)",
+      "Bash(xcode-select -p)",
+      "Bash(swift --version)",
+      "Bash(xcodegen generate *)",
+      "Skill(speckit-specify)",
+      "Bash(.specify/extensions/git/scripts/bash/create-new-feature.sh *)",
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_specify *)",
+      "Bash(xcodebuild build *)",
+      "Bash(grep -E \"^.*\\(error:|warning: \\).*$\")",
+      "Bash(xcodebuild test *)",
+      "Bash(grep -E \"Test \\(Suite|Case\\).*failed|passed$|TEST\")",
+      "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -showBuildSettings)",
+      "Bash(log show *)",
+      "Read(//Users/ray.johnson/**)",
+      "Read(//Users/ray.johnson/.gemini/**)",
+      "Read(//Users/ray.johnson/.codex/**)",
+      "Bash(pkill -x \"mcp-inator\")",
+      "Bash(python3 *)"
     ]
   }
 }
