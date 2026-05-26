@@ -72,6 +72,7 @@ struct MCPServerConfig: Identifiable {
     }
 
     var isHTTP: Bool { transportType == .http || transportType == .sse }
+    var isBuiltIn: Bool { serverKey == "mcp-inator" }
 }
 
 // MARK: - CatalogEntry Convenience Init

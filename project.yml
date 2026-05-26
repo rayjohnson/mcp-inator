@@ -15,6 +15,9 @@ packages:
   TOMLKit:
     url: https://github.com/LebJe/TOMLKit
     from: "0.5.0"
+  MCP:
+    url: https://github.com/modelcontextprotocol/swift-sdk
+    from: "0.12.1"
 
 targets:
   mcp-inator:
@@ -39,6 +42,8 @@ targets:
         product: Sparkle
       - package: TOMLKit
         product: TOMLKit
+      - package: MCP
+        product: MCP
     info:
       path: mcp-inator/Resources/Info.plist
       properties:
