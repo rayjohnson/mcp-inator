@@ -41,13 +41,7 @@ struct mcp_inatorApp: App {
                 }
             }
         } label: {
-            if let url = Bundle.main.url(forResource: "Inator", withExtension: "png"),
-               let nsImage = NSImage(contentsOf: url) {
-                let _ = { nsImage.isTemplate = true }()
-                Image(nsImage: nsImage)
-            } else {
-                Image(systemName: "server.rack")
-            }
+            Image("Inator")
         }
         .menuBarExtraStyle(.window)
     }
