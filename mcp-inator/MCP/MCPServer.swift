@@ -36,12 +36,14 @@ struct MCPServerRunner {
             capabilities: .init(tools: .init())
         )
 
+        let handler = MCPToolHandler(store: store)
+
         await server.withMethodHandler(ListTools.self) { _ in
-            ListTools.Result(tools: MCPTools.allTools)
+            ListTools.Result(tools: MCPToolHandler.allTools)
         }
 
         await server.withMethodHandler(CallTool.self) { params in
-            await MCPTools.dispatch(store: store, params: params)
+            await handler.dispatch(params: params)
         }
 
         let transport = TerminatingStdioTransport()

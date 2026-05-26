@@ -161,6 +161,13 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertEqual(store.configs.count, 3)
     }
 
+    func testSeedSelfEntry_idempotent() throws {
+        try store.seedSelfEntry()
+        try store.seedSelfEntry()
+        let count = store.configs.filter { $0.serverKey == "mcp-inator" }.count
+        XCTAssertEqual(count, 1, "seedSelfEntry must not insert a duplicate")
+    }
+
     func testPublishedConfigs_updatesAfterInsertAndDelete() throws {
         XCTAssertTrue(store.configs.isEmpty)
         let config = try store.insert(MCPServerConfig(displayName: "Live", command: "/bin/live"))

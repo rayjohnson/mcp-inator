@@ -1,9 +1,16 @@
 import Foundation
 import MCP
 
-// MARK: - MCPTools
+// MARK: - MCPToolHandler
 
-enum MCPTools {
+struct MCPToolHandler: @unchecked Sendable {
+    let store: ConfigStore
+    var adapterProvider: (AgentType) -> any AgentAdapter
+
+    init(store: ConfigStore, adapterProvider: ((AgentType) -> any AgentAdapter)? = nil) {
+        self.store = store
+        self.adapterProvider = adapterProvider ?? MCPToolHandler.defaultAdapter
+    }
 
     // MARK: - Tool Definitions
 
@@ -74,15 +81,15 @@ enum MCPTools {
     // MARK: - Dispatch
 
     @MainActor
-    static func dispatch(store: ConfigStore, params: CallTool.Parameters) async -> CallTool.Result {
+    func dispatch(params: CallTool.Parameters) async -> CallTool.Result {
         let args = params.arguments ?? [:]
         switch params.name {
-        case "list_servers":   return listServers(store: store)
-        case "add_server":     return await addServer(store: store, args: args)
-        case "remove_server":  return await removeServer(store: store, args: args)
-        case "enable_server":  return await enableServer(store: store, args: args)
-        case "disable_server": return await disableServer(store: store, args: args)
-        case "list_agents":    return listAgents(store: store)
+        case "list_servers":   return listServers()
+        case "add_server":     return await addServer(args: args)
+        case "remove_server":  return await removeServer(args: args)
+        case "enable_server":  return await enableServer(args: args)
+        case "disable_server": return await disableServer(args: args)
+        case "list_agents":    return listAgents()
         default:
             return toolError("Unknown tool: '\(params.name)'")
         }
@@ -91,7 +98,7 @@ enum MCPTools {
     // MARK: - list_servers
 
     @MainActor
-    private static func listServers(store: ConfigStore) -> CallTool.Result {
+    private func listServers() -> CallTool.Result {
         struct ServerSummary: Encodable {
             let serverKey: String
             let displayName: String
@@ -120,7 +127,7 @@ enum MCPTools {
     // MARK: - add_server
 
     @MainActor
-    private static func addServer(store: ConfigStore, args: [String: Value]) async -> CallTool.Result {
+    private func addServer(args: [String: Value]) async -> CallTool.Result {
         guard let name = args["name"]?.stringValue, !name.isEmpty else {
             return toolError("Missing required argument: 'name'")
         }
@@ -157,7 +164,7 @@ enum MCPTools {
     // MARK: - remove_server
 
     @MainActor
-    private static func removeServer(store: ConfigStore, args: [String: Value]) async -> CallTool.Result {
+    private func removeServer(args: [String: Value]) async -> CallTool.Result {
         guard let serverName = args["server_name"]?.stringValue, !serverName.isEmpty else {
             return toolError("Missing required argument: 'server_name'")
         }
@@ -181,7 +188,7 @@ enum MCPTools {
     // MARK: - enable_server
 
     @MainActor
-    private static func enableServer(store: ConfigStore, args: [String: Value]) async -> CallTool.Result {
+    private func enableServer(args: [String: Value]) async -> CallTool.Result {
         guard let serverName = args["server_name"]?.stringValue, !serverName.isEmpty else {
             return toolError("Missing required argument: 'server_name'")
         }
@@ -202,10 +209,9 @@ enum MCPTools {
             return toolError("agent '\(agentStr)' not found — run a discovery scan first")
         }
 
-        let adapter = adapterFor(agentType)
+        let adapter = adapterProvider(agentType)
         let configPath = URL(fileURLWithPath: agent.configPath)
 
-        // For mcp-inator's own entry, substitute the real executable path at write time
         var effectiveConfig = config
         if config.isBuiltIn, let execPath = Bundle.main.executableURL?.path {
             effectiveConfig.command = execPath
@@ -236,7 +242,7 @@ enum MCPTools {
     // MARK: - disable_server
 
     @MainActor
-    private static func disableServer(store: ConfigStore, args: [String: Value]) async -> CallTool.Result {
+    private func disableServer(args: [String: Value]) async -> CallTool.Result {
         guard let serverName = args["server_name"]?.stringValue, !serverName.isEmpty else {
             return toolError("Missing required argument: 'server_name'")
         }
@@ -257,7 +263,7 @@ enum MCPTools {
             return toolError("agent '\(agentStr)' not found — run a discovery scan first")
         }
 
-        let adapter = adapterFor(agentType)
+        let adapter = adapterProvider(agentType)
         let configPath = URL(fileURLWithPath: agent.configPath)
 
         do {
@@ -285,7 +291,7 @@ enum MCPTools {
     // MARK: - list_agents
 
     @MainActor
-    private static func listAgents(store: ConfigStore) -> CallTool.Result {
+    private func listAgents() -> CallTool.Result {
         struct AgentSummary: Encodable {
             let agentType: String
             let displayName: String
@@ -309,14 +315,14 @@ enum MCPTools {
 
     // MARK: - Helpers
 
-    private static func toolError(_ message: String) -> CallTool.Result {
+    private func toolError(_ message: String) -> CallTool.Result {
         CallTool.Result(
             content: [.text(text: "Error: \(message)", annotations: nil, _meta: nil)],
             isError: true
         )
     }
 
-    private static func adapterFor(_ agentType: AgentType) -> any AgentAdapter {
+    private static func defaultAdapter(_ agentType: AgentType) -> any AgentAdapter {
         switch agentType {
         case .claudeCode:    return ClaudeCodeAdapter()
         case .claudeDesktop: return ClaudeDesktopAdapter()

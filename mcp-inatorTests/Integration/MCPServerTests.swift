@@ -36,7 +36,6 @@ final class MCPServerTests: XCTestCase {
 
         try process.run()
 
-        // Write all messages then close stdin
         for msg in messages {
             let data = try JSONSerialization.data(withJSONObject: msg)
             stdin.fileHandleForWriting.write(data + "\n".data(using: .utf8)!)
@@ -53,12 +52,10 @@ final class MCPServerTests: XCTestCase {
         }
     }
 
-    /// Returns only responses that have an `id` field (not notifications).
     private func responses(from all: [[String: Any]]) -> [[String: Any]] {
         all.filter { $0["id"] != nil }
     }
 
-    /// Finds the response with the given numeric id. Responses may arrive out of order.
     private func response(id: Int, from all: [[String: Any]]) throws -> [String: Any] {
         try XCTUnwrap(all.first { ($0["id"] as? Int) == id })
     }
@@ -79,7 +76,7 @@ final class MCPServerTests: XCTestCase {
         ]
     }
 
-    // MARK: - Tests
+    // MARK: - Wire Protocol
 
     func testInitializeHandshake() throws {
         let msgs = makeInitSeq()
@@ -111,71 +108,25 @@ final class MCPServerTests: XCTestCase {
         XCTAssertEqual(names.count, 6)
     }
 
+    // MARK: - End-to-End Tool Round-Trip
+
     func testAddAndListServer() throws {
-        let msgs = makeInitSeq() + [
-            [
-                "jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": [
-                    "name": "add_server",
-                    "arguments": ["name": "Test Server", "command": "npx", "args": ["-y", "test-mcp"]]
-                ]
-            ],
-            [
-                "jsonrpc": "2.0", "id": 3, "method": "tools/call",
-                "params": ["name": "list_servers", "arguments": [:]]
-            ],
-            // Remove the server we just added so tests are idempotent
-            [
-                "jsonrpc": "2.0", "id": 4, "method": "tools/call",
-                "params": ["name": "remove_server", "arguments": ["server_name": "test-server"]]
-            ]
-        ]
-        let all = try runServer(messages: msgs)
+        // Use separate invocations so add and list are never concurrent.
 
-        // Responses may arrive out of order — look up by id
-        let addResult = try XCTUnwrap((try response(id: 2, from: all))["result"] as? [String: Any])
-        let addText = try XCTUnwrap((addResult["content"] as? [[String: Any]])?.first?["text"] as? String)
-        XCTAssertTrue(addText.contains("Added"), "Expected 'Added', got: \(addText)")
-        XCTAssertNil(addResult["isError"])
-
-        let listResult = try XCTUnwrap((try response(id: 3, from: all))["result"] as? [String: Any])
-        let listText = try XCTUnwrap((listResult["content"] as? [[String: Any]])?.first?["text"] as? String)
-        let servers = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: listText.data(using: .utf8)!) as? [[String: Any]]
-        )
-        let keys = servers.compactMap { $0["serverKey"] as? String }
-        XCTAssertTrue(keys.contains("test-server"), "Expected test-server in \(keys)")
-    }
-
-    func testRemoveServer() throws {
-        // Use separate invocations to avoid concurrency ordering issues: add first,
-        // then remove, then list in separate process runs so ordering is deterministic.
-
-        // Invocation 1: add the server
+        // Invocation 1: add
         let addMsgs = makeInitSeq() + [
             [
                 "jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": ["name": "add_server", "arguments": ["name": "Removable", "command": "echo"]]
+                "params": ["name": "add_server", "arguments": ["name": "Test Server", "command": "npx", "args": ["-y", "test-mcp"]]]
             ] as [String: Any]
         ]
         let addAll = try runServer(messages: addMsgs)
         let addResult = try XCTUnwrap((try response(id: 2, from: addAll))["result"] as? [String: Any])
-        let addText = (addResult["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
-        let addOK = addText.contains("Added") || addText.contains("already exists")
-        XCTAssertTrue(addOK, "Unexpected add result: \(addText)")
+        let addText = try XCTUnwrap((addResult["content"] as? [[String: Any]])?.first?["text"] as? String)
+        XCTAssertTrue(addText.contains("Added"), "Expected 'Added', got: \(addText)")
+        XCTAssertNil(addResult["isError"])
 
-        // Invocation 2: remove it (single operation — no ordering race)
-        let removeMsgs = makeInitSeq() + [
-            [
-                "jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": ["name": "remove_server", "arguments": ["server_name": "removable"]]
-            ] as [String: Any]
-        ]
-        let removeAll = try runServer(messages: removeMsgs)
-        let removeResult = try XCTUnwrap((try response(id: 2, from: removeAll))["result"] as? [String: Any])
-        XCTAssertNil(removeResult["isError"], "remove_server failed: \(removeResult)")
-
-        // Invocation 3: list to confirm it's gone
+        // Invocation 2: list to confirm presence
         let listMsgs = makeInitSeq() + [
             [
                 "jsonrpc": "2.0", "id": 2, "method": "tools/call",
@@ -189,8 +140,19 @@ final class MCPServerTests: XCTestCase {
             JSONSerialization.jsonObject(with: listText.data(using: .utf8)!) as? [[String: Any]]
         )
         let keys = servers.compactMap { $0["serverKey"] as? String }
-        XCTAssertFalse(keys.contains("removable"), "removable should be gone from \(keys)")
+        XCTAssertTrue(keys.contains("test-server"), "Expected test-server in \(keys)")
+
+        // Invocation 3: cleanup
+        let removeMsgs = makeInitSeq() + [
+            [
+                "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                "params": ["name": "remove_server", "arguments": ["server_name": "test-server"]]
+            ] as [String: Any]
+        ]
+        _ = try runServer(messages: removeMsgs)
     }
+
+    // MARK: - Error Guards (spot-checks of built-in protections)
 
     func testCannotRemoveBuiltIn() throws {
         let msgs = makeInitSeq() + [
@@ -200,8 +162,7 @@ final class MCPServerTests: XCTestCase {
             ]
         ]
         let all = try runServer(messages: msgs)
-        let reps = responses(from: all)
-        let result = try XCTUnwrap(reps.last?["result"] as? [String: Any])
+        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
         XCTAssertEqual(result["isError"] as? Bool, true)
         let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
         XCTAssertTrue(text.contains("built-in"), "Expected 'built-in' error, got: \(text)")
@@ -218,68 +179,23 @@ final class MCPServerTests: XCTestCase {
             ]
         ]
         let all = try runServer(messages: msgs)
-        let reps = responses(from: all)
-        let result = try XCTUnwrap(reps.last?["result"] as? [String: Any])
+        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
         XCTAssertEqual(result["isError"] as? Bool, true)
         let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
         XCTAssertTrue(text.contains("app-managed"), "Expected 'app-managed' error, got: \(text)")
     }
 
-    func testEnableDisableServer() throws {
-        // The MCP server process doesn't run agent discovery, so agents are only present
-        // if the GUI app has previously discovered them. This test verifies the enable/disable
-        // pathway returns a coherent result (either success or "agent not found").
+    func testEnableServer_serverNotFound() throws {
         let msgs = makeInitSeq() + [
             [
                 "jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": ["name": "add_server", "arguments": ["name": "E2E Test", "command": "echo"]]
-            ],
-            [
-                "jsonrpc": "2.0", "id": 3, "method": "tools/call",
-                "params": ["name": "enable_server", "arguments": ["server_name": "e2e-test", "agent": "claude_code"]]
-            ],
-            [
-                "jsonrpc": "2.0", "id": 4, "method": "tools/call",
-                "params": ["name": "disable_server", "arguments": ["server_name": "e2e-test", "agent": "claude_code"]]
-            ],
-            // Cleanup: remove the test server so this test is idempotent
-            [
-                "jsonrpc": "2.0", "id": 5, "method": "tools/call",
-                "params": ["name": "remove_server", "arguments": ["server_name": "e2e-test"]]
+                "params": ["name": "enable_server", "arguments": ["server_name": "nonexistent", "agent": "claude_code"]]
             ]
         ]
         let all = try runServer(messages: msgs)
-
-        let enableResult = try XCTUnwrap((try response(id: 3, from: all))["result"] as? [String: Any])
-        let enableText = (enableResult["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
-        // Either success or "agent not found" (no discovery in server mode) — both are valid
-        let isKnownOutcome = enableText.contains("Enabled") || enableText.contains("not found")
-        XCTAssertTrue(isKnownOutcome, "Unexpected enable result: \(enableText)")
-    }
-
-    func testListAgents() throws {
-        let msgs = makeInitSeq() + [
-            [
-                "jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": ["name": "list_agents", "arguments": [:]]
-            ]
-        ]
-        let all = try runServer(messages: msgs)
-        let reps = responses(from: all)
-        let result = try XCTUnwrap(reps.last?["result"] as? [String: Any])
-        XCTAssertNil(result["isError"])
-        let text = try XCTUnwrap(
-            (result["content"] as? [[String: Any]])?.first?["text"] as? String
-        )
-        // Result must be a valid JSON array (may be empty if no agents discovered in test environment)
-        let agents = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: text.data(using: .utf8)!) as? [[String: Any]]
-        )
-        // Each entry must have the expected shape if present
-        for agent in agents {
-            XCTAssertNotNil(agent["agentType"])
-            XCTAssertNotNil(agent["displayName"])
-            XCTAssertNotNil(agent["configPath"])
-        }
+        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
+        XCTAssertEqual(result["isError"] as? Bool, true)
+        let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
+        XCTAssertTrue(text.contains("not found"), "Expected 'not found' error, got: \(text)")
     }
 }
