@@ -8,14 +8,13 @@ struct AgentListView: View {
 
     @State private var enabledUUIDs: Set<UUID> = []
     @State private var pendingWrite: PendingWrite?
-    @State private var showRestartNotice = false
+    @State private var pendingToggleStates: [UUID: Bool] = [:]
+    @State private var restartNotice: String?
+    @State private var writeErrorBanner: String?
     @State private var showPathOverride = false
     @State private var customPathInput: String = ""
-    @State private var writeError: String?
     @State private var showImportReview = false
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
-    @State private var multiSelectActive = false
-    @State private var multiSelected: Set<UUID> = []
 
     private struct PendingWrite {
         let uuid: UUID
@@ -55,6 +54,57 @@ struct AgentListView: View {
             } else {
                 configRows
             }
+
+            if let notice = restartNotice {
+                Divider()
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text(notice)
+                        .font(.callout)
+                    Spacer()
+                    Button("Dismiss") { restartNotice = nil }
+                        .buttonStyle(.plain)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.green.opacity(0.08))
+            }
+
+            if let err = writeErrorBanner {
+                Divider()
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                    Text(err)
+                        .font(.callout)
+                        .foregroundColor(.red)
+                    Spacer()
+                    Button("Dismiss") { writeErrorBanner = nil }
+                        .buttonStyle(.plain)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.red.opacity(0.08))
+            }
+
+            if !pendingToggleStates.isEmpty {
+                Divider()
+                HStack {
+                    Button("Cancel") { pendingToggleStates = [:] }
+                        .keyboardShortcut(.escape, modifiers: [])
+                    Spacer()
+                    let count = pendingToggleStates.count
+                    Text("\(count) unsaved change\(count == 1 ? "" : "s")")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                    Button("Apply") { applyPendingToggles() }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.return, modifiers: .command)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+            }
         }
         .navigationTitle(agent.displayName)
         .toolbar { toolbarContent }
@@ -64,19 +114,6 @@ struct AgentListView: View {
         .navigationDestination(isPresented: $showImportReview) {
             ImportReviewView(agent: agent, categories: importCategories)
                 .environmentObject(store)
-        }
-        .alert("Restart Required", isPresented: $showRestartNotice) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            restartMessage
-        }
-        .alert("Write Failed", isPresented: Binding(
-            get: { writeError != nil },
-            set: { if !$0 { writeError = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(writeError ?? "")
         }
         .onAppear { refreshEnabledSet() }
     }
@@ -130,20 +167,14 @@ struct AgentListView: View {
     private var configRows: some View {
         List {
             ForEach(store.configs) { config in
+                let displayedEnabled = pendingToggleStates[config.uuid] ?? enabledUUIDs.contains(config.uuid)
+                let isPending = pendingToggleStates[config.uuid] != nil
                 ConfigAgentRow(
                     config: config,
-                    isEnabled: enabledUUIDs.contains(config.uuid),
+                    isEnabled: displayedEnabled,
+                    isPending: isPending,
                     agentAvailable: agent.isAvailable,
-                    multiSelectActive: multiSelectActive,
-                    isMultiSelected: multiSelected.contains(config.uuid),
-                    onToggle: { toggle(config: config) },
-                    onMultiSelect: {
-                        if multiSelected.contains(config.uuid) {
-                            multiSelected.remove(config.uuid)
-                        } else {
-                            multiSelected.insert(config.uuid)
-                        }
-                    }
+                    onToggle: { togglePending(config: config) }
                 )
             }
         }
@@ -159,56 +190,57 @@ struct AgentListView: View {
                 Image(systemName: "ellipsis.circle")
             }
         }
-        if multiSelectActive {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Apply (\(multiSelected.count))") { applySelected() }
-                    .disabled(multiSelected.isEmpty)
-                    .buttonStyle(.borderedProminent)
-            }
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    multiSelectActive = false
-                    multiSelected = []
-                }
-            }
-        } else if !store.configs.isEmpty {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Select") {
-                    multiSelectActive = true
-                    multiSelected = Set(store.configs.map(\.uuid))
-                }
-            }
+    }
+
+    // MARK: - Pending Toggle Logic
+
+    private func togglePending(config: MCPServerConfig) {
+        let actual = enabledUUIDs.contains(config.uuid)
+        let current = pendingToggleStates[config.uuid] ?? actual
+        let desired = !current
+        if desired == actual {
+            pendingToggleStates.removeValue(forKey: config.uuid)
+        } else {
+            pendingToggleStates[config.uuid] = desired
         }
     }
 
-    // MARK: - Toggle Enable/Disable
-
-    private func toggle(config: MCPServerConfig) {
-        guard agent.isAvailable, let agentId = agent.id else { return }
-        let wasEnabled = enabledUUIDs.contains(config.uuid)
+    private func applyPendingToggles() {
+        guard let agentId = agent.id else { return }
         do {
             try store.refreshAvailability(adapters: [adapter])
-            if wasEnabled {
-                let result = try store.disableConfig(uuid: config.uuid, agentId: agentId,
-                                                     adapter: adapter, configPath: configPath)
-                handleResult(result, uuid: config.uuid, enable: false)
-            } else {
-                let result = try store.enableConfig(uuid: config.uuid, agentId: agentId,
-                                                    adapter: adapter, configPath: configPath)
-                handleResult(result, uuid: config.uuid, enable: true)
-            }
         } catch {
-            writeError = describeError(error, configPath: configPath)
+            writeErrorBanner = describeError(error, configPath: configPath)
+            return
         }
-    }
 
-    private func handleResult(_ result: WriteResult, uuid: UUID, enable: Bool) {
-        switch result {
-        case .success:
-            refreshEnabledSet()
-            showRestartNotice = true
-        case .driftDetected:
-            pendingWrite = PendingWrite(uuid: uuid, enable: enable, driftResult: result)
+        var anySuccess = false
+        for (uuid, enable) in pendingToggleStates {
+            do {
+                let result: WriteResult
+                if enable {
+                    result = try store.enableConfig(uuid: uuid, agentId: agentId,
+                                                    adapter: adapter, configPath: configPath)
+                } else {
+                    result = try store.disableConfig(uuid: uuid, agentId: agentId,
+                                                     adapter: adapter, configPath: configPath)
+                }
+                switch result {
+                case .success:
+                    anySuccess = true
+                case .driftDetected:
+                    pendingToggleStates = [:]
+                    pendingWrite = PendingWrite(uuid: uuid, enable: enable, driftResult: result)
+                    return
+                }
+            } catch {
+                writeErrorBanner = describeError(error, configPath: configPath)
+            }
+        }
+        pendingToggleStates = [:]
+        refreshEnabledSet()
+        if anySuccess {
+            restartNotice = restartMessageText
         }
     }
 
@@ -281,20 +313,20 @@ struct AgentListView: View {
                                             adapter: adapter, configPath: configPath, force: true)
             }
             refreshEnabledSet()
-            showRestartNotice = true
+            restartNotice = restartMessageText
         } catch {
-            writeError = describeError(error, configPath: configPath)
+            writeErrorBanner = describeError(error, configPath: configPath)
         }
         pendingWrite = nil
     }
 
     // MARK: - Restart Notice
 
-    private var restartMessage: Text {
+    private var restartMessageText: String {
         if agent.agentType == .geminiCLI {
-            return Text("Restart Gemini CLI, or run `/mcp reload` in an active session.")
+            return "Restart Gemini CLI, or run `/mcp reload` in an active session."
         }
-        return Text("Restart \(agent.displayName) to apply the change.")
+        return "Restart \(agent.displayName) to apply the change."
     }
 
     // MARK: - Path Override (navigation destination)
@@ -336,28 +368,8 @@ struct AgentListView: View {
             importCategories = try store.categorizeImport(from: adapter, configPath: configPath)
             showImportReview = true
         } catch {
-            writeError = describeError(error, configPath: configPath)
+            writeErrorBanner = describeError(error, configPath: configPath)
         }
-    }
-
-    // MARK: - Bulk Apply (T047)
-
-    private func applySelected() {
-        guard let agentId = agent.id else { return }
-        let uuids = Array(multiSelected)
-        do {
-            let result = try store.bulkEnableConfigs(uuids: uuids, agentId: agentId,
-                                                     adapter: adapter, configPath: configPath)
-            refreshEnabledSet()
-            if !result.succeeded.isEmpty { showRestartNotice = true }
-            if let firstFailed = result.failed.first {
-                writeError = describeError(firstFailed.1, configPath: configPath)
-            }
-        } catch {
-            writeError = describeError(error, configPath: configPath)
-        }
-        multiSelectActive = false
-        multiSelected = []
     }
 
     // MARK: - Helpers
@@ -367,7 +379,6 @@ struct AgentListView: View {
         enabledUUIDs = (try? Set(store.fetchEnabledConfigs(for: agentId).map(\.uuid))) ?? []
     }
 
-    // FR-012: specific error messages with file path and cause
     private func describeError(_ error: Error, configPath: URL) -> String {
         if let adapterErr = error as? AdapterError {
             switch adapterErr {
@@ -386,22 +397,22 @@ struct AgentListView: View {
 private struct ConfigAgentRow: View {
     let config: MCPServerConfig
     let isEnabled: Bool
+    let isPending: Bool
     let agentAvailable: Bool
-    let multiSelectActive: Bool
-    let isMultiSelected: Bool
     let onToggle: () -> Void
-    let onMultiSelect: () -> Void
 
     var body: some View {
         HStack {
-            if multiSelectActive {
-                Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isMultiSelected ? .accentColor : .secondary)
-                    .onTapGesture { onMultiSelect() }
-            }
             VStack(alignment: .leading, spacing: 2) {
-                Text(config.displayName)
-                    .fontWeight(.medium)
+                HStack(spacing: 4) {
+                    Text(config.displayName)
+                        .fontWeight(.medium)
+                    if isPending {
+                        Circle()
+                            .fill(Color.accentColor)
+                            .frame(width: 6, height: 6)
+                    }
+                }
                 Group {
                     if config.isHTTP {
                         Text(config.url)
@@ -423,7 +434,7 @@ private struct ConfigAgentRow: View {
                     .background(Color.orange.opacity(0.15))
                     .foregroundColor(.orange)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else if !multiSelectActive {
+            } else {
                 Toggle("", isOn: Binding(get: { isEnabled }, set: { _ in onToggle() }))
                     .labelsHidden()
             }
