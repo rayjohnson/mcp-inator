@@ -14,10 +14,11 @@ Add a curated, searchable catalog of known MCP servers to mcp-inator. The catalo
 
 **Primary Dependencies**: SwiftUI, GRDB (existing), Sparkle (existing), URLSession (stdlib — no new packages)
 
-**Storage**: Catalog stored as JSON files only — no new GRDB tables. Two locations:
-- Bundle: `mcp-inator.app/Contents/Resources/catalog.json` (read-only fallback)
-- App Support: `~/Library/Application Support/mcp-inator/catalog.json` (refreshed copy, preferred)
-- ETag: `UserDefaults` key `catalogETag`
+**Storage**: Catalog stored as JSON files only — no new GRDB tables.
+- Bundle: `mcp-inator.app/Contents/Resources/catalog.json` (sole data source for v1)
+- `catalog/catalog.json` at repo root is the source of truth; `make sync-catalog` (or `make build`) copies it to the bundle resource before each build
+
+**Remote refresh**: Deferred to post-v1. The spec's FR-009/FR-010/FR-011 (manual refresh, error handling, last-refreshed timestamp) are out of scope until the repo hosting situation is resolved. Architecture supports adding it later with no structural changes.
 
 **Testing**: XCTest (existing Unit + Integration targets)
 
@@ -98,41 +99,45 @@ No constitution violations — table not required.
 
 ## Implementation Phases
 
-### Phase A — Data Layer (no UI)
+### Phase A — Tooling
 
-1. **`CatalogEntry.swift`**: Define `CatalogEntry`, `CatalogEnvVar`, `CatalogCategory`, `CatalogMetadata`, `Catalog` as `Codable` structs/enums. Add `MCPServerConfig.init(from: CatalogEntry)` to `MCPServerConfig.swift`.
+1. **`Makefile`** at repo root with targets:
+   - `make build` — depends on `sync-catalog`; runs `xcodebuild` debug build
+   - `make test` — runs `xcodebuild test`
+   - `make lint` — runs `swiftlint lint`
+   - `make run` — `make build` then kill + open the app
+   - `make sync-catalog` — copies `catalog/catalog.json` → `mcp-inator/Resources/catalog.json`
+   - `make clean` — `xcodebuild clean`
 
-2. **`catalog.json` (bundle + remote)**: Create `catalog/catalog.json` at repo root with ≥15 entries across ≥4 categories conforming to the schema in `contracts/catalog-json-schema.md`. Copy to `mcp-inator/Resources/catalog.json` and add to Xcode Copy Bundle Resources build phase.
+### Phase B — Data Layer (no UI)
 
-3. **`CatalogStore.swift`**: `@MainActor final class CatalogStore: ObservableObject` with:
+2. **`CatalogEntry.swift`**: Define `CatalogEntry`, `CatalogEnvVar`, `CatalogCategory`, `CatalogMetadata`, `Catalog` as `Codable` structs/enums. Add `MCPServerConfig.init(from: CatalogEntry)` to `MCPServerConfig.swift`.
+
+3. **`catalog/catalog.json`**: Create at repo root with ≥15 entries across ≥4 categories conforming to `contracts/catalog-json-schema.md`. Run `make sync-catalog` to copy to bundle; add bundle copy to Xcode Copy Bundle Resources build phase.
+
+4. **`CatalogStore.swift`**: `@MainActor final class CatalogStore: ObservableObject` with:
    - `@Published var entries: [CatalogEntry]`
-   - `@Published var isRefreshing: Bool`
-   - `@Published var refreshError: String?`
-   - `@Published var lastRefreshedAt: Date?`
-   - `func load()` — reads App Support copy if valid, else bundle fallback
-   - `func refresh() async` — conditional GET with ETag; non-blocking; updates App Support copy on success
+   - `func load()` — decodes bundle `catalog.json`; on schema version mismatch shows empty state rather than crashing
    - `func filtered(search: String, category: CatalogCategory?) -> [CatalogEntry]` — pure in-memory filter
 
-4. **Unit tests** for `CatalogStore`: load from fixture JSON, search filter correctness, refresh ETag round-trip (mocked URLSession), schema-version mismatch falls back to bundle.
+5. **Unit tests** for `CatalogStore`: load from fixture JSON, search filter correctness, category filter, schema-version mismatch returns empty entries gracefully.
 
-### Phase B — UI Layer
+### Phase C — UI Layer
 
-5. **`AddEditConfigView` prefill init**: Add `init(prefill: MCPServerConfig)` that pre-populates all `@State` fields but keeps `existing = nil` so saving creates a new record.
+6. **`AddEditConfigView` prefill init**: Add `init(prefill: MCPServerConfig)` that pre-populates all `@State` fields but keeps `existing = nil` so saving creates a new library record.
 
-6. **`CatalogDetailView.swift`**: Sheet view showing entry name, description, category badge, command/URL + args, env vars list (name + description + required flag), docs link. "Add to Library" button creates `MCPServerConfig(from: entry)` and navigates to `AddEditConfigView(prefill:)`. "Edit in Library" button (shown when `serverKey` already in library) navigates to `AddEditConfigView(existing:)`.
+7. **`CatalogDetailView.swift`**: Sheet showing entry name, description, category badge, command/URL + args, env vars list (name + description + required flag), docs link. "Add to Library" → `AddEditConfigView(prefill:)`. "Edit in Library" (when `serverKey` already in library) → `AddEditConfigView(existing:)`.
 
-7. **`CatalogView.swift`**: Main catalog tab with:
+8. **`CatalogView.swift`**: Main catalog tab with:
    - Search bar (`searchText` binding)
-   - Category filter (horizontal `Picker` or segmented; "All" + 7 categories)
-   - `List` of filtered `CatalogEntry` rows (name, category badge, description snippet, "in library" indicator)
+   - Category filter (horizontal `Picker`; "All" + 7 categories)
+   - `List` of filtered rows (name, category badge, description snippet, "in library" indicator)
    - Empty state when no results match
-   - Refresh button in toolbar (calls `catalogStore.refresh()`)
-   - Last-refreshed timestamp in toolbar or footer
 
-8. **`MenuBarView.swift`**: Add Catalog tab (third tab after Library and Agents). Inject `CatalogStore` via `.environmentObject`.
+9. **`MenuBarView.swift`**: Add Catalog tab (third tab after Library and Agents). Inject `CatalogStore` via `.environmentObject`.
 
-9. **`mcp_inatorApp.swift`**: Instantiate `CatalogStore` as `@StateObject`; inject via `.environmentObject`; call `catalogStore.load()` on init.
+10. **`mcp_inatorApp.swift`**: Instantiate `CatalogStore` as `@StateObject`; inject via `.environmentObject`; call `catalogStore.load()` on init.
 
-### Phase C — Remote Catalog Content
+### Phase D — Catalog Content
 
-10. **Populate `catalog/catalog.json`** with ≥15 well-known servers covering ≥4 categories (satisfies SC-006). Entries must include: GitHub, Slack, Linear, filesystem, Brave Search, PostgreSQL, SQLite, Puppeteer, fetch, memory, home-assistant, Notion, Google Drive, Docker, and at least one AI/LLM provider.
+11. **Populate `catalog/catalog.json`** with ≥15 well-known servers covering ≥4 categories (satisfies SC-006). Entries must include: GitHub, Slack, Linear, filesystem, Brave Search, PostgreSQL, SQLite, Puppeteer, fetch, memory, home-assistant, Notion, Google Drive, Docker, and at least one AI/LLM provider. Run `make sync-catalog` after populating.
