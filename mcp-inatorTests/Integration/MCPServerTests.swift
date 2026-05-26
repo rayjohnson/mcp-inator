@@ -70,7 +70,7 @@ final class MCPServerTests: XCTestCase {
                 "id": id,
                 "method": "initialize",
                 "params": [
-                    "protocolVersion": "2024-11-05",
+                    "protocolVersion": "2025-11-25",
                     "capabilities": [:],
                     "clientInfo": ["name": "test", "version": "1.0"]
                 ]
@@ -86,7 +86,7 @@ final class MCPServerTests: XCTestCase {
         let all = try runServer(messages: msgs)
         let resp = try XCTUnwrap(responses(from: all).first)
         let result = try XCTUnwrap(resp["result"] as? [String: Any])
-        XCTAssertEqual(result["protocolVersion"] as? String, "2024-11-05")
+        XCTAssertEqual(result["protocolVersion"] as? String, "2025-11-25")
         let serverInfo = try XCTUnwrap(result["serverInfo"] as? [String: Any])
         XCTAssertEqual(serverInfo["name"] as? String, "mcp-inator")
         let caps = try XCTUnwrap(result["capabilities"] as? [String: Any])
