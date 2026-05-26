@@ -12,6 +12,7 @@ private struct DiscoveryContext: Identifiable {
 struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
+    @StateObject private var catalogStore = CatalogStore()
     @State private var discoveryContext: DiscoveryContext?
 
     private let updaterController = SPUStandardUpdaterController(
@@ -32,7 +33,11 @@ struct mcp_inatorApp: App {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
-                    .onAppear { runAgentScan(store: store) }
+                    .environmentObject(catalogStore)
+                    .onAppear {
+                        catalogStore.load()
+                        runAgentScan(store: store)
+                    }
                     .sheet(item: $discoveryContext) { ctx in
                         DiscoveryView(results: ctx.results)
                             .environmentObject(store)

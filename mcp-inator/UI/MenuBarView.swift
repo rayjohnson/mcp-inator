@@ -1,8 +1,9 @@
 import SwiftUI
 
-// Root popover content. Uses a tab view: Servers (config library) and Agents.
+// Root popover content. Uses a tab view: Servers (config library), Agents, and Catalog.
 struct MenuBarView: View {
     @EnvironmentObject var store: ConfigStore
+    @EnvironmentObject var catalogStore: CatalogStore
 
     var body: some View {
         TabView {
@@ -19,6 +20,13 @@ struct MenuBarView: View {
             .tabItem {
                 Label("Agents", systemImage: "cpu")
             }
+
+            CatalogView()
+                .environmentObject(catalogStore)
+                .environmentObject(store)
+                .tabItem {
+                    Label("Catalog", systemImage: "square.grid.2x2")
+                }
         }
         .frame(width: 420, height: 520)
         .onAppear {

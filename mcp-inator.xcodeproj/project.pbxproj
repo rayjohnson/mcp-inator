@@ -46,6 +46,13 @@
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
 		52C7B638BF1939AEA6364D67 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7703E22C881015DCD13E527 /* Assets.xcassets */; };
 		2D316A39BA7E75455B6FF161 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 49032E9BBFF79BE6DA975953 /* Inator.png */; };
+		A5D8F1E62C0B3947A8D6F912 /* catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = B7C3E0D94A1F82356CD0E57A /* catalog.json */; };
+		D8E1F4A3C95B267048E21BDF /* CatalogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */; };
+		C1B7E3D0A94F62815E3D0AB8 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */; };
+		3A7F8C2D1B0E5946D8F0A321 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */; };
+		5E0C8B3F2A1D47960F7E2C84 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */; };
+		F7A0B2E3C4D185960E3A0F51 /* CatalogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */; };
+		D1C3F9E05B2A47861F4D0E72 /* CatalogEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +106,13 @@
 		F97CA2C41585DD4CD516D00B /* claude_code_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_code_config.json; sourceTree = "<group>"; };
 		E7703E22C881015DCD13E527 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49032E9BBFF79BE6DA975953 /* Inator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Inator.png; sourceTree = "<group>"; };
+		B7C3E0D94A1F82356CD0E57A /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.json; sourceTree = "<group>"; };
+		F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntry.swift; sourceTree = "<group>"; };
+		E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
+		9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDetailView.swift; sourceTree = "<group>"; };
+		7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
+		A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStoreTests.swift; sourceTree = "<group>"; };
+		B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +159,7 @@
 				CA126C95E6E31DF909D7073F /* App */,
 				DB653EB06BB01E80D6589289 /* Models */,
 				37F4DAEA47FE4DE28E86B9E6 /* Resources */,
+				ADAA571A050CD9DEFE28FD37 /* Services */,
 				3CA20AB8A1CEBB4B854A2BD7 /* Store */,
 				4AAFCEC1C02B8CA4C695061B /* UI */,
 			);
@@ -155,12 +170,21 @@
 			isa = PBXGroup;
 			children = (
 				E7703E22C881015DCD13E527 /* Assets.xcassets */,
+				B7C3E0D94A1F82356CD0E57A /* catalog.json */,
 				49032E9BBFF79BE6DA975953 /* Inator.png */,
 				571E43C54CCE0B46A9AA5E44 /* appcast.xml */,
 				9AFF47ED4F7D3099F03DF0B6 /* Info.plist */,
 				67EC9770AC45367A218213E2 /* mcp-inator.entitlements */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		ADAA571A050CD9DEFE28FD37 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		3CA20AB8A1CEBB4B854A2BD7 /* Store */ = {
@@ -178,6 +202,8 @@
 				E6AA0D309B195442D289C705 /* AddEditConfigView.swift */,
 				97EE0A94708E98E71A4BE095 /* AgentIcon.swift */,
 				6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */,
+				9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */,
+				7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */,
 				7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */,
 				55B09DE2D809C77FE508549F /* DiscoveryView.swift */,
 				7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */,
@@ -222,6 +248,8 @@
 		9B799A17A60007F437C24AD3 /* Unit */ = {
 			isa = PBXGroup;
 			children = (
+				B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */,
+				A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
 				B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */,
 				CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */,
@@ -259,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				A3B865013EA65AAE8229C657 /* AgentRecord.swift */,
+				F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */,
 				9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */,
 				7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */,
 			);
@@ -367,6 +396,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */,
+				A5D8F1E62C0B3947A8D6F912 /* catalog.json in Resources */,
 				2D316A39BA7E75455B6FF161 /* Inator.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -380,6 +410,10 @@
 			files = (
 				4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */,
 				A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */,
+				C1B7E3D0A94F62815E3D0AB8 /* CatalogStore.swift in Sources */,
+				3A7F8C2D1B0E5946D8F0A321 /* CatalogDetailView.swift in Sources */,
+				5E0C8B3F2A1D47960F7E2C84 /* CatalogView.swift in Sources */,
+				D8E1F4A3C95B267048E21BDF /* CatalogEntry.swift in Sources */,
 				09F27190B4168272965387B2 /* AgentIcon.swift in Sources */,
 				D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */,
 				95EE55C2F28E746E65CF804D /* AgentRecord.swift in Sources */,
@@ -407,6 +441,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D1C3F9E05B2A47861F4D0E72 /* CatalogEntryTests.swift in Sources */,
+				F7A0B2E3C4D185960E3A0F51 /* CatalogStoreTests.swift in Sources */,
 				544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */,
 				D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */,
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,

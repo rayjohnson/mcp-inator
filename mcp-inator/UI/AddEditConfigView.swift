@@ -39,6 +39,19 @@ struct AddEditConfigView: View {
         _notes           = State(initialValue: existing?.notes ?? "")
     }
 
+    init(prefill: MCPServerConfig) {
+        self.existing = nil
+        _displayName     = State(initialValue: prefill.displayName)
+        _serverKey       = State(initialValue: prefill.serverKey)
+        _serverKeyEdited = State(initialValue: true)
+        _transportType   = State(initialValue: prefill.transportType)
+        _command         = State(initialValue: prefill.command)
+        _args            = State(initialValue: prefill.args)
+        _url             = State(initialValue: prefill.url)
+        _envVars         = State(initialValue: prefill.envVars)
+        _notes           = State(initialValue: prefill.notes)
+    }
+
     private var isEditMode: Bool { existing != nil }
     private var title: String { isEditMode ? "Edit Server" : "Add Server" }
     private var isHTTP: Bool { transportType == .http || transportType == .sse }

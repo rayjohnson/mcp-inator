@@ -74,6 +74,35 @@ struct MCPServerConfig: Identifiable {
     var isHTTP: Bool { transportType == .http || transportType == .sse }
 }
 
+// MARK: - CatalogEntry Convenience Init
+
+extension MCPServerConfig {
+    init(from entry: CatalogEntry) {
+        let mappedEnvVars = entry.envVars.map { v in
+            EnvVar(key: v.name, value: v.defaultValue ?? "", isSensitive: v.isSensitive)
+        }
+        if entry.isHTTP {
+            self.init(
+                displayName: entry.displayName,
+                serverKey: entry.serverKey,
+                transportType: entry.transportType,
+                url: entry.url,
+                headers: mappedEnvVars,
+                notes: ""
+            )
+        } else {
+            self.init(
+                displayName: entry.displayName,
+                serverKey: entry.serverKey,
+                command: entry.command,
+                args: entry.args,
+                envVars: mappedEnvVars,
+                notes: ""
+            )
+        }
+    }
+}
+
 // MARK: - Server Key Transform
 
 extension MCPServerConfig {

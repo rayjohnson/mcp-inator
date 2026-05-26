@@ -1,0 +1,212 @@
+import SwiftUI
+
+struct CatalogDetailView: View {
+    @EnvironmentObject private var store: ConfigStore
+    @Environment(\.dismiss) private var dismiss
+
+    let entry: CatalogEntry
+
+    @State private var navigateToAddEdit = false
+    @State private var prefillConfig: MCPServerConfig?
+    @State private var editConfig: MCPServerConfig?
+
+    private var libraryMatch: MCPServerConfig? {
+        store.configs.first { $0.serverKey == entry.serverKey }
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                // Header
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        CategoryBadge(category: entry.category)
+                        if entry.isVerified {
+                            Label("Verified", systemImage: "checkmark.seal.fill")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                        }
+                        Spacer()
+                    }
+                    Text(entry.displayName)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    Text(entry.shortDescription)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+
+                Divider()
+
+                // Transport
+                VStack(alignment: .leading, spacing: 6) {
+                    Label("Transport", systemImage: entry.isHTTP ? "network" : "terminal")
+                        .font(.headline)
+                    if entry.isHTTP {
+                        LabeledRow(label: "URL") {
+                            Text(entry.url.isEmpty ? "—" : entry.url)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                        LabeledRow(label: "Type") {
+                            Text(entry.transportType.rawValue.uppercased())
+                                .font(.caption2)
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                    } else {
+                        LabeledRow(label: "Command") {
+                            Text(entry.command)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                        if !entry.args.isEmpty {
+                            LabeledRow(label: "Arguments") {
+                                Text(entry.args.joined(separator: " "))
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                // Env vars
+                if !entry.envVars.isEmpty {
+                    Divider()
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Environment Variables", systemImage: "key")
+                            .font(.headline)
+                        ForEach(entry.envVars) { envVar in
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(envVar.name)
+                                        .font(.system(.body, design: .monospaced))
+                                        .fontWeight(.medium)
+                                    if envVar.isRequired {
+                                        Text("Required")
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 5).padding(.vertical, 1)
+                                            .background(Color.orange)
+                                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                                    }
+                                    if envVar.isSensitive {
+                                        Image(systemName: "lock.fill")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                Text(envVar.description)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.leading, 8)
+                        }
+                    }
+                }
+
+                // Links
+                let hasLinks = entry.documentationURL != nil || entry.repositoryURL != nil
+                if hasLinks {
+                    Divider()
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Links", systemImage: "link")
+                            .font(.headline)
+                        if let docURL = entry.documentationURL, let url = URL(string: docURL) {
+                            Link(destination: url) {
+                                Label("Documentation", systemImage: "book")
+                                    .font(.body)
+                            }
+                        }
+                        if let repoURL = entry.repositoryURL, let url = URL(string: repoURL) {
+                            Link(destination: url) {
+                                Label("Repository", systemImage: "chevron.left.forwardslash.chevron.right")
+                                    .font(.body)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(minLength: 16)
+            }
+            .padding(16)
+        }
+        .navigationTitle(entry.displayName)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                if let match = libraryMatch {
+                    Button("Edit in Library") {
+                        editConfig = match
+                        navigateToAddEdit = true
+                    }
+                    .help("Open this server's library entry for editing")
+                } else {
+                    Button("Add to Library") {
+                        prefillConfig = MCPServerConfig(from: entry)
+                        navigateToAddEdit = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .help("Add this server to your library with fields pre-filled")
+                }
+            }
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Done") { dismiss() }
+            }
+        }
+        .navigationDestination(isPresented: $navigateToAddEdit) {
+            if let match = editConfig {
+                AddEditConfigView(existing: match)
+                    .environmentObject(store)
+            } else if let prefill = prefillConfig {
+                AddEditConfigView(prefill: prefill)
+                    .environmentObject(store)
+            }
+        }
+    }
+}
+
+// MARK: - Supporting Views
+
+private struct LabeledRow<Content: View>: View {
+    let label: String
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        HStack(alignment: .top) {
+            Text(label + ":")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(width: 80, alignment: .trailing)
+            content()
+            Spacer()
+        }
+    }
+}
+
+struct CategoryBadge: View {
+    let category: CatalogCategory
+
+    var body: some View {
+        Text(category.rawValue)
+            .font(.caption2)
+            .fontWeight(.medium)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(color.opacity(0.15))
+            .foregroundColor(color)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    private var color: Color {
+        switch category {
+        case .codeAndDevelopment: return .blue
+        case .productivity:       return .purple
+        case .dataAndAnalytics:   return .green
+        case .communication:      return .orange
+        case .infrastructure:     return .gray
+        case .aiAndLLMs:          return .pink
+        case .webAndBrowser:      return .teal
+        }
+    }
+}
