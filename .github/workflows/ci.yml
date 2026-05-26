@@ -33,7 +33,9 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_16.3.app
 
       - name: Install tools
-        run: brew install xcodegen xcpretty || gem install xcpretty
+        run: |
+          brew install xcodegen
+          gem install xcpretty
 
       - name: Generate Xcode project
         run: xcodegen generate
