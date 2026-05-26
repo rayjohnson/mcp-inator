@@ -43,7 +43,11 @@
       "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug test)",
       "Bash(pkill -x mcp-inator)",
       "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug -showBuildSettings)",
-      "Bash(swiftlint lint *)"
+      "Bash(swiftlint lint *)",
+      "WebFetch(domain:glama.ai)",
+      "WebFetch(domain:mcpmarket.com)",
+      "WebFetch(domain:registry.modelcontextprotocol.io)",
+      "WebFetch(domain:docs.mcpmarket.com)"
     ]
   }
 }
