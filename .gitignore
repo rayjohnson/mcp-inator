@@ -36,6 +36,10 @@ build/
 *.o
 *.d
 
+# Code coverage
+*.profraw
+*.profdata
+
 # Archives
 *.xcarchive
 
