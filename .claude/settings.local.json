@@ -37,7 +37,13 @@
       "Read(//Users/ray.johnson/.gemini/**)",
       "Read(//Users/ray.johnson/.codex/**)",
       "Bash(pkill -x \"mcp-inator\")",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(xargs -I{} mdls -name kMDItemCFBundleIdentifier {})",
+      "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug build)",
+      "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug test)",
+      "Bash(pkill -x mcp-inator)",
+      "Bash(xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug -showBuildSettings)",
+      "Bash(swiftlint lint *)"
     ]
   }
 }

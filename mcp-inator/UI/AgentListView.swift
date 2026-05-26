@@ -166,7 +166,7 @@ struct AgentListView: View {
 
     private var configRows: some View {
         List {
-            ForEach(store.configs) { config in
+            ForEach(store.configs, id: \.uuid) { config in
                 let displayedEnabled = pendingToggleStates[config.uuid] ?? enabledUUIDs.contains(config.uuid)
                 let isPending = pendingToggleStates[config.uuid] != nil
                 ConfigAgentRow(
@@ -375,8 +375,27 @@ struct AgentListView: View {
     // MARK: - Helpers
 
     private func refreshEnabledSet() {
-        guard let agentId = agent.id else { return }
-        enabledUUIDs = (try? Set(store.fetchEnabledConfigs(for: agentId).map(\.uuid))) ?? []
+        guard let agentId = agent.id, agent.isAvailable else {
+            enabledUUIDs = []
+            return
+        }
+        do {
+            // Source of truth: the actual file on disk, matched to library configs by serverKey.
+            let onDisk = try adapter.readConfigs(from: configPath)
+            let diskKeys = Set(onDisk.keys)
+            enabledUUIDs = Set(store.configs.compactMap { config in
+                diskKeys.contains(config.serverKey) ? config.uuid : nil
+            })
+            // Sync DB assignment states so that enable/disable operations reconstruct
+            // the config map correctly (preserving existing entries not being modified).
+            for config in store.configs {
+                let state: AssignmentState = diskKeys.contains(config.serverKey) ? .enabled : .disabled
+                try? store.setAssignmentState(configUUID: config.uuid, agentId: agentId, state: state)
+            }
+        } catch {
+            // File unreadable — fall back to database assignment state.
+            enabledUUIDs = (try? Set(store.fetchEnabledConfigs(for: agentId).map(\.uuid))) ?? []
+        }
     }
 
     private func describeError(_ error: Error, configPath: URL) -> String {

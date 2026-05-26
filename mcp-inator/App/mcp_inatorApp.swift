@@ -28,7 +28,7 @@ struct mcp_inatorApp: App {
     ]
 
     var body: some Scene {
-        MenuBarExtra("mcp-inator", systemImage: "server.rack") {
+        MenuBarExtra("mcp-inator", image: "Inator") {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
