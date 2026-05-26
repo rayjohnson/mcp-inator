@@ -7,14 +7,14 @@ final class ConfigStoreTests: XCTestCase {
     private var tempDir: URL!
     private var store: ConfigStore!
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("mcp-inator-store-tests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         store = try ConfigStore(databasePath: tempDir.appendingPathComponent("test.db"))
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         store = nil
         try? FileManager.default.removeItem(at: tempDir)
     }

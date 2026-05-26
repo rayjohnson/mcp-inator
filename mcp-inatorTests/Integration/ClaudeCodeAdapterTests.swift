@@ -172,7 +172,7 @@ final class ClaudeCodeAdapterTests: XCTestCase {
     }
 }
 
-extension WriteResult: Equatable {
+extension WriteResult: @retroactive Equatable {
     public static func == (lhs: WriteResult, rhs: WriteResult) -> Bool {
         switch (lhs, rhs) {
         case (.success, .success): return true
