@@ -267,16 +267,16 @@ private struct EnvVarRow: View {
             Text(envVar.key)
                 .font(.system(.body, design: .monospaced))
                 .foregroundColor(.secondary)
-            Spacer()
+                .fixedSize()
+            Divider().frame(height: 16)
             if envVar.isSensitive && !isRevealed {
-                Text("••••••••")
+                SecureField("value", text: $envVar.value)
                     .font(.system(.body, design: .monospaced))
-                    .foregroundColor(.secondary)
+                    .textFieldStyle(.plain)
             } else {
-                Text(envVar.value)
+                TextField("value", text: $envVar.value)
                     .font(.system(.body, design: .monospaced))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .textFieldStyle(.plain)
             }
             if envVar.isSensitive {
                 Button(action: onToggleReveal) {

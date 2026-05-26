@@ -2,168 +2,165 @@ import SwiftUI
 
 struct CatalogDetailView: View {
     @EnvironmentObject private var store: ConfigStore
-    @Environment(\.dismiss) private var dismiss
 
     let entry: CatalogEntry
-
-    @State private var navigateToAddEdit = false
-    @State private var prefillConfig: MCPServerConfig?
-    @State private var editConfig: MCPServerConfig?
 
     private var libraryMatch: MCPServerConfig? {
         store.configs.first { $0.serverKey == entry.serverKey }
     }
 
     var body: some View {
+        VStack(spacing: 0) {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Header
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        CategoryBadge(category: entry.category)
-                        if entry.isVerified {
-                            Label("Verified", systemImage: "checkmark.seal.fill")
-                                .font(.caption2)
-                                .foregroundColor(.blue)
+                VStack(alignment: .leading, spacing: 16) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            CategoryBadge(category: entry.category)
+                            if entry.isVerified {
+                                Label("Verified", systemImage: "checkmark.seal.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.blue)
+                            }
+                            if libraryMatch != nil {
+                                Label("In Library", systemImage: "checkmark.circle.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.green)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        Text(entry.displayName)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        Text(entry.shortDescription)
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
-                    Text(entry.displayName)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Text(entry.shortDescription)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
 
-                Divider()
+                    Divider()
 
-                // Transport
-                VStack(alignment: .leading, spacing: 6) {
-                    Label("Transport", systemImage: entry.isHTTP ? "network" : "terminal")
-                        .font(.headline)
-                    if entry.isHTTP {
-                        LabeledRow(label: "URL") {
-                            Text(entry.url.isEmpty ? "—" : entry.url)
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.secondary)
-                        }
-                        LabeledRow(label: "Type") {
-                            Text(entry.transportType.rawValue.uppercased())
-                                .font(.caption2)
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Color.secondary.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
-                        }
-                    } else {
-                        LabeledRow(label: "Command") {
-                            Text(entry.command)
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.secondary)
-                        }
-                        if !entry.args.isEmpty {
-                            LabeledRow(label: "Arguments") {
-                                Text(entry.args.joined(separator: " "))
-                                    .font(.system(.caption, design: .monospaced))
+                    // Transport
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("Transport", systemImage: entry.isHTTP ? "network" : "terminal")
+                            .font(.headline)
+                        if entry.isHTTP {
+                            LabeledRow(label: "URL") {
+                                Text(entry.url.isEmpty ? "—" : entry.url)
+                                    .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
-                        }
-                    }
-                }
-
-                // Env vars
-                if !entry.envVars.isEmpty {
-                    Divider()
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Environment Variables", systemImage: "key")
-                            .font(.headline)
-                        ForEach(entry.envVars) { envVar in
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack(spacing: 6) {
-                                    Text(envVar.name)
-                                        .font(.system(.body, design: .monospaced))
-                                        .fontWeight(.medium)
-                                    if envVar.isRequired {
-                                        Text("Required")
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                            .padding(.horizontal, 5).padding(.vertical, 1)
-                                            .background(Color.orange)
-                                            .clipShape(RoundedRectangle(cornerRadius: 3))
-                                    }
-                                    if envVar.isSensitive {
-                                        Image(systemName: "lock.fill")
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                    }
+                            LabeledRow(label: "Type") {
+                                Text(entry.transportType.rawValue.uppercased())
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6).padding(.vertical, 2)
+                                    .background(Color.secondary.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                            }
+                        } else {
+                            LabeledRow(label: "Command") {
+                                Text(entry.command)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                            }
+                            if !entry.args.isEmpty {
+                                LabeledRow(label: "Arguments") {
+                                    Text(entry.args.joined(separator: " "))
+                                        .font(.system(.caption, design: .monospaced))
+                                        .foregroundColor(.secondary)
                                 }
-                                Text(envVar.description)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.leading, 8)
-                        }
-                    }
-                }
-
-                // Links
-                let hasLinks = entry.documentationURL != nil || entry.repositoryURL != nil
-                if hasLinks {
-                    Divider()
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Links", systemImage: "link")
-                            .font(.headline)
-                        if let docURL = entry.documentationURL, let url = URL(string: docURL) {
-                            Link(destination: url) {
-                                Label("Documentation", systemImage: "book")
-                                    .font(.body)
-                            }
-                        }
-                        if let repoURL = entry.repositoryURL, let url = URL(string: repoURL) {
-                            Link(destination: url) {
-                                Label("Repository", systemImage: "chevron.left.forwardslash.chevron.right")
-                                    .font(.body)
                             }
                         }
                     }
-                }
 
-                Spacer(minLength: 16)
+                    // Env vars
+                    if !entry.envVars.isEmpty {
+                        Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Environment Variables", systemImage: "key")
+                                .font(.headline)
+                            ForEach(entry.envVars) { envVar in
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack(spacing: 6) {
+                                        Text(envVar.name)
+                                            .font(.system(.body, design: .monospaced))
+                                            .fontWeight(.medium)
+                                        if envVar.isRequired {
+                                            Text("Required")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 5).padding(.vertical, 1)
+                                                .background(Color.orange)
+                                                .clipShape(RoundedRectangle(cornerRadius: 3))
+                                        }
+                                        if envVar.isSensitive {
+                                            Image(systemName: "lock.fill")
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    Text(envVar.description)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.leading, 8)
+                            }
+                        }
+                    }
+
+                    // Links
+                    let hasLinks = entry.documentationURL != nil || entry.repositoryURL != nil
+                    if hasLinks {
+                        Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Links", systemImage: "link")
+                                .font(.headline)
+                            if let docURL = entry.documentationURL, let url = URL(string: docURL) {
+                                Link(destination: url) {
+                                    Label("Documentation", systemImage: "book")
+                                        .font(.body)
+                                }
+                            }
+                            if let repoURL = entry.repositoryURL, let url = URL(string: repoURL) {
+                                Link(destination: url) {
+                                    Label("Repository", systemImage: "chevron.left.forwardslash.chevron.right")
+                                        .font(.body)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(minLength: 16)
             }
             .padding(16)
         }
-        .navigationTitle(entry.displayName)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                if let match = libraryMatch {
-                    Button("Edit in Library") {
-                        editConfig = match
-                        navigateToAddEdit = true
-                    }
-                    .help("Open this server's library entry for editing")
-                } else {
-                    Button("Add to Library") {
-                        prefillConfig = MCPServerConfig(from: entry)
-                        navigateToAddEdit = true
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .help("Add this server to your library with fields pre-filled")
+
+        Divider()
+
+        HStack {
+            Spacer()
+            if let match = libraryMatch {
+                NavigationLink(destination:
+                    AddEditConfigView(existing: match)
+                        .environmentObject(store)
+                ) {
+                    Text("Edit in Library")
                 }
-            }
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Done") { dismiss() }
-            }
-        }
-        .navigationDestination(isPresented: $navigateToAddEdit) {
-            if let match = editConfig {
-                AddEditConfigView(existing: match)
-                    .environmentObject(store)
-            } else if let prefill = prefillConfig {
-                AddEditConfigView(prefill: prefill)
-                    .environmentObject(store)
+                .help("Open this server's library entry for editing")
+            } else {
+                NavigationLink(destination:
+                    AddEditConfigView(prefill: MCPServerConfig(from: entry))
+                        .environmentObject(store)
+                ) {
+                    Text("Add to Library")
+                }
+                .buttonStyle(.borderedProminent)
+                .help("Add this server to your library with fields pre-filled")
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        }
+        .navigationTitle(entry.displayName)
     }
 }
 

@@ -6,8 +6,6 @@ struct CatalogView: View {
 
     @State private var searchText: String = ""
     @State private var selectedCategory: CatalogCategory?
-    @State private var selectedEntry: CatalogEntry?
-    @State private var showDetail = false
 
     private var filtered: [CatalogEntry] {
         catalogStore.filtered(search: searchText, category: selectedCategory)
@@ -77,25 +75,21 @@ struct CatalogView: View {
                 .padding()
             } else {
                 List(filtered) { entry in
-                    CatalogRow(entry: entry, isInLibrary: store.configs.contains { $0.serverKey == entry.serverKey })
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedEntry = entry
-                            showDetail = true
-                        }
-                        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                    NavigationLink(destination:
+                        CatalogDetailView(entry: entry)
+                            .environmentObject(store)
+                    ) {
+                        CatalogRow(
+                            entry: entry,
+                            isInLibrary: store.configs.contains { $0.serverKey == entry.serverKey }
+                        )
+                    }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
                 }
                 .listStyle(.plain)
             }
         }
-        .sheet(isPresented: $showDetail) {
-            if let entry = selectedEntry {
-                NavigationStack {
-                    CatalogDetailView(entry: entry)
-                        .environmentObject(store)
-                }
-            }
-        }
+        .navigationTitle("Catalog")
     }
 }
 

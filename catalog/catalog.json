@@ -31,10 +31,10 @@
       "id": "filesystem",
       "displayName": "Filesystem",
       "category": "Code & Development",
-      "shortDescription": "Read, write, and navigate local files and directories with configurable access controls.",
+      "shortDescription": "Read, write, and navigate local files and directories. Add the allowed directory paths as Arguments after adding to library.",
       "transportType": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/directory"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem"],
       "url": "",
       "envVars": [],
       "documentationURL": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
@@ -46,10 +46,10 @@
       "id": "git",
       "displayName": "Git",
       "category": "Code & Development",
-      "shortDescription": "Execute git operations, read history, and inspect repository state.",
+      "shortDescription": "Execute git operations, read history, and inspect repository state. Add --repository /path/to/repo as Arguments after adding to library.",
       "transportType": "stdio",
       "command": "uvx",
-      "args": ["mcp-server-git", "--repository", "/path/to/repo"],
+      "args": ["mcp-server-git"],
       "url": "",
       "envVars": [],
       "documentationURL": "https://github.com/modelcontextprotocol/servers/tree/main/src/git",
@@ -131,7 +131,7 @@
       "shortDescription": "Connect to PostgreSQL databases, run queries, and inspect schema.",
       "transportType": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "${POSTGRES_CONNECTION_STRING}"],
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
       "url": "",
       "envVars": [
         {
@@ -150,10 +150,10 @@
       "id": "sqlite",
       "displayName": "SQLite",
       "category": "Data & Analytics",
-      "shortDescription": "Read and query SQLite database files with full SQL support.",
+      "shortDescription": "Read and query SQLite database files with full SQL support. Add --db-path /path/to/database.db as Arguments after adding to library.",
       "transportType": "stdio",
       "command": "uvx",
-      "args": ["mcp-server-sqlite", "--db-path", "/path/to/database.db"],
+      "args": ["mcp-server-sqlite"],
       "url": "",
       "envVars": [],
       "documentationURL": "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
@@ -262,7 +262,8 @@
           "name": "HASS_URL",
           "description": "Home Assistant base URL (e.g. http://homeassistant.local:8123)",
           "isRequired": true,
-          "isSensitive": false
+          "isSensitive": false,
+          "defaultValue": "http://homeassistant.local:8123"
         },
         {
           "name": "HASS_TOKEN",
@@ -317,7 +318,8 @@
           "name": "AWS_REGION",
           "description": "AWS region (e.g. us-east-1)",
           "isRequired": true,
-          "isSensitive": false
+          "isSensitive": false,
+          "defaultValue": "us-east-1"
         }
       ],
       "documentationURL": "https://github.com/modelcontextprotocol/servers/tree/main/src/aws-kb-retrieval-server",

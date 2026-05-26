@@ -21,14 +21,16 @@ struct MenuBarView: View {
                 Label("Agents", systemImage: "cpu")
             }
 
-            CatalogView()
-                .environmentObject(catalogStore)
-                .environmentObject(store)
-                .tabItem {
-                    Label("Catalog", systemImage: "square.grid.2x2")
-                }
+            NavigationStack {
+                CatalogView()
+            }
+            .environmentObject(catalogStore)
+            .environmentObject(store)
+            .tabItem {
+                Label("Catalog", systemImage: "square.grid.2x2")
+            }
         }
-        .frame(width: 420, height: 520)
+        .frame(width: 420, height: 580)
         .onAppear {
             try? store.refreshAvailability(adapters: allAdapters)
         }
