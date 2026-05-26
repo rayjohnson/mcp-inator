@@ -1,0 +1,67 @@
+name: mcp-inator
+options:
+  bundleIdPrefix: io.moov
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    from: "6.0.0"
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.0.0"
+  TOMLKit:
+    url: https://github.com/LebJe/TOMLKit
+    from: "0.5.0"
+
+targets:
+  mcp-inator:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - mcp-inator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.moov.mcp-inator
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: mcp-inator/Resources/mcp-inator.entitlements
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+    dependencies:
+      - package: GRDB
+        product: GRDB
+      - package: Sparkle
+        product: Sparkle
+      - package: TOMLKit
+        product: TOMLKit
+    info:
+      path: mcp-inator/Resources/Info.plist
+      properties:
+        CFBundleName: mcp-inator
+        CFBundleDisplayName: mcp-inator
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.1.0"
+        LSUIElement: true
+        NSHighResolutionCapable: true
+        NSSupportsAutomaticGraphicsSwitching: true
+        SUFeedURL: "https://rayjohnson.github.io/mcp-inator/appcast.xml"
+        SUEnableAutomaticChecks: true
+
+  mcp-inatorTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - mcp-inatorTests
+    dependencies:
+      - target: mcp-inator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.moov.mcp-inatorTests
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        GENERATE_INFOPLIST_FILE: YES

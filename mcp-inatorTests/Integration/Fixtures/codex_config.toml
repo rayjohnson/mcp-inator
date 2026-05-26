@@ -1,0 +1,13 @@
+[mcp_servers.github-mcp]
+command = "npx"
+args = ["@modelcontextprotocol/server-github"]
+
+[mcp_servers.github-mcp.env]
+GITHUB_TOKEN = "ghp_testtoken123"
+
+[mcp_servers.filesystem-mcp]
+command = "npx"
+args = ["/Users/test/Documents"]
+
+[other_codex_setting]
+model = "o4-mini"

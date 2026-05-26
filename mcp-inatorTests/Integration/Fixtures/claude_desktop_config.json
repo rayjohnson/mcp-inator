@@ -1,0 +1,21 @@
+{
+  "mcpServers" : {
+    "github-mcp" : {
+      "args" : [
+        "@modelcontextprotocol/server-github"
+      ],
+      "command" : "npx",
+      "env" : {
+        "GITHUB_TOKEN" : "ghp_testtoken123"
+      }
+    },
+    "filesystem-mcp" : {
+      "args" : [
+        "/Users/test/Documents"
+      ],
+      "command" : "npx",
+      "env" : {}
+    }
+  },
+  "globalShortcut" : "Cmd+Shift+C"
+}

@@ -1,0 +1,20 @@
+{
+  "mcpServers" : {
+    "github-mcp" : {
+      "args" : [
+        "@modelcontextprotocol/server-github"
+      ],
+      "command" : "npx",
+      "env" : {
+        "GITHUB_TOKEN" : "ghp_testtoken123"
+      }
+    },
+    "search-mcp" : {
+      "command" : "/usr/local/bin/mcp-search",
+      "env" : {
+        "SEARCH_API_KEY" : "sk-test-456"
+      }
+    }
+  },
+  "theme" : "dark"
+}
