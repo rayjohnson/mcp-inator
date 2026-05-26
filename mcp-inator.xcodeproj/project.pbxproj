@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03112027C047E7EAF9BA153E /* Migration004.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE8B8FA13F587123365E245 /* Migration004.swift */; };
 		04D154E8633D90EC5206EB0E /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 9F02EB3D916681BA267ADB14 /* GRDB */; };
 		09F27190B4168272965387B2 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE0A94708E98E71A4BE095 /* AgentIcon.swift */; };
 		0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */; };
@@ -15,9 +16,12 @@
 		14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B09DE2D809C77FE508549F /* DiscoveryView.swift */; };
 		16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */; };
 		18386C1473590D124F999EF6 /* PropagationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9807676F96538CB02A0B159 /* PropagationView.swift */; };
+		1F16905A2C802EEA4F149074 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6BDD852709F641ED9CAB7766 /* Assets.xcassets */; };
 		2C67F3E57F8B0B8BEE781321 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 4F51316E8731F74700960B78 /* Sparkle */; };
+		33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */; };
 		400927860892CA6B0842C128 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */; };
 		478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */; };
+		49C139F2C652AF12C85B2621 /* CatalogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */; };
 		4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AA0D309B195442D289C705 /* AddEditConfigView.swift */; };
 		522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */; };
 		544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E57B58837265AE3A8812BC /* ClaudeCodeAdapterTests.swift */; };
@@ -26,38 +30,35 @@
 		71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */; };
 		739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1876009CB9EF08303E122849 /* ConfigStoreTests.swift */; };
 		7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 7ACD9873730B56F995155492 /* claude_desktop_config.json */; };
+		82A187BE9A23C507DAFE2038 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FB6678049CEDA09778E112E /* Inator.png */; };
+		836ACE3795330484C937101A /* catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = 624E21650338FFEE2413BE75 /* catalog.json */; };
 		85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75736D0388AAACA14315CAE /* ClaudeCodeAdapter.swift */; };
+		8659AD4092A2503E6C1E79C3 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF94672DFC83B2A8317F2FCC /* CatalogView.swift */; };
 		8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */ = {isa = PBXBuildFile; fileRef = F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */; };
 		92676DE4508191620304B216 /* gemini_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 9109E1A5469B7D25B926FD1E /* gemini_config.json */; };
+		941B0061DDDBE840AB3F815A /* CatalogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208282AF3881944515550A89 /* CatalogStoreTests.swift */; };
 		95EE55C2F28E746E65CF804D /* AgentRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B865013EA65AAE8229C657 /* AgentRecord.swift */; };
+		9BA46DF2391731E8AF7CBDBE /* ManageAgentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */; };
 		9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */; };
 		A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */; };
+		A2CF25990C93250DD40BEC1F /* GeminiDesktopAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */; };
+		ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */; };
+		B3F24BE0BA8D8436E74603EE /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A789E346EC685FBD34C7C235 /* CatalogStore.swift */; };
 		BC362B5B9FB7F4C39AB37295 /* ClaudeDesktopAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */; };
+		C29C4A0AB1C1CB59D2F521C0 /* CatalogEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */; };
 		C5F664311811F2260A829E52 /* ImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */; };
 		C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = 571E43C54CCE0B46A9AA5E44 /* appcast.xml */; };
 		CCCEEB624CD6B6ECF4335159 /* ServerKeyTransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */; };
 		D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */; };
+		D1C6D075F030E86E687D04A4 /* AgentVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */; };
 		D22C26DC90B06519C84045D6 /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CB9545A4BAAA3E5D7B3892 /* ConfigStore.swift */; };
 		D541D6822382E172DE600A9E /* Migration001.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30560F888607C8CDB96E1EDA /* Migration001.swift */; };
+		D5D6668FFE36038FDD0626ED /* Inator@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 06F600189546F0C9C3181A74 /* Inator@1x.png */; };
 		D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */; };
 		DF9E5F26F37E0D834BFB35DC /* SensitiveFieldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */; };
 		E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */; };
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
-		52C7B638BF1939AEA6364D67 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7703E22C881015DCD13E527 /* Assets.xcassets */; };
-		2D316A39BA7E75455B6FF161 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 49032E9BBFF79BE6DA975953 /* Inator.png */; };
-		A5D8F1E62C0B3947A8D6F912 /* catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = B7C3E0D94A1F82356CD0E57A /* catalog.json */; };
-		D8E1F4A3C95B267048E21BDF /* CatalogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */; };
-		C1B7E3D0A94F62815E3D0AB8 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */; };
-		3A7F8C2D1B0E5946D8F0A321 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */; };
-		5E0C8B3F2A1D47960F7E2C84 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */; };
-		F7A0B2E3C4D185960E3A0F51 /* CatalogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */; };
-		D1C3F9E05B2A47861F4D0E72 /* CatalogEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */; };
-		FF209B6F50D14E47B0BCA5A8 /* Migration004.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10099CFB6D62485EAD862F58 /* Migration004.swift */; };
-		15FAF93597094ED1A5898614 /* GeminiDesktopAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6202AAF905B493C9A870927 /* GeminiDesktopAdapter.swift */; };
-		138D0EE273B644A1886EB5C4 /* ManageAgentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90786D54025E450884E60954 /* ManageAgentsView.swift */; };
-		51C9E26AB9464EDC95470D4D /* GeminiDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0319A8CCB944864BF49A8B5 /* GeminiDesktopAdapterTests.swift */; };
-		1889B927920D4F0893687CB7 /* AgentVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B196FC998C04A77ACFD7183 /* AgentVisibilityTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,26 +72,36 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDetailView.swift; sourceTree = "<group>"; };
+		06F600189546F0C9C3181A74 /* Inator@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Inator@1x.png"; sourceTree = "<group>"; };
 		07E57B58837265AE3A8812BC /* ClaudeCodeAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCodeAdapterTests.swift; sourceTree = "<group>"; };
 		0804AB63951008ED49D09FF7 /* mcp-inator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mcp-inator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A161C992F00212393F1172D /* mcp-inatorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mcp-inatorTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexCLIAdapterTests.swift; sourceTree = "<group>"; };
 		1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mcp_inatorApp.swift; sourceTree = "<group>"; };
 		1876009CB9EF08303E122849 /* ConfigStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStoreTests.swift; sourceTree = "<group>"; };
+		1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapter.swift; sourceTree = "<group>"; };
 		1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapterTests.swift; sourceTree = "<group>"; };
+		208282AF3881944515550A89 /* CatalogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStoreTests.swift; sourceTree = "<group>"; };
 		30560F888607C8CDB96E1EDA /* Migration001.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration001.swift; sourceTree = "<group>"; };
+		38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAdapter.swift; sourceTree = "<group>"; };
 		3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAgentsView.swift; sourceTree = "<group>"; };
 		512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapter.swift; sourceTree = "<group>"; };
 		55B09DE2D809C77FE508549F /* DiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryView.swift; sourceTree = "<group>"; };
 		571E43C54CCE0B46A9AA5E44 /* appcast.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
+		58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
+		624E21650338FFEE2413BE75 /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.json; sourceTree = "<group>"; };
 		67EC9770AC45367A218213E2 /* mcp-inator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "mcp-inator.entitlements"; sourceTree = "<group>"; };
 		6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentListView.swift; sourceTree = "<group>"; };
+		6BDD852709F641ED9CAB7766 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewView.swift; sourceTree = "<group>"; };
 		7ACD9873730B56F995155492 /* claude_desktop_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_desktop_config.json; sourceTree = "<group>"; };
 		7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServerConfig.swift; sourceTree = "<group>"; };
 		7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigLibraryView.swift; sourceTree = "<group>"; };
+		7FB6678049CEDA09778E112E /* Inator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Inator.png; sourceTree = "<group>"; };
 		82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapter.swift; sourceTree = "<group>"; };
 		90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		9109E1A5469B7D25B926FD1E /* gemini_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gemini_config.json; sourceTree = "<group>"; };
@@ -98,31 +109,22 @@
 		97EE0A94708E98E71A4BE095 /* AgentIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentIcon.swift; sourceTree = "<group>"; };
 		9AFF47ED4F7D3099F03DF0B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigAgentAssignment.swift; sourceTree = "<group>"; };
+		A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisibilityTests.swift; sourceTree = "<group>"; };
 		A3B865013EA65AAE8229C657 /* AgentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRecord.swift; sourceTree = "<group>"; };
+		A789E346EC685FBD34C7C235 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
+		AFE8B8FA13F587123365E245 /* Migration004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration004.swift; sourceTree = "<group>"; };
 		B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveFieldTests.swift; sourceTree = "<group>"; };
 		B9807676F96538CB02A0B159 /* PropagationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationView.swift; sourceTree = "<group>"; };
 		CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerKeyTransformTests.swift; sourceTree = "<group>"; };
+		DF94672DFC83B2A8317F2FCC /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
 		E6AA0D309B195442D289C705 /* AddEditConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditConfigView.swift; sourceTree = "<group>"; };
 		E75736D0388AAACA14315CAE /* ClaudeCodeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCodeAdapter.swift; sourceTree = "<group>"; };
 		E7CB9545A4BAAA3E5D7B3892 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration003.swift; sourceTree = "<group>"; };
+		ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntry.swift; sourceTree = "<group>"; };
 		F1A4408041C07C9921071598 /* Migration002.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration002.swift; sourceTree = "<group>"; };
 		F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */ = {isa = PBXFileReference; path = codex_config.toml; sourceTree = "<group>"; };
 		F97CA2C41585DD4CD516D00B /* claude_code_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_code_config.json; sourceTree = "<group>"; };
-		E7703E22C881015DCD13E527 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		49032E9BBFF79BE6DA975953 /* Inator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Inator.png; sourceTree = "<group>"; };
-		B7C3E0D94A1F82356CD0E57A /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.json; sourceTree = "<group>"; };
-		F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntry.swift; sourceTree = "<group>"; };
-		E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
-		9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDetailView.swift; sourceTree = "<group>"; };
-		7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
-		A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStoreTests.swift; sourceTree = "<group>"; };
-		B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
-		10099CFB6D62485EAD862F58 /* Migration004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration004.swift; sourceTree = "<group>"; };
-		C6202AAF905B493C9A870927 /* GeminiDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapter.swift; sourceTree = "<group>"; };
-		90786D54025E450884E60954 /* ManageAgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAgentsView.swift; sourceTree = "<group>"; };
-		E0319A8CCB944864BF49A8B5 /* GeminiDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapterTests.swift; sourceTree = "<group>"; };
-		9B196FC998C04A77ACFD7183 /* AgentVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisibilityTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,7 +149,7 @@
 				512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */,
 				928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */,
 				82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */,
-				C6202AAF905B493C9A870927 /* GeminiDesktopAdapter.swift */,
+				1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */,
 				61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */,
 			);
 			path = Adapters;
@@ -159,7 +161,7 @@
 				30560F888607C8CDB96E1EDA /* Migration001.swift */,
 				F1A4408041C07C9921071598 /* Migration002.swift */,
 				EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */,
-				10099CFB6D62485EAD862F58 /* Migration004.swift */,
+				AFE8B8FA13F587123365E245 /* Migration004.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -171,7 +173,7 @@
 				CA126C95E6E31DF909D7073F /* App */,
 				DB653EB06BB01E80D6589289 /* Models */,
 				37F4DAEA47FE4DE28E86B9E6 /* Resources */,
-				ADAA571A050CD9DEFE28FD37 /* Services */,
+				C6B4A8D0B362E2F4A09A21A7 /* Services */,
 				3CA20AB8A1CEBB4B854A2BD7 /* Store */,
 				4AAFCEC1C02B8CA4C695061B /* UI */,
 			);
@@ -181,22 +183,15 @@
 		37F4DAEA47FE4DE28E86B9E6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E7703E22C881015DCD13E527 /* Assets.xcassets */,
-				B7C3E0D94A1F82356CD0E57A /* catalog.json */,
-				49032E9BBFF79BE6DA975953 /* Inator.png */,
 				571E43C54CCE0B46A9AA5E44 /* appcast.xml */,
+				6BDD852709F641ED9CAB7766 /* Assets.xcassets */,
+				624E21650338FFEE2413BE75 /* catalog.json */,
+				7FB6678049CEDA09778E112E /* Inator.png */,
+				06F600189546F0C9C3181A74 /* Inator@1x.png */,
 				9AFF47ED4F7D3099F03DF0B6 /* Info.plist */,
 				67EC9770AC45367A218213E2 /* mcp-inator.entitlements */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		ADAA571A050CD9DEFE28FD37 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				E2C4F9A73D0B514867E0F123 /* CatalogStore.swift */,
-			);
-			path = Services;
 			sourceTree = "<group>";
 		};
 		3CA20AB8A1CEBB4B854A2BD7 /* Store */ = {
@@ -214,12 +209,12 @@
 				E6AA0D309B195442D289C705 /* AddEditConfigView.swift */,
 				97EE0A94708E98E71A4BE095 /* AgentIcon.swift */,
 				6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */,
-				9F1D3A5BC7E024867F3D0E4C /* CatalogDetailView.swift */,
-				7B2E0F4C9A3D81567CE4B09D /* CatalogView.swift */,
+				016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */,
+				DF94672DFC83B2A8317F2FCC /* CatalogView.swift */,
 				7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */,
 				55B09DE2D809C77FE508549F /* DiscoveryView.swift */,
 				7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */,
-				90786D54025E450884E60954 /* ManageAgentsView.swift */,
+				40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */,
 				3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */,
 				B9807676F96538CB02A0B159 /* PropagationView.swift */,
 			);
@@ -261,11 +256,11 @@
 		9B799A17A60007F437C24AD3 /* Unit */ = {
 			isa = PBXGroup;
 			children = (
-				9B196FC998C04A77ACFD7183 /* AgentVisibilityTests.swift */,
-				B2E4C09D7A3F185640D9F2C8 /* CatalogEntryTests.swift */,
-				A3F1D0C8B5E7294630F8E1A7 /* CatalogStoreTests.swift */,
+				A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */,
+				58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */,
+				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
-				E0319A8CCB944864BF49A8B5 /* GeminiDesktopAdapterTests.swift */,
+				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
 				B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */,
 				CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */,
 			);
@@ -290,6 +285,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C6B4A8D0B362E2F4A09A21A7 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A789E346EC685FBD34C7C235 /* CatalogStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		CA126C95E6E31DF909D7073F /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -302,7 +305,7 @@
 			isa = PBXGroup;
 			children = (
 				A3B865013EA65AAE8229C657 /* AgentRecord.swift */,
-				F3A9C2B150E8D74621F09ABC /* CatalogEntry.swift */,
+				ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */,
 				9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */,
 				7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */,
 			);
@@ -398,7 +401,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52C7B638BF1939AEA6364D67 /* Assets.xcassets in Resources */,
 				111DB46129B2AC3E7C8313CD /* claude_code_config.json in Resources */,
 				7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */,
 				8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */,
@@ -410,9 +412,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F16905A2C802EEA4F149074 /* Assets.xcassets in Resources */,
+				82A187BE9A23C507DAFE2038 /* Inator.png in Resources */,
+				D5D6668FFE36038FDD0626ED /* Inator@1x.png in Resources */,
 				C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */,
-				A5D8F1E62C0B3947A8D6F912 /* catalog.json in Resources */,
-				2D316A39BA7E75455B6FF161 /* Inator.png in Resources */,
+				836ACE3795330484C937101A /* catalog.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,13 +429,13 @@
 			files = (
 				4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */,
 				A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */,
-				C1B7E3D0A94F62815E3D0AB8 /* CatalogStore.swift in Sources */,
-				3A7F8C2D1B0E5946D8F0A321 /* CatalogDetailView.swift in Sources */,
-				5E0C8B3F2A1D47960F7E2C84 /* CatalogView.swift in Sources */,
-				D8E1F4A3C95B267048E21BDF /* CatalogEntry.swift in Sources */,
 				09F27190B4168272965387B2 /* AgentIcon.swift in Sources */,
 				D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */,
 				95EE55C2F28E746E65CF804D /* AgentRecord.swift in Sources */,
+				33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */,
+				49C139F2C652AF12C85B2621 /* CatalogEntry.swift in Sources */,
+				B3F24BE0BA8D8436E74603EE /* CatalogStore.swift in Sources */,
+				8659AD4092A2503E6C1E79C3 /* CatalogView.swift in Sources */,
 				85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */,
 				BC362B5B9FB7F4C39AB37295 /* ClaudeDesktopAdapter.swift in Sources */,
 				71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */,
@@ -440,15 +444,15 @@
 				D22C26DC90B06519C84045D6 /* ConfigStore.swift in Sources */,
 				14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */,
 				5E93AE6C06C1F2916D5724A2 /* GeminiCLIAdapter.swift in Sources */,
+				A2CF25990C93250DD40BEC1F /* GeminiDesktopAdapter.swift in Sources */,
 				C5F664311811F2260A829E52 /* ImportReviewView.swift in Sources */,
 				E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */,
+				9BA46DF2391731E8AF7CBDBE /* ManageAgentsView.swift in Sources */,
 				400927860892CA6B0842C128 /* MenuBarView.swift in Sources */,
 				D541D6822382E172DE600A9E /* Migration001.swift in Sources */,
 				EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */,
 				522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */,
-				FF209B6F50D14E47B0BCA5A8 /* Migration004.swift in Sources */,
-				15FAF93597094ED1A5898614 /* GeminiDesktopAdapter.swift in Sources */,
-				138D0EE273B644A1886EB5C4 /* ManageAgentsView.swift in Sources */,
+				03112027C047E7EAF9BA153E /* Migration004.swift in Sources */,
 				18386C1473590D124F999EF6 /* PropagationView.swift in Sources */,
 				EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */,
 				0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */,
@@ -459,15 +463,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D1C3F9E05B2A47861F4D0E72 /* CatalogEntryTests.swift in Sources */,
-				F7A0B2E3C4D185960E3A0F51 /* CatalogStoreTests.swift in Sources */,
+				D1C6D075F030E86E687D04A4 /* AgentVisibilityTests.swift in Sources */,
+				C29C4A0AB1C1CB59D2F521C0 /* CatalogEntryTests.swift in Sources */,
+				941B0061DDDBE840AB3F815A /* CatalogStoreTests.swift in Sources */,
 				544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */,
 				D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */,
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,
 				739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
-				51C9E26AB9464EDC95470D4D /* GeminiDesktopAdapterTests.swift in Sources */,
-				1889B927920D4F0893687CB7 /* AgentVisibilityTests.swift in Sources */,
+				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,
 				DF9E5F26F37E0D834BFB35DC /* SensitiveFieldTests.swift in Sources */,
 				CCCEEB624CD6B6ECF4335159 /* ServerKeyTransformTests.swift in Sources */,
 			);
@@ -501,7 +505,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.moov.mcp-inator";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -582,6 +586,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.moov.mcp-inatorTests";
 				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mcp-inator.app/Contents/MacOS/mcp-inator";
 			};
 			name = Release;
@@ -600,6 +605,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.moov.mcp-inatorTests";
 				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mcp-inator.app/Contents/MacOS/mcp-inator";
 			};
 			name = Debug;
@@ -677,7 +683,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.moov.mcp-inator";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
