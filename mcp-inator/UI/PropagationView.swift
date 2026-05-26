@@ -22,37 +22,34 @@ struct PropagationView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                if enabledAgents.isEmpty {
-                    loadingState
-                } else {
-                    agentDiffList
-                }
-                if let err = writeError {
-                    Text(err)
-                        .foregroundColor(.red)
-                        .font(.callout)
-                        .padding(.horizontal)
-                }
+        VStack(spacing: 0) {
+            if enabledAgents.isEmpty {
+                loadingState
+            } else {
+                agentDiffList
             }
-            .navigationTitle("Push Changes")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Skip") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Push to All") { pushAll() }
-                        .disabled(enabledAgents.isEmpty)
-                }
-            }
-            .alert("Restart Required", isPresented: $showRestartNotice) {
-                Button("OK") { dismiss() }
-            } message: {
-                Text("Restart each affected agent to apply the changes.")
+            if let err = writeError {
+                Text(err)
+                    .foregroundColor(.red)
+                    .font(.callout)
+                    .padding(.horizontal)
             }
         }
-        .frame(width: 460, height: 400)
+        .navigationTitle("Push Changes")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Skip") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Push to All") { pushAll() }
+                    .disabled(enabledAgents.isEmpty)
+            }
+        }
+        .alert("Restart Required", isPresented: $showRestartNotice) {
+            Button("OK") { dismiss() }
+        } message: {
+            Text("Restart each affected agent to apply the changes.")
+        }
         .onAppear { loadAgents() }
     }
 

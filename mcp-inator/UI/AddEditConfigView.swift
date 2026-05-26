@@ -45,114 +45,124 @@ struct AddEditConfigView: View {
     private var envLabel: String { isHTTP ? "Request Headers" : "Environment Variables" }
 
     var body: some View {
-        Form {
-            Section("Server Identity") {
-                TextField("Display Name", text: $displayName)
-                    .onChange(of: displayName) { newValue in
-                        if !serverKeyEdited {
-                            serverKey = MCPServerConfig.generateKey(from: newValue)
+        VStack(spacing: 0) {
+            Form {
+                Section("Server Identity") {
+                    TextField("Display Name", text: $displayName)
+                        .onChange(of: displayName) { newValue in
+                            if !serverKeyEdited {
+                                serverKey = MCPServerConfig.generateKey(from: newValue)
+                            }
+                        }
+
+                    HStack {
+                        TextField("Server Key", text: $serverKey)
+                            .onChange(of: serverKey) { _ in serverKeyEdited = true }
+                        if !serverKey.isEmpty {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .opacity(serverKey == MCPServerConfig.generateKey(from: displayName) ? 0 : 1)
                         }
                     }
+                    .help("Used as the key in the agent config file. Auto-generated from display name.")
 
-                HStack {
-                    TextField("Server Key", text: $serverKey)
-                        .onChange(of: serverKey) { _ in serverKeyEdited = true }
-                    if !serverKey.isEmpty {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                            .opacity(serverKey == MCPServerConfig.generateKey(from: displayName) ? 0 : 1)
+                    Picker("Transport", selection: $transportType) {
+                        Text("stdio (command)").tag(TransportType.stdio)
+                        Text("HTTP").tag(TransportType.http)
+                        Text("SSE").tag(TransportType.sse)
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                if isHTTP {
+                    Section("URL") {
+                        TextField("https://…", text: $url)
+                    }
+                } else {
+                    Section("Command") {
+                        TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
+                    }
+
+                    Section("Arguments") {
+                        ForEach(args.indices, id: \.self) { i in
+                            HStack {
+                                Text(args[i])
+                                    .font(.system(.body, design: .monospaced))
+                                Spacer()
+                                Button(role: .destructive) { args.remove(at: i) } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.red)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                        HStack {
+                            TextField("Add argument…", text: $newArg)
+                                .onSubmit { addArg() }
+                            Button("Add", action: addArg)
+                                .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
                 }
-                .help("Used as the key in the agent config file. Auto-generated from display name.")
 
-                Picker("Transport", selection: $transportType) {
-                    Text("stdio (command)").tag(TransportType.stdio)
-                    Text("HTTP").tag(TransportType.http)
-                    Text("SSE").tag(TransportType.sse)
-                }
-                .pickerStyle(.segmented)
-            }
-
-            if isHTTP {
-                Section("URL") {
-                    TextField("https://…", text: $url)
-                }
-            } else {
-                Section("Command") {
-                    TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
-                }
-
-                Section("Arguments") {
-                    ForEach(args.indices, id: \.self) { i in
-                        HStack {
-                            Text(args[i])
-                                .font(.system(.body, design: .monospaced))
-                            Spacer()
-                            Button(role: .destructive) { args.remove(at: i) } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
+                Section(envLabel) {
+                    ForEach($envVars) { $env in
+                        EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
+                            if revealedEnvIds.contains(env.id) {
+                                revealedEnvIds.remove(env.id)
+                            } else {
+                                revealedEnvIds.insert(env.id)
                             }
-                            .buttonStyle(.plain)
+                        } onDelete: {
+                            envVars.removeAll { $0.id == env.id }
                         }
                     }
                     HStack {
-                        TextField("Add argument…", text: $newArg)
-                            .onSubmit { addArg() }
-                        Button("Add", action: addArg)
-                            .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
+                        TextField("Key", text: $newEnvKey)
+                        TextField("Value", text: $newEnvValue)
+                        Button("Add") { addEnvVar() }
+                            .disabled(newEnvKey.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
-            }
 
-            Section(envLabel) {
-                ForEach($envVars) { $env in
-                    EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
-                        if revealedEnvIds.contains(env.id) {
-                            revealedEnvIds.remove(env.id)
-                        } else {
-                            revealedEnvIds.insert(env.id)
-                        }
-                    } onDelete: {
-                        envVars.removeAll { $0.id == env.id }
-                    }
-                }
-                HStack {
-                    TextField("Key", text: $newEnvKey)
-                    TextField("Value", text: $newEnvValue)
-                    Button("Add") { addEnvVar() }
-                        .disabled(newEnvKey.trimmingCharacters(in: .whitespaces).isEmpty)
+                Section("Notes") {
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 60)
                 }
             }
-
-            Section("Notes") {
-                TextEditor(text: $notes)
-                    .frame(minHeight: 60)
-            }
+            .formStyle(.grouped)
 
             if let error = validationError {
-                Section {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.callout)
-                }
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.callout)
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
             }
-        }
-        .formStyle(.grouped)
-        .navigationTitle(title)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+
+            Divider()
+            HStack {
                 Button("Cancel") { dismiss() }
-            }
-            ToolbarItem(placement: .confirmationAction) {
+                    .keyboardShortcut(.escape, modifiers: [])
+                Spacer()
                 Button("Save") { save() }
+                    .buttonStyle(.borderedProminent)
                     .disabled(isSaveDisabled)
+                    .keyboardShortcut(.return, modifiers: .command)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
-        .sheet(isPresented: $showPropagation) {
+        .navigationTitle(title)
+        .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $showPropagation) {
             if let saved = savedConfig {
                 PropagationView(config: saved)
                     .environmentObject(store)
             }
+        }
+        .onChange(of: showPropagation) { isShowing in
+            if !isShowing { dismiss() }
         }
     }
 
@@ -260,14 +270,14 @@ private struct EnvVarRow: View {
                     Image(systemName: isRevealed ? "eye.slash" : "eye")
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 .help(isRevealed ? "Hide value" : "Reveal value")
             }
             Button(role: .destructive, action: onDelete) {
                 Image(systemName: "minus.circle.fill")
                     .foregroundColor(.red)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
         }
     }
 }

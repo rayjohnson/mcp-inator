@@ -28,14 +28,17 @@ struct ConfigLibraryView: View {
                 .help("Add MCP server")
             }
         }
-        .sheet(isPresented: $showAddConfig) {
-            NavigationStack {
-                AddEditConfigView()
-                    .environmentObject(store)
-            }
+        .navigationDestination(isPresented: $showAddConfig) {
+            AddEditConfigView()
+                .environmentObject(store)
         }
-        .sheet(item: $editingConfig) { config in
-            NavigationStack {
+        .navigationDestination(
+            isPresented: Binding(
+                get: { editingConfig != nil },
+                set: { if !$0 { editingConfig = nil } }
+            )
+        ) {
+            if let config = editingConfig {
                 AddEditConfigView(existing: config)
                     .environmentObject(store)
             }
@@ -182,20 +185,11 @@ private struct AgentStateBadge: View {
     let agent: AgentRecord
     let state: EffectiveState
 
-    private var label: String {
-        switch agent.agentType {
-        case .claudeCode:    return "CC"
-        case .claudeDesktop: return "CD"
-        case .geminiCLI:     return "GE"
-        case .codexCLI:      return "CX"
-        }
-    }
-
-    private var badgeColor: Color {
+    private var stateColor: Color {
         switch state {
-        case .enabled:            return .green
-        case .disabled:           return .secondary
-        case .unavailable:        return .orange
+        case .enabled:     return .green
+        case .disabled:    return .secondary
+        case .unavailable: return .orange
         }
     }
 
@@ -208,13 +202,22 @@ private struct AgentStateBadge: View {
     }
 
     var body: some View {
-        Text(label)
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundColor(state == .disabled ? .secondary : .white)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 2)
-            .background(badgeColor.opacity(state == .disabled ? 0.2 : 0.85))
-            .clipShape(RoundedRectangle(cornerRadius: 3))
+        AgentIcon(agentType: agent.agentType)
+            .frame(width: 18, height: 18)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .strokeBorder(stateColor, lineWidth: 1.5)
+            )
+            .opacity(state == .disabled ? 0.4 : 1.0)
+            .overlay(alignment: .bottomTrailing) {
+                if state == .enabled {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 5, height: 5)
+                        .offset(x: 2, y: 2)
+                }
+            }
             .help(tooltip)
     }
 }

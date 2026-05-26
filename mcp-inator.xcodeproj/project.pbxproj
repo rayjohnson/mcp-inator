@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04D154E8633D90EC5206EB0E /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 9F02EB3D916681BA267ADB14 /* GRDB */; };
+		09F27190B4168272965387B2 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE0A94708E98E71A4BE095 /* AgentIcon.swift */; };
 		0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */; };
 		0DF006CA7250138FF808747A /* ConfigAgentAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */; };
 		111DB46129B2AC3E7C8313CD /* claude_code_config.json in Resources */ = {isa = PBXBuildFile; fileRef = F97CA2C41585DD4CD516D00B /* claude_code_config.json */; };
@@ -80,6 +81,7 @@
 		90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		9109E1A5469B7D25B926FD1E /* gemini_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gemini_config.json; sourceTree = "<group>"; };
 		928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexCLIAdapter.swift; sourceTree = "<group>"; };
+		97EE0A94708E98E71A4BE095 /* AgentIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentIcon.swift; sourceTree = "<group>"; };
 		9AFF47ED4F7D3099F03DF0B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigAgentAssignment.swift; sourceTree = "<group>"; };
 		A3B865013EA65AAE8229C657 /* AgentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRecord.swift; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				E6AA0D309B195442D289C705 /* AddEditConfigView.swift */,
+				97EE0A94708E98E71A4BE095 /* AgentIcon.swift */,
 				6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */,
 				7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */,
 				55B09DE2D809C77FE508549F /* DiscoveryView.swift */,
@@ -369,6 +372,7 @@
 			files = (
 				4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */,
 				A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */,
+				09F27190B4168272965387B2 /* AgentIcon.swift in Sources */,
 				D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */,
 				95EE55C2F28E746E65CF804D /* AgentRecord.swift in Sources */,
 				85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */,
