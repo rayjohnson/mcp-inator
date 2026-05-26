@@ -432,17 +432,31 @@ private struct ConfigAgentRow: View {
                             .frame(width: 6, height: 6)
                     }
                 }
-                Group {
+                HStack(spacing: 3) {
+                    Image(systemName: config.isHTTP ? "network" : "terminal")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     if config.isHTTP {
                         Text(config.url)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(config.transportType.rawValue.uppercased())
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 3))
                     } else {
                         Text(([config.command] + config.args).joined(separator: " "))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                     }
                 }
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
             }
             Spacer()
             if !agentAvailable {
