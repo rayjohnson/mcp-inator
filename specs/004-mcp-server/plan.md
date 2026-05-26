@@ -15,9 +15,9 @@ agents can add mcp-inator to themselves.
 
 ## Technical Context
 
-**Language/Version**: Swift 5.9, macOS 13.0+
+**Language/Version**: Swift 6.0, macOS 13.0+
 
-**Primary Dependencies**: GRDB 6.x (existing), Foundation (existing); no new dependencies
+**Primary Dependencies**: GRDB 6.x (existing), `modelcontextprotocol/swift-sdk` ≥ 0.11.0 (new)
 
 **Storage**: SQLite via GRDB — same database used by the main app
 
@@ -69,26 +69,36 @@ specs/004-mcp-server/
 ```text
 mcp-inator/
 ├── App/
-│   └── mcp_inatorApp.swift          # Remove @main; keep as App struct
+│   ├── mcp_inatorApp.swift          # Remove @main; keep as App struct
+│   └── main.swift                   # NEW: replaces @main; checks --mcp-server, routes accordingly
 ├── MCP/                              # NEW: MCP server subsystem
-│   ├── MCPServer.swift              # Entry point: reads stdin, writes stdout, dispatch loop
-│   ├── MCPTypes.swift               # Codable: JSONRPCRequest, JSONRPCResponse, MCPError, Tool, ToolResult
+│   ├── MCPServer.swift              # Creates MCP.Server, seeds self-entry, registers handlers, runs StdioTransport
 │   └── MCPTools.swift               # Tool implementations: list_servers, add_server, etc.
 ├── Models/
 │   └── (existing models unchanged)
-├── Store/
-│   └── (existing store unchanged)
-└── Resources/
-    └── main.swift                   # NEW: replaces @main; checks --mcp-server, routes to MCPServer or SwiftUI
+└── Store/
+    └── (existing store unchanged)
 
 mcp-inatorTests/
-└── Unit/
-    └── MCPServerTests.swift         # Integration tests via in-process pipe
+└── Integration/
+    └── MCPServerTests.swift         # End-to-end tests via in-process pipe (Process + stdin/stdout)
 ```
 
 **Structure Decision**: Single-target approach. `@main` is removed from `mcp_inatorApp` and a new
-`main.swift` is added that checks `CommandLine.arguments` before the SwiftUI lifecycle starts. The
-`MCP/` directory groups new files. No new Xcode target is needed.
+`main.swift` (in `App/` alongside other entry-point code) checks `CommandLine.arguments` before the
+SwiftUI lifecycle starts. `MCPServer.swift` uses the official `MCP` SDK (`MCP.Server` +
+`StdioTransport`) — no hand-rolled JSON-RPC types needed. `MCPTools.swift` contains the business
+logic for each tool. Tests go in `Integration/` (not `Unit/`) because they spawn a real process.
+No new Xcode target needed; `project.yml` gains the `swift-sdk` package dependency.
+
+**App-managed agents**: `enable_server` and `disable_server` MUST return a tool error (not silent
+success) when called with an app-managed agent (e.g., `gemini_desktop`). Error message:
+`"'gemini_desktop' is app-managed — MCP configuration cannot be written by mcp-inator"`.
+
+**Self-entry seeding**: `MCPServer.run()` MUST call a `seedSelfEntry(store:)` function before
+starting the SDK's run loop. This ensures the mcp-inator library entry exists when running headless
+(i.e., when the SwiftUI app is not launched). The same function is called on app launch from
+`mcp_inatorApp`.
 
 ## Complexity Tracking
 

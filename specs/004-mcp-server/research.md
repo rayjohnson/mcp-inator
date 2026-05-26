@@ -1,14 +1,14 @@
 # Research: Built-in MCP Server
 
-## Decision 1: Use hand-rolled JSON-RPC vs. official Swift SDK
+## Decision 1: Use official Swift SDK (revised)
 
-**Decision**: Hand-roll the MCP protocol (JSON-RPC 2.0 + newline-delimited framing).
+**Decision**: Use the official `modelcontextprotocol/swift-sdk` (≥ 0.11.0).
 
-**Rationale**: The official Swift SDK (`modelcontextprotocol/swift-sdk`) requires **Swift 6.0 / Xcode 16+**. mcp-inator targets Swift 5.9. Adding the SDK would force a language version upgrade, which is a larger change than warranted for a small subset of the protocol. The MCP stdio protocol is genuinely simple: newline-delimited JSON, three-phase lifecycle, two request types. A ~200-line hand-rolled implementation is maintainable and avoids the dependency.
+**Rationale**: mcp-inator is now Swift 6.0 (upgraded in branch 005-swift6-upgrade), which is the minimum requirement for the SDK. The SDK handles all protocol plumbing — framing, handshake, routing, ping, error codes, Swift 6 concurrency — so the implementation is reduced to registering `ListTools` and `CallTool` handlers. This is strictly less code and stays in sync with the official spec automatically.
 
 **Alternatives considered**:
-- Use the official SDK: blocked by Swift 6.0 requirement.
-- Use a generic JSON-RPC library: no Swift 5.9-compatible option found with MCP-specific semantics; would still require writing tool dispatch layer.
+- Hand-roll: was the original plan when the project was Swift 5.9; no longer justified now that the SDK is available.
+- Generic JSON-RPC library: more work than the SDK with no benefit.
 
 ---
 
