@@ -352,7 +352,7 @@ struct AgentListView: View {
             let result = try store.bulkEnableConfigs(uuids: uuids, agentId: agentId,
                                                      adapter: adapter, configPath: configPath)
             refreshEnabledSet()
-            if result.succeeded.count > 0 { showRestartNotice = true }
+            if !result.succeeded.isEmpty { showRestartNotice = true }
             if let firstFailed = result.failed.first {
                 writeError = describeError(firstFailed.1, configPath: configPath)
             }

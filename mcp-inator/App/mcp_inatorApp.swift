@@ -8,6 +8,7 @@ private struct DiscoveryContext: Identifiable {
 }
 
 @main
+// swiftlint:disable:next type_name
 struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
