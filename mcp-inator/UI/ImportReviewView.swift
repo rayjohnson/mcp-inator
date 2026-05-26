@@ -21,7 +21,7 @@ struct ImportReviewView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
             Group {
                 if categories.isEmpty {
                     emptyState
@@ -29,23 +29,28 @@ struct ImportReviewView: View {
                     categoryList
                 }
             }
-            .navigationTitle("Import from \(agent.displayName)")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Import Selected") { applyDecisions() }
-                        .disabled(importCount == 0)
-                }
-            }
             if let err = errorMessage {
                 Text(err)
                     .foregroundColor(.red)
+                    .font(.callout)
                     .padding(.horizontal)
+                    .padding(.bottom, 4)
             }
+            Divider()
+            HStack {
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.escape, modifiers: [])
+                Spacer()
+                Button("Import Selected") { applyDecisions() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(importCount == 0)
+                    .keyboardShortcut(.return, modifiers: .command)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
-        .frame(width: 500, height: 480)
+        .navigationTitle("Import from \(agent.displayName)")
+        .navigationBarBackButtonHidden(true)
         .onAppear { seedDefaults() }
     }
 
@@ -187,7 +192,7 @@ private struct NewEntryRow: View {
             VStack(alignment: .leading) {
                 Text(config.displayName.isEmpty ? key : config.displayName)
                     .fontWeight(.medium)
-                Text("\(config.command) \(config.args.joined(separator: " "))")
+                Text(config.isHTTP ? config.url : ([config.command] + config.args).joined(separator: " "))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)

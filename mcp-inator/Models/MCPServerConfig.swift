@@ -176,6 +176,12 @@ struct EnvVar: Codable, Equatable, Identifiable {
         self.isSensitive = isSensitive ?? EnvVar.defaultSensitivity(for: value)
     }
 
+    // id is excluded from Codable (not stored in files or snapshots) so synthesized
+    // == would always return false across encode/decode cycles. Compare content only.
+    static func == (lhs: EnvVar, rhs: EnvVar) -> Bool {
+        lhs.key == rhs.key && lhs.value == rhs.value && lhs.isSensitive == rhs.isSensitive
+    }
+
     // FR-016: env var references like ${GITHUB_TOKEN} are not sensitive; literals are.
     static func defaultSensitivity(for value: String) -> Bool {
         let pattern = #"^\$\{[A-Z_][A-Z0-9_]*\}$"#

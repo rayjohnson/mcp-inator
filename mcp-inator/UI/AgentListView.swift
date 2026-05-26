@@ -8,7 +8,6 @@ struct AgentListView: View {
 
     @State private var enabledUUIDs: Set<UUID> = []
     @State private var pendingWrite: PendingWrite?
-    @State private var showDriftSheet = false
     @State private var showRestartNotice = false
     @State private var showPathOverride = false
     @State private var customPathInput: String = ""
@@ -39,10 +38,11 @@ struct AgentListView: View {
         VStack(alignment: .leading, spacing: 0) {
             agentHeader
             Divider()
-            if !agent.isAvailable {
+            if let pending = pendingWrite {
+                driftView(pending: pending)
+            } else if !agent.isAvailable {
                 unavailableBanner
-            }
-            if store.configs.isEmpty {
+            } else if store.configs.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Text("No configs in your library yet.")
@@ -58,16 +58,17 @@ struct AgentListView: View {
         }
         .navigationTitle(agent.displayName)
         .toolbar { toolbarContent }
-        .sheet(isPresented: $showDriftSheet) { driftSheet }
+        .navigationDestination(isPresented: $showPathOverride) {
+            pathOverrideView
+        }
+        .navigationDestination(isPresented: $showImportReview) {
+            ImportReviewView(agent: agent, categories: importCategories)
+                .environmentObject(store)
+        }
         .alert("Restart Required", isPresented: $showRestartNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             restartMessage
-        }
-        .sheet(isPresented: $showPathOverride) { pathOverrideSheet }
-        .sheet(isPresented: $showImportReview) {
-            ImportReviewView(agent: agent, categories: importCategories)
-                .environmentObject(store)
         }
         .alert("Write Failed", isPresented: Binding(
             get: { writeError != nil },
@@ -154,21 +155,28 @@ struct AgentListView: View {
         ToolbarItem(placement: .primaryAction) {
             Menu {
                 Button("Import from \(agent.displayName)…") { triggerImport() }
-                Divider()
-                Button(multiSelectActive ? "Cancel Selection" : "Apply All…") {
-                    if multiSelectActive {
-                        multiSelectActive = false
-                        multiSelected = []
-                    } else {
-                        multiSelectActive = true
-                        multiSelected = Set(store.configs.map(\.uuid))
-                    }
-                }
-                if multiSelectActive && !multiSelected.isEmpty {
-                    Button("Apply \(multiSelected.count) Selected") { applySelected() }
-                }
             } label: {
                 Image(systemName: "ellipsis.circle")
+            }
+        }
+        if multiSelectActive {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Apply (\(multiSelected.count))") { applySelected() }
+                    .disabled(multiSelected.isEmpty)
+                    .buttonStyle(.borderedProminent)
+            }
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    multiSelectActive = false
+                    multiSelected = []
+                }
+            }
+        } else if !store.configs.isEmpty {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Select") {
+                    multiSelectActive = true
+                    multiSelected = Set(store.configs.map(\.uuid))
+                }
             }
         }
     }
@@ -201,54 +209,40 @@ struct AgentListView: View {
             showRestartNotice = true
         case .driftDetected:
             pendingWrite = PendingWrite(uuid: uuid, enable: enable, driftResult: result)
-            showDriftSheet = true
         }
     }
 
-    // MARK: - Drift Sheet
+    // MARK: - Inline Drift View
 
-    private var driftSheet: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
-                    .font(.system(size: 44))
-                    .foregroundColor(.orange)
-                Text("Config file changed externally")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                Text("The values in the agent config file no longer match what mcp-inator last wrote. Review the diff and choose how to proceed.")
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                if case .driftDetected(let onDisk, let expected) = pendingWrite?.driftResult {
-                    driftDetail(onDisk: onDisk, expected: expected)
-                }
-                HStack(spacing: 16) {
-                    Button("Cancel") {
-                        pendingWrite = nil
-                        showDriftSheet = false
-                    }
-                    .buttonStyle(.bordered)
-                    Button("Override & Write") {
-                        forcePendingWrite()
-                        showDriftSheet = false
-                    }
+    private func driftView(pending: PendingWrite) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                .font(.system(size: 44))
+                .foregroundColor(.orange)
+            Text("Config file changed externally")
+                .font(.title2).fontWeight(.semibold)
+            Text("The config file was modified since mcp-inator last wrote it. You can skip this change or override the file with the current config.")
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            if case .driftDetected(let onDisk, let expected) = pending.driftResult {
+                driftDetail(onDisk: onDisk, expected: expected)
+            }
+            Spacer()
+            Divider()
+            HStack(spacing: 16) {
+                Button("Skip") { pendingWrite = nil }
+                    .keyboardShortcut(.escape, modifiers: [])
+                Spacer()
+                Button("Override & Write") { forcePendingWrite() }
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
-                }
             }
-            .padding()
-            .navigationTitle("Drift Detected")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        pendingWrite = nil
-                        showDriftSheet = false
-                    }
-                }
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
-        .frame(width: 440, height: 380)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func driftDetail(onDisk: [String: MCPServerConfig], expected: [String: MCPServerConfig]) -> some View {
@@ -303,33 +297,36 @@ struct AgentListView: View {
         return Text("Restart \(agent.displayName) to apply the change.")
     }
 
-    // MARK: - Path Override
+    // MARK: - Path Override (navigation destination)
 
-    private var pathOverrideSheet: some View {
-        NavigationStack {
+    private var pathOverrideView: some View {
+        VStack(spacing: 0) {
             Form {
                 Section("Config File Path") {
                     TextField("Path", text: $customPathInput)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("Change Config Path")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { showPathOverride = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        if let agentId = agent.id {
-                            try? store.updateAgentConfigPath(agentId: agentId, path: customPathInput)
-                        }
-                        showPathOverride = false
+            Divider()
+            HStack {
+                Button("Cancel") { showPathOverride = false }
+                    .keyboardShortcut(.escape, modifiers: [])
+                Spacer()
+                Button("Save") {
+                    if let agentId = agent.id {
+                        try? store.updateAgentConfigPath(agentId: agentId, path: customPathInput)
                     }
-                    .disabled(customPathInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                    showPathOverride = false
                 }
+                .buttonStyle(.borderedProminent)
+                .disabled(customPathInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                .keyboardShortcut(.return, modifiers: .command)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
-        .frame(width: 360, height: 200)
+        .navigationTitle("Change Config Path")
+        .navigationBarBackButtonHidden(true)
     }
 
     // MARK: - Import
@@ -405,10 +402,17 @@ private struct ConfigAgentRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(config.displayName)
                     .fontWeight(.medium)
-                Text("\(config.command) \(config.args.joined(separator: " "))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                Group {
+                    if config.isHTTP {
+                        Text(config.url)
+                    } else {
+                        Text(([config.command] + config.args).joined(separator: " "))
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
             }
             Spacer()
             if !agentAvailable {
