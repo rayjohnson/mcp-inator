@@ -2,9 +2,9 @@ import SwiftUI
 
 struct DiscoveryView: View {
     @EnvironmentObject private var store: ConfigStore
-    @Environment(\.dismiss) private var dismiss
 
     let results: [ConfigStore.DiscoveryResult]
+    var onDismiss: () -> Void
 
     @State private var importTarget: AgentRecord?
     @State private var showImportReview = false
@@ -14,7 +14,8 @@ struct DiscoveryView: View {
         .claudeCode:    ClaudeCodeAdapter(),
         .claudeDesktop: ClaudeDesktopAdapter(),
         .geminiCLI:     GeminiCLIAdapter(),
-        .codexCLI:      CodexCLIAdapter()
+        .codexCLI:      CodexCLIAdapter(),
+        .geminiDesktop: GeminiDesktopAdapter()
     ]
 
     var body: some View {
@@ -29,7 +30,7 @@ struct DiscoveryView: View {
             .navigationTitle("New Agents Found")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Skip All") { dismiss() }
+                    Button("Skip All") { onDismiss() }
                 }
             }
             .sheet(isPresented: $showImportReview) {
@@ -52,11 +53,11 @@ struct DiscoveryView: View {
             Text("No AI tools found")
                 .font(.title2)
                 .fontWeight(.semibold)
-            Text("Install Claude Code, Claude Desktop, Gemini CLI, or Codex CLI and relaunch mcp-inator.")
+            Text("Install Claude Code, Claude Desktop, Gemini CLI, Gemini Desktop, or Codex CLI and relaunch mcp-inator.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            Button("Done") { dismiss() }
+            Button("Done") { onDismiss() }
                 .buttonStyle(.borderedProminent)
         }
         .padding()
@@ -70,17 +71,33 @@ struct DiscoveryView: View {
                 VStack(alignment: .leading) {
                     Text(result.agent.displayName)
                         .fontWeight(.medium)
-                    Text(result.agent.configPath)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                    if result.agent.agentType.isAppManaged {
+                        Text("MCP servers managed internally")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text(result.agent.configPath)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
                 }
                 Spacer()
-                Button("Import…") {
-                    prepareImport(for: result.agent)
+                if result.agent.agentType.isAppManaged {
+                    Text("In-app managed")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.secondary.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                } else {
+                    Button("Import…") {
+                        prepareImport(for: result.agent)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
             .padding(.vertical, 2)
         }
@@ -88,7 +105,7 @@ struct DiscoveryView: View {
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Spacer()
-                Button("Done") { dismiss() }
+                Button("Done") { onDismiss() }
                     .buttonStyle(.borderedProminent)
                     .padding()
             }

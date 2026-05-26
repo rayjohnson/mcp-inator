@@ -18,7 +18,8 @@ struct PropagationView: View {
         .claudeCode:    ClaudeCodeAdapter(),
         .claudeDesktop: ClaudeDesktopAdapter(),
         .geminiCLI:     GeminiCLIAdapter(),
-        .codexCLI:      CodexCLIAdapter()
+        .codexCLI:      CodexCLIAdapter(),
+        .geminiDesktop: GeminiDesktopAdapter()
     ]
 
     var body: some View {
@@ -103,7 +104,9 @@ struct PropagationView: View {
 
     private func loadAgents() {
         do {
+            let visibleIds = Set(store.visibleAgents.compactMap(\.id))
             enabledAgents = try store.findEnabledAgents(for: config.uuid)
+                .filter { visibleIds.contains($0.id ?? -1) }
             for agent in enabledAgents {
                 guard let agentId = agent.id else { continue }
                 let assignment = try store.fetchAssignment(configUUID: config.uuid, agentId: agentId)

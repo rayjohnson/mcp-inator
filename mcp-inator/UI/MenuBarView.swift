@@ -37,7 +37,7 @@ struct MenuBarView: View {
     }
 
     private var allAdapters: [any AgentAdapter] {
-        [ClaudeCodeAdapter(), ClaudeDesktopAdapter(), GeminiCLIAdapter(), CodexCLIAdapter()]
+        [ClaudeCodeAdapter(), ClaudeDesktopAdapter(), GeminiCLIAdapter(), CodexCLIAdapter(), GeminiDesktopAdapter()]
     }
 }
 
@@ -45,17 +45,27 @@ struct MenuBarView: View {
 
 private struct AgentsTabView: View {
     @EnvironmentObject private var store: ConfigStore
+    @State private var showManageAgents = false
 
     var body: some View {
-        List(store.agents) { agent in
+        List(store.visibleAgents) { agent in
             NavigationLink(destination: AgentListView(agent: agent).environmentObject(store)) {
                 AgentRow(agent: agent)
             }
         }
         .listStyle(.inset)
         .navigationTitle("Agents")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Manage") { showManageAgents = true }
+            }
+        }
+        .navigationDestination(isPresented: $showManageAgents) {
+            ManageAgentsView()
+                .environmentObject(store)
+        }
         .overlay {
-            if store.agents.isEmpty {
+            if store.visibleAgents.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "cpu")
                         .font(.system(size: 40))
@@ -63,6 +73,11 @@ private struct AgentsTabView: View {
                     Text("No agents discovered yet")
                         .font(.title3)
                         .foregroundColor(.secondary)
+                    if !store.agents.isEmpty {
+                        Text("Some agents are hidden — tap Manage to show them.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
@@ -79,11 +94,17 @@ private struct AgentRow: View {
             VStack(alignment: .leading) {
                 Text(agent.displayName)
                     .fontWeight(.medium)
-                Text(agent.configPath)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                if agent.agentType.isAppManaged {
+                    Text("Managed in-app")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text(agent.configPath)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
         }
     }

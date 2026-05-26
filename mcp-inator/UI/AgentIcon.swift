@@ -15,6 +15,8 @@ struct AgentIcon: View {
             LetterBadge(letter: "G", background: Color(red: 0.26, green: 0.52, blue: 0.96))
         case .codexCLI:
             LetterBadge(letter: "X", background: Color(red: 0.07, green: 0.07, blue: 0.07))
+        case .geminiDesktop:
+            GeminiDesktopAppIcon()
         }
     }
 }
@@ -45,6 +47,37 @@ private struct ClaudeAppIcon: View {
                 appIcon = NSWorkspace.shared.icon(forFile: url.path)
                 return
             }
+        }
+    }
+}
+
+// MARK: - GeminiDesktopAppIcon
+
+private struct GeminiDesktopAppIcon: View {
+    @State private var appIcon: NSImage?
+
+    var body: some View {
+        Group {
+            if let icon = appIcon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .interpolation(.high)
+            } else {
+                LetterBadge(letter: "G", background: Color(red: 0.11, green: 0.53, blue: 0.96))
+            }
+        }
+        .onAppear { loadIcon() }
+    }
+
+    private func loadIcon() {
+        guard appIcon == nil else { return }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.google.GeminiMacOS") {
+            appIcon = NSWorkspace.shared.icon(forFile: url.path)
+            return
+        }
+        let appPath = "/Applications/Gemini.app"
+        if FileManager.default.fileExists(atPath: appPath) {
+            appIcon = NSWorkspace.shared.icon(forFile: appPath)
         }
     }
 }

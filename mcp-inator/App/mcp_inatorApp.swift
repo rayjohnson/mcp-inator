@@ -1,11 +1,6 @@
 import SwiftUI
+import AppKit
 import Sparkle
-
-// Wraps discovery results for sheet(item:) so data and presentation are atomic.
-private struct DiscoveryContext: Identifiable {
-    let id = UUID()
-    let results: [ConfigStore.DiscoveryResult]
-}
 
 @main
 // swiftlint:disable:next type_name
@@ -13,7 +8,6 @@ struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var catalogStore = CatalogStore()
-    @State private var discoveryContext: DiscoveryContext?
 
     private let updaterController = SPUStandardUpdaterController(
         startingUpdater: true,
@@ -25,8 +19,11 @@ struct mcp_inatorApp: App {
         ClaudeCodeAdapter(),
         ClaudeDesktopAdapter(),
         GeminiCLIAdapter(),
-        CodexCLIAdapter()
+        CodexCLIAdapter(),
+        GeminiDesktopAdapter()
     ]
+
+    private let discoveryController = DiscoveryWindowController()
 
     var body: some Scene {
         MenuBarExtra {
@@ -37,10 +34,6 @@ struct mcp_inatorApp: App {
                     .onAppear {
                         catalogStore.load()
                         runAgentScan(store: store)
-                    }
-                    .sheet(item: $discoveryContext) { ctx in
-                        DiscoveryView(results: ctx.results)
-                            .environmentObject(store)
                     }
             } else {
                 StoreRecoveryView(error: storeContainer.initError) {
@@ -67,12 +60,43 @@ struct mcp_inatorApp: App {
                 let results = try store.discoverAgents(adapters: adapters)
                 let newlyFound = results.filter(\.isNew)
                 if !newlyFound.isEmpty {
-                    discoveryContext = DiscoveryContext(results: newlyFound)
+                    discoveryController.show(results: newlyFound, store: store)
                 }
             } catch {
                 // Discovery errors are non-fatal
             }
         }
+    }
+}
+
+// MARK: - DiscoveryWindowController
+
+@MainActor
+final class DiscoveryWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(results: [ConfigStore.DiscoveryResult], store: ConfigStore) {
+        guard window == nil else { return }
+
+        let view = DiscoveryView(results: results, onDismiss: { [weak self] in
+            self?.window?.close()
+        }).environmentObject(store)
+
+        let hosting = NSHostingController(rootView: view)
+        let w = NSWindow(contentViewController: hosting)
+        w.title = "New Agents Found"
+        w.setContentSize(NSSize(width: 440, height: 380))
+        w.styleMask = [.titled, .closable]
+        w.center()
+        w.isReleasedWhenClosed = false
+        w.delegate = self
+        w.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = w
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
     }
 }
 

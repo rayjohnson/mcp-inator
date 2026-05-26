@@ -44,9 +44,20 @@ protocol AgentAdapter {
         expectedValue: MCPServerConfig?
     ) throws -> WriteResult
 
+    // MARK: App-Managed
+
+    /// When true, the agent manages its MCP config internally (no file to read/write).
+    var isAppManaged: Bool { get }
+
     // MARK: Validation
 
     func validateServerKey(_ key: String) -> KeyValidationResult
+}
+
+// MARK: - App-Managed Default
+
+extension AgentAdapter {
+    var isAppManaged: Bool { false }
 }
 
 // MARK: - Supporting Types
