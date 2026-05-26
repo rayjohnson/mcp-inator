@@ -28,7 +28,7 @@ struct mcp_inatorApp: App {
     ]
 
     var body: some Scene {
-        MenuBarExtra("mcp-inator", image: "Inator") {
+        MenuBarExtra {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
@@ -41,6 +41,14 @@ struct mcp_inatorApp: App {
                 StoreRecoveryView(error: storeContainer.initError) {
                     storeContainer.reset()
                 }
+            }
+        } label: {
+            if let url = Bundle.main.url(forResource: "Inator", withExtension: "png"),
+               let nsImage = NSImage(contentsOf: url) {
+                let _ = { nsImage.isTemplate = true }()
+                Image(nsImage: nsImage)
+            } else {
+                Image(systemName: "server.rack")
             }
         }
         .menuBarExtraStyle(.window)

@@ -44,6 +44,8 @@
 		E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */; };
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
+		52C7B638BF1939AEA6364D67 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7703E22C881015DCD13E527 /* Assets.xcassets */; };
+		2D316A39BA7E75455B6FF161 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 49032E9BBFF79BE6DA975953 /* Inator.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,6 +97,8 @@
 		F1A4408041C07C9921071598 /* Migration002.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration002.swift; sourceTree = "<group>"; };
 		F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */ = {isa = PBXFileReference; path = codex_config.toml; sourceTree = "<group>"; };
 		F97CA2C41585DD4CD516D00B /* claude_code_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_code_config.json; sourceTree = "<group>"; };
+		E7703E22C881015DCD13E527 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		49032E9BBFF79BE6DA975953 /* Inator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Inator.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,8 @@
 		37F4DAEA47FE4DE28E86B9E6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				E7703E22C881015DCD13E527 /* Assets.xcassets */,
+				49032E9BBFF79BE6DA975953 /* Inator.png */,
 				571E43C54CCE0B46A9AA5E44 /* appcast.xml */,
 				9AFF47ED4F7D3099F03DF0B6 /* Info.plist */,
 				67EC9770AC45367A218213E2 /* mcp-inator.entitlements */,
@@ -348,6 +354,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52C7B638BF1939AEA6364D67 /* Assets.xcassets in Resources */,
 				111DB46129B2AC3E7C8313CD /* claude_code_config.json in Resources */,
 				7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */,
 				8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */,
@@ -360,6 +367,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */,
+				2D316A39BA7E75455B6FF161 /* Inator.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
