@@ -89,6 +89,22 @@ final class ConfigStore: ObservableObject {
         }
     }
 
+    func seedSelfEntry() throws {
+        let exists = try pool.read { db in
+            try MCPServerConfig
+                .filter(Column("serverKey") == "mcp-inator")
+                .fetchOne(db) != nil
+        }
+        guard !exists else { return }
+        let entry = MCPServerConfig(
+            displayName: "mcp-inator",
+            serverKey: "mcp-inator",
+            command: "",
+            args: ["--mcp-server"]
+        )
+        _ = try insert(entry)
+    }
+
     // MARK: - AgentRecord CRUD (T012)
 
     func upsertAgent(_ agent: AgentRecord) throws -> AgentRecord {
