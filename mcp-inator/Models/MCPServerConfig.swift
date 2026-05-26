@@ -64,7 +64,7 @@ extension MCPServerConfig: Equatable {
 
 // MARK: - GRDB Persistence
 
-extension MCPServerConfig: FetchableRecord, PersistableRecord {
+extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
     static let databaseTableName = "mcp_server_configs"
 
     init(row: Row) throws {
@@ -100,6 +100,10 @@ extension MCPServerConfig: FetchableRecord, PersistableRecord {
         container["notes"] = notes
         container["createdAt"] = createdAt.timeIntervalSince1970
         container["updatedAt"] = updatedAt.timeIntervalSince1970
+    }
+
+    mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
     }
 }
 

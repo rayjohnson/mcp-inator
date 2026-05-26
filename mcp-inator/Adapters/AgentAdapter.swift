@@ -56,7 +56,7 @@ enum WriteResult {
     case driftDetected(onDisk: [String: MCPServerConfig], expected: [String: MCPServerConfig])
 }
 
-enum KeyValidationResult {
+enum KeyValidationResult: Equatable {
     case valid
     case invalid(reason: String)
 }

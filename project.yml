@@ -64,3 +64,4 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.moov.mcp-inatorTests
         MACOSX_DEPLOYMENT_TARGET: "13.0"
+        GENERATE_INFOPLIST_FILE: YES

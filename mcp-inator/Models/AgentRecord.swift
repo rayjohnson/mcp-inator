@@ -60,7 +60,7 @@ struct AgentRecord: Identifiable {
 
 // MARK: - GRDB Persistence
 
-extension AgentRecord: FetchableRecord, PersistableRecord {
+extension AgentRecord: FetchableRecord, MutablePersistableRecord {
     static let databaseTableName = "agents"
 
     init(row: Row) throws {
@@ -88,6 +88,10 @@ extension AgentRecord: FetchableRecord, PersistableRecord {
         container["discoveredAt"] = discoveredAt.timeIntervalSince1970
         container["lastSeenAt"] = lastSeenAt.timeIntervalSince1970
     }
+
+    mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
+    }
 }
 
 // MARK: - AssignmentState
@@ -99,7 +103,7 @@ enum AssignmentState: String, Codable {
 
 // MARK: - EffectiveState (computed, not stored)
 
-enum EffectiveState {
+enum EffectiveState: Equatable {
     case enabled
     case disabled
     case unavailable(reason: String)

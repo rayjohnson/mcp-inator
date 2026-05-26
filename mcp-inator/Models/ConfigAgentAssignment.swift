@@ -27,7 +27,7 @@ struct ConfigAgentAssignment: Identifiable {
 
 // MARK: - GRDB Persistence
 
-extension ConfigAgentAssignment: FetchableRecord, PersistableRecord {
+extension ConfigAgentAssignment: FetchableRecord, MutablePersistableRecord {
     static let databaseTableName = "config_agent_assignments"
 
     init(row: Row) throws {
@@ -67,5 +67,9 @@ extension ConfigAgentAssignment: FetchableRecord, PersistableRecord {
 
         container["assignedAt"] = assignedAt.timeIntervalSince1970
         container["updatedAt"] = updatedAt.timeIntervalSince1970
+    }
+
+    mutating func didInsert(_ inserted: InsertionSuccess) {
+        id = inserted.rowID
     }
 }

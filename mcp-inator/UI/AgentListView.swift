@@ -331,7 +331,6 @@ struct AgentListView: View {
     // MARK: - Import
 
     private func triggerImport() {
-        guard let adapter else { return }
         do {
             importCategories = try store.categorizeImport(from: adapter, configPath: configPath)
             showImportReview = true
@@ -343,7 +342,7 @@ struct AgentListView: View {
     // MARK: - Bulk Apply (T047)
 
     private func applySelected() {
-        guard let agentId = agent.id, let adapter else { return }
+        guard let agentId = agent.id else { return }
         let uuids = Array(multiSelected)
         do {
             let result = try store.bulkEnableConfigs(uuids: uuids, agentId: agentId,

@@ -41,7 +41,7 @@ struct ConfigLibraryView: View {
             }
         }
         .confirmationDialog(
-            "Delete "\(confirmDelete?.displayName ?? "")"?",
+            "Delete \"\(confirmDelete?.displayName ?? "")\"?",
             isPresented: Binding(
                 get: { confirmDelete != nil },
                 set: { if !$0 { confirmDelete = nil } }
