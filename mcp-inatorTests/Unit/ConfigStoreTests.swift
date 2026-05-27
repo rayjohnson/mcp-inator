@@ -1,6 +1,36 @@
 import XCTest
 @testable import mcp_inator
 
+// MARK: - MockAdapter
+
+/// Records calls to writeConfigs without touching the filesystem.
+/// Used to verify what ConfigStore passes to the adapter layer.
+private final class MockAdapter: AgentAdapter, @unchecked Sendable {
+    let agentType: AgentType = .claudeCode
+    let displayName = "Mock"
+
+    var capturedConfigs: [String: MCPServerConfig]?
+    var capturedExpectedExisting: [String: MCPServerConfig]?
+    var capturedExpectedExistingWasNil = false
+    var writeResult: WriteResult = .success
+
+    func defaultConfigPath() -> URL { URL(fileURLWithPath: "/dev/null") }
+    func isInstalled() -> Bool { true }
+    func readConfigs(from path: URL) throws -> [String: MCPServerConfig] { [:] }
+    func writeConfigs(
+        _ configs: [String: MCPServerConfig],
+        to path: URL,
+        expectedExisting: [String: MCPServerConfig]?
+    ) throws -> WriteResult {
+        capturedConfigs = configs
+        capturedExpectedExisting = expectedExisting
+        capturedExpectedExistingWasNil = expectedExisting == nil
+        return writeResult
+    }
+    func removeConfig(key: String, from path: URL, expectedValue: MCPServerConfig?) throws -> WriteResult { .success }
+    func validateServerKey(_ key: String) -> KeyValidationResult { .valid }
+}
+
 @MainActor
 final class ConfigStoreTests: XCTestCase {
 
@@ -174,5 +204,79 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertEqual(store.configs.count, 1)
         try store.delete(config)
         XCTAssertTrue(store.configs.isEmpty)
+    }
+
+    // MARK: - enableConfig
+
+    // Regression: when enabling server B while the built-in (mcp-inator) is already
+    // enabled, the configMap passed to the adapter must use the real executable path
+    // for mcp-inator — not the "" the DB stores. Before the fix, enabledConfigs were
+    // copied to configMap with raw DB values, so every non-builtin enable wrote
+    // command="" for mcp-inator to disk, causing the stored snapshot (exec path) to
+    // drift from what was on disk.
+    func testEnableConfig_builtInCommandNotStomped() throws {
+        try store.seedSelfEntry()
+        let builtIn = try XCTUnwrap(store.configs.first { $0.isBuiltIn })
+        let regular = try store.insert(MCPServerConfig(displayName: "Regular", command: "/bin/regular"))
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let configPath = tempDir.appendingPathComponent("test.json")
+
+        // Enable the built-in first so it appears in enabledConfigs on the next call.
+        _ = try store.enableConfig(uuid: builtIn.uuid, agentId: agentId,
+                                    adapter: MockAdapter(), configPath: configPath)
+
+        // Now enable the regular server. The configMap must include mcp-inator with
+        // a non-empty command, not the "" stored in the DB.
+        let adapter = MockAdapter()
+        _ = try store.enableConfig(uuid: regular.uuid, agentId: agentId,
+                                    adapter: adapter, configPath: configPath)
+
+        let writtenBuiltIn = try XCTUnwrap(adapter.capturedConfigs?[builtIn.serverKey])
+        XCTAssertFalse(writtenBuiltIn.command.isEmpty,
+                       "Built-in server command must be resolved to executable path, not left empty in configMap")
+    }
+
+    func testEnableConfig_driftResult_propagates_andSkipsSnapshot() throws {
+        let config = try store.insert(MCPServerConfig(displayName: "X", command: "/bin/x"))
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let configPath = tempDir.appendingPathComponent("test.json")
+
+        let driftAdapter = MockAdapter()
+        driftAdapter.writeResult = .driftDetected(onDisk: [:], expected: [:])
+
+        let result = try store.enableConfig(uuid: config.uuid, agentId: agentId,
+                                             adapter: driftAdapter, configPath: configPath)
+        if case .driftDetected = result { } else {
+            XCTFail("Expected driftDetected to be propagated from adapter")
+        }
+        XCTAssertNil(try store.fetchAssignment(configUUID: config.uuid, agentId: agentId),
+                     "Assignment must not be created when drift is detected")
+    }
+
+    func testEnableConfig_force_passesNilExpectedExisting() throws {
+        // After the first enable creates a snapshot, a normal second enable includes
+        // expectedExisting. force=true must bypass that and pass nil to the adapter.
+        let c1 = try store.insert(MCPServerConfig(displayName: "A", command: "/bin/a"))
+        let c2 = try store.insert(MCPServerConfig(displayName: "B", command: "/bin/b"))
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let configPath = tempDir.appendingPathComponent("test.json")
+
+        _ = try store.enableConfig(uuid: c1.uuid, agentId: agentId,
+                                    adapter: MockAdapter(), configPath: configPath)
+
+        let normalAdapter = MockAdapter()
+        _ = try store.enableConfig(uuid: c2.uuid, agentId: agentId,
+                                    adapter: normalAdapter, configPath: configPath)
+        XCTAssertFalse(normalAdapter.capturedExpectedExistingWasNil,
+                       "Normal enable must pass expectedExisting to adapter when snapshots exist")
+
+        let forceAdapter = MockAdapter()
+        _ = try store.enableConfig(uuid: c2.uuid, agentId: agentId,
+                                    adapter: forceAdapter, configPath: configPath, force: true)
+        XCTAssertTrue(forceAdapter.capturedExpectedExistingWasNil,
+                      "force=true must pass nil expectedExisting to adapter")
     }
 }

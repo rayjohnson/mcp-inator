@@ -131,11 +131,15 @@ extension MCPServerConfig {
 
 extension MCPServerConfig: Equatable {
     static func == (lhs: MCPServerConfig, rhs: MCPServerConfig) -> Bool {
-        lhs.transportType == rhs.transportType &&
-        lhs.command == rhs.command &&
-        lhs.args == rhs.args &&
-        lhs.url == rhs.url &&
-        lhs.envVars == rhs.envVars
+        // envVars are compared order-independently: the JSON writer uses sortedKeys so
+        // on-disk order is always alphabetical, but snapshots may store registry order.
+        let lhsEnv = lhs.envVars.sorted { $0.key < $1.key }
+        let rhsEnv = rhs.envVars.sorted { $0.key < $1.key }
+        return lhs.transportType == rhs.transportType &&
+               lhs.command == rhs.command &&
+               lhs.args == rhs.args &&
+               lhs.url == rhs.url &&
+               lhsEnv == rhsEnv
     }
 }
 

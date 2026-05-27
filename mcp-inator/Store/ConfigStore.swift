@@ -48,6 +48,7 @@ final class ConfigStore: ObservableObject {
         Migration002.register(in: &migrator)
         Migration003.register(in: &migrator)
         Migration004.register(in: &migrator)
+        Migration005.register(in: &migrator)
         try migrator.migrate(pool)
     }
 
@@ -213,13 +214,18 @@ final class ConfigStore: ObservableObject {
             throw AdapterError.parseFailure(configPath, underlying: NSError(domain: "ConfigStore", code: 1,
                 userInfo: [NSLocalizedDescriptionKey: "Config not found: \(uuid)"]))
         }
-        if config.isBuiltIn, let execPath = Bundle.main.executableURL?.path {
-            config.command = execPath
-        }
+        let execPath = Bundle.main.executableURL?.path
+        if config.isBuiltIn, let path = execPath { config.command = path }
 
         let enabledConfigs = try fetchEnabledConfigs(for: agentId)
+        // Apply isBuiltIn command fix to every enabled config, not just the one being enabled.
+        // Built-in servers store command="" in the DB; the real path must be resolved at runtime.
         var configMap: [String: MCPServerConfig] = Dictionary(
-            uniqueKeysWithValues: enabledConfigs.map { ($0.serverKey, $0) }
+            uniqueKeysWithValues: enabledConfigs.map { cfg in
+                var c = cfg
+                if c.isBuiltIn, let path = execPath { c.command = path }
+                return (c.serverKey, c)
+            }
         )
         configMap[config.serverKey] = config
 
