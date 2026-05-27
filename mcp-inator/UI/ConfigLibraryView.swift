@@ -87,6 +87,14 @@ struct ConfigLibraryView: View {
 
     private var configList: some View {
         List {
+            Button {
+                showAddConfig = true
+            } label: {
+                Label("New Server…", systemImage: "plus.circle")
+                    .foregroundColor(.accentColor)
+            }
+            .listRowBackground(Color.clear)
+
             ForEach(store.configs) { config in
                 let row = statusMatrix.first { $0.config.uuid == config.uuid }
                 ConfigRow(config: config, agentStates: row?.agentStates ?? [])
