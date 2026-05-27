@@ -1,0 +1,39 @@
+---
+name: Deploy Pages
+
+"on":
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/**
+
+jobs:
+  deploy:
+    name: Sync scripts to gh-pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Push scripts to gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          git clone --branch gh-pages \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+            gh-pages-work
+
+          cp scripts/install.sh gh-pages-work/install.sh
+          cp scripts/uninstall.sh gh-pages-work/uninstall.sh
+
+          cd gh-pages-work || exit 1
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add install.sh uninstall.sh
+          git diff --cached --quiet && echo "No changes." && exit 0
+          git commit -m "Sync install/uninstall scripts from main"
+          git push

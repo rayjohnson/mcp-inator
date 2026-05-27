@@ -4,26 +4,34 @@ A macOS menu bar app for managing MCP server configurations across AI agents (Cl
 
 ## Installation
 
+### One-line install
+
+```bash
+curl -fsSL https://rayjohnson.github.io/mcp-inator/install.sh | bash
+```
+
+This downloads the latest release, installs it to `/Applications`, and clears the Gatekeeper quarantine flag automatically.
+
+### Manual install
+
 1. Download the latest `mcp-inator-X.Y.Z.dmg` from [GitHub Releases](https://github.com/rayjohnson/mcp-inator/releases)
 2. Open the DMG and drag **mcp-inator** to your Applications folder
+3. On first launch, macOS will block the app — right-click → **Open** to bypass, or run:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/mcp-inator.app
+   ```
 
-### First Launch (Gatekeeper)
+### Uninstall
 
-Because mcp-inator is not notarized, macOS will block the first launch. Use either method:
-
-**Option A — Right-click open** (one-time, no Terminal needed)
-1. Right-click (or Control-click) `mcp-inator.app` in Applications
-2. Choose **Open**
-3. Click **Open** in the dialog
-
-**Option B — Remove quarantine flag**
-```
-xattr -dr com.apple.quarantine /Applications/mcp-inator.app
+```bash
+curl -fsSL https://rayjohnson.github.io/mcp-inator/uninstall.sh | bash
 ```
 
-### Subsequent Updates
+Removes the app and its data. Your agent configurations (Claude, Gemini, etc.) are not touched.
 
-Future updates are delivered automatically — mcp-inator will notify you when a new version is available.
+### Updates
+
+Once installed, mcp-inator updates itself automatically via the built-in updater.
 
 ## Requirements
 
@@ -31,7 +39,7 @@ Future updates are delivered automatically — mcp-inator will notify you when a
 
 ## Building from Source
 
-```
+```bash
 xcodegen generate
 xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug build
 ```
