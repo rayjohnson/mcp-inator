@@ -15,6 +15,7 @@ struct AgentListView: View {
     @State private var customPathInput: String = ""
     @State private var showImportReview = false
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
+    @State private var cloudMCPs: [ClaudeCodeAdapter.CloudManagedMCP] = []
 
     private struct PendingWrite {
         let uuid: UUID
@@ -48,7 +49,7 @@ struct AgentListView: View {
                 appManagedBanner
             } else if !agent.isAvailable {
                 unavailableBanner
-            } else if store.configs.isEmpty {
+            } else if store.configs.isEmpty && cloudMCPs.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Text("No configs in your library yet.")
@@ -122,7 +123,12 @@ struct AgentListView: View {
             ImportReviewView(agent: agent, categories: importCategories)
                 .environmentObject(store)
         }
-        .onAppear { refreshEnabledSet() }
+        .onAppear {
+            refreshEnabledSet()
+            if agent.agentType == .claudeCode {
+                cloudMCPs = ClaudeCodeAdapter().cloudMCPs()
+            }
+        }
         .onChange(of: store.configs.count) { _ in refreshEnabledSet() }
         .onChange(of: store.agents.first(where: { $0.id == agent.id })?.isAvailable) { _ in refreshEnabledSet() }
     }
@@ -208,6 +214,14 @@ struct AgentListView: View {
                     agentAvailable: agent.isAvailable,
                     onToggle: { togglePending(config: config) }
                 )
+            }
+
+            if !cloudMCPs.isEmpty {
+                Section("Managed via claude.ai") {
+                    ForEach(cloudMCPs) { mcp in
+                        CloudMCPRow(mcp: mcp)
+                    }
+                }
             }
         }
         .listStyle(.inset)
@@ -510,6 +524,29 @@ private struct ConfigAgentRow: View {
                 Toggle("", isOn: Binding(get: { isEnabled }, set: { _ in onToggle() }))
                     .labelsHidden()
             }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - CloudMCPRow
+
+private struct CloudMCPRow: View {
+    let mcp: ClaudeCodeAdapter.CloudManagedMCP
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(mcp.displayName)
+                    .fontWeight(.medium)
+                Text("Managed via claude.ai")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Image(systemName: "cloud.fill")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
         .padding(.vertical, 2)
     }

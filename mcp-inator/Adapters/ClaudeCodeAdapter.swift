@@ -50,4 +50,26 @@ struct ClaudeCodeAdapter: AgentAdapter {
         }
         return .valid
     }
+
+    // MARK: - Cloud-managed MCPs
+
+    struct CloudManagedMCP: Identifiable {
+        let rawName: String
+        let displayName: String
+        var id: String { rawName }
+    }
+
+    func cloudMCPs() -> [CloudManagedMCP] {
+        let cacheURL = FileManager.default
+            .homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude/mcp-needs-auth-cache.json")
+        guard let data = try? Data(contentsOf: cacheURL),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return []
+        }
+        return dict.keys.sorted().map { name in
+            let display = name.hasPrefix("claude.ai ") ? String(name.dropFirst("claude.ai ".count)) : name
+            return CloudManagedMCP(rawName: name, displayName: display)
+        }
+    }
 }
