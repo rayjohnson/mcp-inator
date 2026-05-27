@@ -106,7 +106,7 @@ description: "Task list for Built-in MCP Server feature"
 
 - [X] T012 Verify build clean with zero warnings: `xcodebuild build -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug`
 - [X] T013 Verify all tests pass: `xcodebuild test -project mcp-inator.xcodeproj -scheme mcp-inator -destination 'platform=macOS'`
-- [ ] T014 Run through quickstart.md Scenario 1–5 manually using the built binary; confirm each produces the expected output
+- [X] T014 Run through quickstart.md Scenario 1–5 manually using the built binary; confirm each produces the expected output
 
 ---
 

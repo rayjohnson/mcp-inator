@@ -6,6 +6,20 @@ struct ConfigLibraryView: View {
     @State private var editingConfig: MCPServerConfig?
     @State private var confirmDelete: MCPServerConfig?
     @State private var statusMatrix: [ConfigStore.StatusRow] = []
+    @State private var importAgent: AgentRecord?
+    @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
+
+    private let adapters: [AgentType: any AgentAdapter] = [
+        .claudeCode:    ClaudeCodeAdapter(),
+        .claudeDesktop: ClaudeDesktopAdapter(),
+        .geminiCLI:     GeminiCLIAdapter(),
+        .codexCLI:      CodexCLIAdapter(),
+        .geminiDesktop: GeminiDesktopAdapter()
+    ]
+
+    private var importableAgents: [AgentRecord] {
+        store.agents.filter { $0.isAvailable && !$0.agentType.isAppManaged }
+    }
 
     var body: some View {
         Group {
@@ -18,19 +32,20 @@ struct ConfigLibraryView: View {
         .onAppear { loadMatrix() }
         .onChange(of: store.configs.count) { _ in loadMatrix() }
         .navigationTitle("MCP Servers")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showAddConfig = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .help("Add MCP server")
-            }
-        }
         .navigationDestination(isPresented: $showAddConfig) {
             AddEditConfigView()
                 .environmentObject(store)
+        }
+        .navigationDestination(
+            isPresented: Binding(
+                get: { importAgent != nil },
+                set: { if !$0 { importAgent = nil } }
+            )
+        ) {
+            if let agent = importAgent {
+                ImportReviewView(agent: agent, categories: importCategories)
+                    .environmentObject(store)
+            }
         }
         .navigationDestination(
             isPresented: Binding(
@@ -87,11 +102,27 @@ struct ConfigLibraryView: View {
 
     private var configList: some View {
         List {
-            Button {
-                showAddConfig = true
-            } label: {
-                Label("New Server…", systemImage: "plus.circle")
-                    .foregroundColor(.accentColor)
+            HStack {
+                Button {
+                    showAddConfig = true
+                } label: {
+                    Label("New Server…", systemImage: "plus.circle")
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+
+                if !importableAgents.isEmpty {
+                    Spacer()
+                    Menu {
+                        ForEach(importableAgents) { agent in
+                            Button(agent.displayName) { prepareImport(for: agent) }
+                        }
+                    } label: {
+                        Label("Import…", systemImage: "square.and.arrow.down")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
             .listRowBackground(Color.clear)
 
@@ -118,6 +149,14 @@ struct ConfigLibraryView: View {
 
     private func loadMatrix() {
         statusMatrix = (try? store.fetchStatusMatrix()) ?? []
+    }
+
+    private func prepareImport(for agent: AgentRecord) {
+        guard let adapter = adapters[agent.agentType] else { return }
+        let configURL = URL(fileURLWithPath: agent.configPath)
+        guard let categories = try? store.categorizeImport(from: adapter, configPath: configURL) else { return }
+        importCategories = categories
+        importAgent = agent
     }
 }
 
