@@ -1,0 +1,39 @@
+---
+name: Version Check
+
+"on":
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  version-check:
+    name: Version bump required
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest release tag
+        id: latest
+        run: |
+          TAG=$(git tag --sort=-v:refname | grep '^v[0-9]' | head -1 || true)
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Latest release tag: ${TAG:-none}"
+
+      - name: Get VERSION on main
+        id: main
+        run: |
+          VER=$(git show "origin/${{ github.base_ref }}:VERSION" 2>/dev/null \
+            | tr -d '[:space:]' || true)
+          echo "version=${VER}" >> "$GITHUB_OUTPUT"
+          echo "VERSION on main: ${VER:-not found}"
+
+      - name: Check version bump
+        run: |
+          python3 .github/scripts/check_version.py \
+            "${{ steps.latest.outputs.tag }}" \
+            "$(cat VERSION | tr -d '[:space:]')" \
+            "${{ steps.main.outputs.version }}"

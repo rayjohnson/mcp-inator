@@ -56,6 +56,7 @@ targets:
         NSSupportsAutomaticGraphicsSwitching: true
         SUFeedURL: "https://rayjohnson.github.io/mcp-inator/appcast.xml"
         SUEnableAutomaticChecks: true
+        SUPublicEDKey: "nynSJzUuvPqucktVA9vqfaCCbUiZnzkSEjlqUeDvZm8="
 
   mcp-inatorTests:
     type: bundle.unit-test
