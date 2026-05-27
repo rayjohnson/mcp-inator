@@ -8,7 +8,7 @@ options:
 packages:
   GRDB:
     url: https://github.com/groue/GRDB.swift
-    from: "6.0.0"
+    from: "7.0.0"
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     from: "2.0.0"

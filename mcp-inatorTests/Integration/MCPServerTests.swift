@@ -95,7 +95,7 @@ final class MCPServerTests: XCTestCase {
             ["jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": [:]]
         ]
         let all = try runServer(messages: msgs)
-        let toolsResp = try XCTUnwrap(responses(from: all).last)
+        let toolsResp = try response(id: 2, from: all)
         let result = try XCTUnwrap(toolsResp["result"] as? [String: Any])
         let tools = try XCTUnwrap(result["tools"] as? [[String: Any]])
         let names = tools.compactMap { $0["name"] as? String }
@@ -163,7 +163,7 @@ final class MCPServerTests: XCTestCase {
             ]
         ]
         let all = try runServer(messages: msgs)
-        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
+        let result = try XCTUnwrap((try response(id: 2, from: all))["result"] as? [String: Any])
         XCTAssertEqual(result["isError"] as? Bool, true)
         let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
         XCTAssertTrue(text.contains("built-in"), "Expected 'built-in' error, got: \(text)")
@@ -180,7 +180,7 @@ final class MCPServerTests: XCTestCase {
             ]
         ]
         let all = try runServer(messages: msgs)
-        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
+        let result = try XCTUnwrap((try response(id: 2, from: all))["result"] as? [String: Any])
         XCTAssertEqual(result["isError"] as? Bool, true)
         let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
         XCTAssertTrue(text.contains("app-managed"), "Expected 'app-managed' error, got: \(text)")
@@ -194,7 +194,7 @@ final class MCPServerTests: XCTestCase {
             ]
         ]
         let all = try runServer(messages: msgs)
-        let result = try XCTUnwrap(responses(from: all).last?["result"] as? [String: Any])
+        let result = try XCTUnwrap((try response(id: 2, from: all))["result"] as? [String: Any])
         XCTAssertEqual(result["isError"] as? Bool, true)
         let text = (result["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
         XCTAssertTrue(text.contains("not found"), "Expected 'not found' error, got: \(text)")
