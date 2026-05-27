@@ -105,7 +105,8 @@ final class MCPServerTests: XCTestCase {
         XCTAssertTrue(names.contains("enable_server"))
         XCTAssertTrue(names.contains("disable_server"))
         XCTAssertTrue(names.contains("list_agents"))
-        XCTAssertEqual(names.count, 6)
+        XCTAssertTrue(names.contains("list_catalog"))
+        XCTAssertEqual(names.count, 7)
     }
 
     // MARK: - End-to-End Tool Round-Trip

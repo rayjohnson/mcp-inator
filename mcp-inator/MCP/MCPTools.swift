@@ -343,25 +343,25 @@ struct MCPToolHandler: @unchecked Sendable {
             let envVars: [EnvVarSummary]
             let isVerified: Bool
         }
-        let summaries = catalogStore.entries.map { e in
+        let summaries = catalogStore.entries.map { entry in
             CatalogSummary(
-                serverKey: e.serverKey,
-                displayName: e.displayName,
-                category: e.category.rawValue,
-                shortDescription: e.shortDescription,
-                transportType: e.transportType.rawValue,
-                command: e.command,
-                args: e.args,
-                envVars: e.envVars.map { v in
+                serverKey: entry.serverKey,
+                displayName: entry.displayName,
+                category: entry.category.rawValue,
+                shortDescription: entry.shortDescription,
+                transportType: entry.transportType.rawValue,
+                command: entry.command,
+                args: entry.args,
+                envVars: entry.envVars.map { envVar in
                     EnvVarSummary(
-                        name: v.name,
-                        description: v.description,
-                        isRequired: v.isRequired,
-                        isSensitive: v.isSensitive,
-                        defaultValue: v.defaultValue
+                        name: envVar.name,
+                        description: envVar.description,
+                        isRequired: envVar.isRequired,
+                        isSensitive: envVar.isSensitive,
+                        defaultValue: envVar.defaultValue
                     )
                 },
-                isVerified: e.isVerified
+                isVerified: entry.isVerified
             )
         }
         guard let data = try? JSONEncoder().encode(summaries),
