@@ -3,11 +3,11 @@ name: Release
 
 "on":
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-main
   cancel-in-progress: false
 
 jobs:
@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.3.app
@@ -29,12 +31,23 @@ jobs:
           brew install xcodegen create-dmg
           gem install xcpretty
 
-      - name: Extract version
+      - name: Read version
         id: version
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building version ${VERSION}"
+
+      - name: Guard against duplicate release
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists — skipping."
+            exit 0
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Xcode project
         run: xcodegen generate
@@ -111,10 +124,11 @@ jobs:
           gh release create "$TAG" \
             --title "mcp-inator $VERSION" \
             --generate-notes \
+            --target "$GITHUB_SHA" \
             "mcp-inator-${VERSION}.dmg"
 
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}"
-          DOWNLOAD_URL="${DOWNLOAD_URL}/releases/download/${TAG}"
+          REPO="${{ github.repository }}"
+          DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}"
           DOWNLOAD_URL="${DOWNLOAD_URL}/mcp-inator-${VERSION}.dmg"
           echo "downloadUrl=$DOWNLOAD_URL" >> "$GITHUB_OUTPUT"
         env:
