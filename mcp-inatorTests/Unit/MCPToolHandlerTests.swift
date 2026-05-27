@@ -14,7 +14,7 @@ final class MCPToolHandlerTests: XCTestCase {
             .appendingPathComponent("mcp-tool-handler-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         store = try ConfigStore(databasePath: tempDir.appendingPathComponent("test.db"))
-        handler = MCPToolHandler(store: store, catalogStore: CatalogStore())
+        handler = MCPToolHandler(store: store, registryStore: RegistryStore())
     }
 
     override func tearDown() async throws {
@@ -182,7 +182,7 @@ final class MCPToolHandlerTests: XCTestCase {
     func testEnableServer_success() async throws {
         _ = try store.insert(MCPServerConfig(displayName: "My Tool", command: "npx"))
         try seedAgent(type: .claudeCode)
-        handler = MCPToolHandler(store: store, catalogStore: CatalogStore(), adapterProvider: { _ in ClaudeCodeAdapter() })
+        handler = MCPToolHandler(store: store, registryStore: RegistryStore(), adapterProvider: { _ in ClaudeCodeAdapter() })
 
         let result = await call("enable_server", ["server_name": "my-tool", "agent": "claude_code"])
         XCTAssertFalse(isError(result), text(from: result))
@@ -207,7 +207,7 @@ final class MCPToolHandlerTests: XCTestCase {
     func testDisableServer_success() async throws {
         _ = try store.insert(MCPServerConfig(displayName: "My Tool", command: "npx"))
         try seedAgent(type: .claudeCode)
-        handler = MCPToolHandler(store: store, catalogStore: CatalogStore(), adapterProvider: { _ in ClaudeCodeAdapter() })
+        handler = MCPToolHandler(store: store, registryStore: RegistryStore(), adapterProvider: { _ in ClaudeCodeAdapter() })
 
         let enableResult = await call("enable_server", ["server_name": "my-tool", "agent": "claude_code"])
         XCTAssertFalse(isError(enableResult), "Precondition: enable must succeed")

@@ -3,24 +3,26 @@ import SwiftUI
 struct CatalogDetailView: View {
     @EnvironmentObject private var store: ConfigStore
 
-    let entry: CatalogEntry
+    let entry: RegistryEntry
+    let category: CatalogCategory?
+
+    private var libraryKey: String {
+        MCPServerConfig.generateKey(from: entry.displayName)
+    }
 
     private var libraryMatch: MCPServerConfig? {
-        store.configs.first { $0.serverKey == entry.serverKey }
+        store.configs.first { $0.serverKey == libraryKey }
     }
 
     var body: some View {
         VStack(spacing: 0) {
-        ScrollView {
+            ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Header
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            CategoryBadge(category: entry.category)
-                            if entry.isVerified {
-                                Label("Verified", systemImage: "checkmark.seal.fill")
-                                    .font(.caption2)
-                                    .foregroundColor(.blue)
+                            if let cat = category {
+                                CategoryBadge(category: cat)
                             }
                             if libraryMatch != nil {
                                 Label("In Library", systemImage: "checkmark.circle.fill")
@@ -32,7 +34,7 @@ struct CatalogDetailView: View {
                         Text(entry.displayName)
                             .font(.title2)
                             .fontWeight(.semibold)
-                        Text(entry.shortDescription)
+                        Text(entry.description)
                             .font(.body)
                             .foregroundColor(.secondary)
                     }
@@ -40,12 +42,13 @@ struct CatalogDetailView: View {
                     Divider()
 
                     // Transport
+                    let isRemote = entry.transportType != .stdio
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Transport", systemImage: entry.isHTTP ? "network" : "terminal")
+                        Label("Transport", systemImage: isRemote ? "network" : "terminal")
                             .font(.headline)
-                        if entry.isHTTP {
+                        if isRemote {
                             LabeledRow(label: "URL") {
-                                Text(entry.url.isEmpty ? "—" : entry.url)
+                                Text(entry.remoteURL ?? "—")
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
@@ -58,13 +61,13 @@ struct CatalogDetailView: View {
                             }
                         } else {
                             LabeledRow(label: "Command") {
-                                Text(entry.command)
+                                Text(entry.derivedCommand ?? "—")
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
-                            if !entry.args.isEmpty {
+                            if let args = entry.derivedArgs, !args.isEmpty {
                                 LabeledRow(label: "Arguments") {
-                                    Text(entry.args.joined(separator: " "))
+                                    Text(args.joined(separator: " "))
                                         .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(.secondary)
                                 }
@@ -73,12 +76,29 @@ struct CatalogDetailView: View {
                     }
 
                     // Env vars
-                    if !entry.envVars.isEmpty {
+                    let envVars = isRemote ? entry.remoteHeaders : entry.envVars
+                    if !envVars.isEmpty {
                         Divider()
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Environment Variables", systemImage: "key")
-                                .font(.headline)
-                            ForEach(entry.envVars) { envVar in
+                            HStack {
+                                Label(isRemote ? "Request Headers" : "Environment Variables",
+                                      systemImage: "key")
+                                    .font(.headline)
+                                Spacer()
+                            }
+                            // Hint notice
+                            HStack(spacing: 6) {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.secondary)
+                                Text("Suggested from registry — verify with package docs before use")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 8).padding(.vertical, 6)
+                            .background(Color.secondary.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                            ForEach(envVars, id: \.name) { envVar in
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 6) {
                                         Text(envVar.name)
@@ -92,15 +112,23 @@ struct CatalogDetailView: View {
                                                 .background(Color.orange)
                                                 .clipShape(RoundedRectangle(cornerRadius: 3))
                                         }
-                                        if envVar.isSensitive {
+                                        if envVar.isSecret {
                                             Image(systemName: "lock.fill")
                                                 .font(.caption2)
                                                 .foregroundColor(.secondary)
                                         }
                                     }
-                                    Text(envVar.description)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                    if !envVar.description.isEmpty {
+                                        Text(envVar.description)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    if let tmpl = envVar.valueTemplate, !tmpl.isEmpty {
+                                        Text("Format: \(tmpl)")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .italic()
+                                    }
                                 }
                                 .padding(.leading, 8)
                             }
@@ -108,57 +136,48 @@ struct CatalogDetailView: View {
                     }
 
                     // Links
-                    let hasLinks = entry.documentationURL != nil || entry.repositoryURL != nil
-                    if hasLinks {
+                    if let repoURL = entry.repositoryURL, let url = URL(string: repoURL) {
                         Divider()
                         VStack(alignment: .leading, spacing: 8) {
                             Label("Links", systemImage: "link")
                                 .font(.headline)
-                            if let docURL = entry.documentationURL, let url = URL(string: docURL) {
-                                Link(destination: url) {
-                                    Label("Documentation", systemImage: "book")
-                                        .font(.body)
-                                }
-                            }
-                            if let repoURL = entry.repositoryURL, let url = URL(string: repoURL) {
-                                Link(destination: url) {
-                                    Label("Repository", systemImage: "chevron.left.forwardslash.chevron.right")
-                                        .font(.body)
-                                }
+                            Link(destination: url) {
+                                Label("Repository", systemImage: "chevron.left.forwardslash.chevron.right")
+                                    .font(.body)
                             }
                         }
                     }
 
                     Spacer(minLength: 16)
-            }
-            .padding(16)
-        }
-
-        Divider()
-
-        HStack {
-            Spacer()
-            if let match = libraryMatch {
-                NavigationLink(destination:
-                    AddEditConfigView(existing: match)
-                        .environmentObject(store)
-                ) {
-                    Text("Edit in Library")
                 }
-                .help("Open this server's library entry for editing")
-            } else {
-                NavigationLink(destination:
-                    AddEditConfigView(prefill: MCPServerConfig(from: entry))
-                        .environmentObject(store)
-                ) {
-                    Text("Add to Library")
-                }
-                .buttonStyle(.borderedProminent)
-                .help("Add this server to your library with fields pre-filled")
+                .padding(16)
             }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+
+            Divider()
+
+            HStack {
+                Spacer()
+                if let match = libraryMatch {
+                    NavigationLink(destination:
+                        AddEditConfigView(existing: match)
+                            .environmentObject(store)
+                    ) {
+                        Text("Edit in Library")
+                    }
+                    .help("Open this server's library entry for editing")
+                } else {
+                    NavigationLink(destination:
+                        AddEditConfigView(prefill: MCPServerConfig(from: entry))
+                            .environmentObject(store)
+                    ) {
+                        Text("Add to Library")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .help("Add this server to your library with fields pre-filled from the registry")
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
         .navigationTitle(entry.displayName)
     }

@@ -6,7 +6,7 @@ import Sparkle
 struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
-    @StateObject private var catalogStore = CatalogStore()
+    @StateObject private var registryStore = RegistryStore()
 
     private let updaterController = SPUStandardUpdaterController(
         startingUpdater: true,
@@ -29,10 +29,10 @@ struct mcp_inatorApp: App {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
-                    .environmentObject(catalogStore)
+                    .environmentObject(registryStore)
                     .onAppear {
-                        catalogStore.load()
                         try? store.seedSelfEntry()
+                        Task { await registryStore.populateCategories() }
                         runAgentScan(store: store)
                     }
             } else {

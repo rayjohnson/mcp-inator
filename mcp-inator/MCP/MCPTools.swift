@@ -5,12 +5,12 @@ import MCP
 
 struct MCPToolHandler: @unchecked Sendable {
     let store: ConfigStore
-    let catalogStore: CatalogStore
+    let registryStore: RegistryStore
     var adapterProvider: (AgentType) -> any AgentAdapter
 
-    init(store: ConfigStore, catalogStore: CatalogStore, adapterProvider: ((AgentType) -> any AgentAdapter)? = nil) {
+    init(store: ConfigStore, registryStore: RegistryStore, adapterProvider: ((AgentType) -> any AgentAdapter)? = nil) {
         self.store = store
-        self.catalogStore = catalogStore
+        self.registryStore = registryStore
         self.adapterProvider = adapterProvider ?? MCPToolHandler.defaultAdapter
     }
 
@@ -329,39 +329,36 @@ struct MCPToolHandler: @unchecked Sendable {
             let name: String
             let description: String
             let isRequired: Bool
-            let isSensitive: Bool
-            let defaultValue: String?
+            let isSecret: Bool
         }
         struct CatalogSummary: Encodable {
-            let serverKey: String
+            let id: String
             let displayName: String
-            let category: String
-            let shortDescription: String
+            let description: String
             let transportType: String
             let command: String
             let args: [String]
             let envVars: [EnvVarSummary]
-            let isVerified: Bool
         }
-        let summaries = catalogStore.entries.map { entry in
-            CatalogSummary(
-                serverKey: entry.serverKey,
+        var seen = Set<String>()
+        let entries = CatalogCategory.allCases.flatMap { registryStore.entries(for: $0) }
+            .filter { seen.insert($0.id).inserted }
+
+        let summaries = entries.map { entry -> CatalogSummary in
+            let derived = entry.packageType.map {
+                RegistryEntry.deriveCommand(packageType: $0, identifier: entry.packageIdentifier ?? "")
+            }
+            return CatalogSummary(
+                id: entry.id,
                 displayName: entry.displayName,
-                category: entry.category.rawValue,
-                shortDescription: entry.shortDescription,
+                description: entry.description,
                 transportType: entry.transportType.rawValue,
-                command: entry.command,
-                args: entry.args,
-                envVars: entry.envVars.map { envVar in
-                    EnvVarSummary(
-                        name: envVar.name,
-                        description: envVar.description,
-                        isRequired: envVar.isRequired,
-                        isSensitive: envVar.isSensitive,
-                        defaultValue: envVar.defaultValue
-                    )
-                },
-                isVerified: entry.isVerified
+                command: derived?.command ?? "",
+                args: derived?.args ?? [],
+                envVars: entry.envVars.map { v in
+                    EnvVarSummary(name: v.name, description: v.description,
+                                  isRequired: v.isRequired, isSecret: v.isSecret)
+                }
             )
         }
         guard let data = try? JSONEncoder().encode(summaries),

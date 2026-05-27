@@ -3,7 +3,7 @@ import SwiftUI
 // Root popover content. Uses a tab view: Servers (config library), Agents, and Catalog.
 struct MenuBarView: View {
     @EnvironmentObject var store: ConfigStore
-    @EnvironmentObject var catalogStore: CatalogStore
+    @EnvironmentObject var registryStore: RegistryStore
 
     var body: some View {
         TabView {
@@ -24,7 +24,7 @@ struct MenuBarView: View {
             NavigationStack {
                 CatalogView()
             }
-            .environmentObject(catalogStore)
+            .environmentObject(registryStore)
             .environmentObject(store)
             .tabItem {
                 Label("Catalog", systemImage: "square.grid.2x2")
@@ -113,4 +113,5 @@ private struct AgentRow: View {
 #Preview {
     MenuBarView()
         .environmentObject(try! ConfigStore())
+        .environmentObject(RegistryStore())
 }

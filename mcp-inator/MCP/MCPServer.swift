@@ -30,8 +30,7 @@ struct MCPServerRunner {
         let store = try ConfigStore()
         try store.seedSelfEntry()
 
-        let catalogStore = CatalogStore()
-        catalogStore.load()
+        let registryStore = RegistryStore()
 
         let server = Server(
             name: "mcp-inator",
@@ -39,7 +38,7 @@ struct MCPServerRunner {
             capabilities: .init(tools: .init())
         )
 
-        let handler = MCPToolHandler(store: store, catalogStore: catalogStore)
+        let handler = MCPToolHandler(store: store, registryStore: registryStore)
 
         await server.withMethodHandler(ListTools.self) { _ in
             ListTools.Result(tools: MCPToolHandler.allTools)

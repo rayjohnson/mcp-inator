@@ -76,30 +76,36 @@ struct MCPServerConfig: Identifiable {
     var displayCommand: String { command.isEmpty ? serverKey : command }
 }
 
-// MARK: - CatalogEntry Convenience Init
+// MARK: - RegistryEntry Convenience Init
 
 extension MCPServerConfig {
-    init(from entry: CatalogEntry) {
-        let mappedEnvVars = entry.envVars.map { v in
-            EnvVar(key: v.name, value: v.defaultValue ?? "", isSensitive: v.isSensitive)
-        }
-        if entry.isHTTP {
+    init(from entry: RegistryEntry) {
+        if entry.transportType == .stdio {
+            let derived = entry.packageType.map {
+                RegistryEntry.deriveCommand(packageType: $0, identifier: entry.packageIdentifier ?? "")
+            }
+            let envVars = entry.envVars.map { v -> EnvVar in
+                var ev = EnvVar(key: v.name, value: "", isSensitive: v.isSecret)
+                ev.isHint = true
+                return ev
+            }
             self.init(
                 displayName: entry.displayName,
-                serverKey: entry.serverKey,
-                transportType: entry.transportType,
-                url: entry.url,
-                headers: mappedEnvVars,
-                notes: ""
+                command: derived?.command ?? "",
+                args: derived?.args ?? [],
+                envVars: envVars
             )
         } else {
+            let headers = entry.remoteHeaders.map { h -> EnvVar in
+                var ev = EnvVar(key: h.name, value: h.valueTemplate ?? "", isSensitive: h.isSecret)
+                ev.isHint = true
+                return ev
+            }
             self.init(
                 displayName: entry.displayName,
-                serverKey: entry.serverKey,
-                command: entry.command,
-                args: entry.args,
-                envVars: mappedEnvVars,
-                notes: ""
+                transportType: entry.transportType,
+                url: entry.remoteURL ?? "",
+                headers: headers
             )
         }
     }
@@ -200,6 +206,7 @@ struct EnvVar: Codable, Equatable, Identifiable {
     var key: String
     var value: String
     var isSensitive: Bool
+    var isHint: Bool = false  // Not persisted — marks registry-suggested values
 
     init(key: String, value: String, isSensitive: Bool? = nil) {
         self.key = key

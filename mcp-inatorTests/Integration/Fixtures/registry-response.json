@@ -1,0 +1,89 @@
+{
+  "servers": [
+    {
+      "server": {
+        "name": "io.github.testuser/postgres-mcp",
+        "description": "PostgreSQL MCP server for database operations",
+        "version": "1.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@testuser/postgres-mcp",
+            "version": "1.0.0",
+            "environmentVariables": [
+              {
+                "name": "DATABASE_URL",
+                "description": "PostgreSQL connection string",
+                "isRequired": true,
+                "isSecret": true
+              },
+              {
+                "name": "DB_POOL_SIZE",
+                "description": "Connection pool size",
+                "isRequired": false,
+                "isSecret": false
+              }
+            ],
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "repository": {
+          "url": "https://github.com/testuser/postgres-mcp",
+          "source": "github"
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "isLatest": true,
+          "status": "active"
+        }
+      }
+    },
+    {
+      "server": {
+        "name": "io.github.testuser/http-mcp-server",
+        "description": "HTTP MCP server with bearer token auth",
+        "version": "2.0.0",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "headers": [
+              {
+                "name": "Authorization",
+                "description": "Bearer token for authentication",
+                "isRequired": true,
+                "isSecret": true,
+                "value": "Bearer {api_key}"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "isLatest": true,
+          "status": "active"
+        }
+      }
+    },
+    {
+      "server": {
+        "name": "io.github.testuser/no-transport",
+        "description": "Server with no packages or remotes — not actionable",
+        "version": "0.1.0"
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "isLatest": true,
+          "status": "active"
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "count": 3
+  }
+}
