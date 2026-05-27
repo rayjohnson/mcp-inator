@@ -56,7 +56,7 @@ struct MCPServerRunner {
         // Wait until stdin closes (transport signals done), then give in-flight
         // handler tasks a moment to finish sending their responses.
         await transport.waitUntilDone()
-        try await Task.sleep(for: .milliseconds(150))
+        try await Task.sleep(for: .milliseconds(500))
     }
 }
 
