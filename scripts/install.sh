@@ -41,6 +41,12 @@ if [[ -z "$MOUNT_POINT" ]]; then
   exit 1
 fi
 
+if pgrep -x "$APP_NAME" > /dev/null 2>&1; then
+  echo "Quitting running instance..."
+  pkill -x "$APP_NAME" || true
+  sleep 1
+fi
+
 echo "Copying to ${INSTALL_DIR}..."
 cp -R "${MOUNT_POINT}/${APP_NAME}.app" "${INSTALL_DIR}/"
 
