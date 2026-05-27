@@ -489,7 +489,7 @@ private struct ConfigAgentRow: View {
                             .background(Color.secondary.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 3))
                     } else {
-                        Text(([config.command] + config.args).joined(separator: " "))
+                        Text(([config.displayCommand] + config.args).joined(separator: " "))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(1)

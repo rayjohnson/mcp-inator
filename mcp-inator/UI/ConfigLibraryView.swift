@@ -152,7 +152,7 @@ private struct ConfigRow: View {
                     Image(systemName: "terminal")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    Text(config.command)
+                    Text(config.displayCommand)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)

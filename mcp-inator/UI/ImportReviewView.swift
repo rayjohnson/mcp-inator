@@ -192,7 +192,7 @@ private struct NewEntryRow: View {
             VStack(alignment: .leading) {
                 Text(config.displayName.isEmpty ? key : config.displayName)
                     .fontWeight(.medium)
-                Text(config.isHTTP ? config.url : ([config.command] + config.args).joined(separator: " "))
+                Text(config.isHTTP ? config.url : ([config.displayCommand] + config.args).joined(separator: " "))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
