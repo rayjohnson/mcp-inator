@@ -5,10 +5,12 @@ import MCP
 
 struct MCPToolHandler: @unchecked Sendable {
     let store: ConfigStore
+    let catalogStore: CatalogStore
     var adapterProvider: (AgentType) -> any AgentAdapter
 
-    init(store: ConfigStore, adapterProvider: ((AgentType) -> any AgentAdapter)? = nil) {
+    init(store: ConfigStore, catalogStore: CatalogStore, adapterProvider: ((AgentType) -> any AgentAdapter)? = nil) {
         self.store = store
+        self.catalogStore = catalogStore
         self.adapterProvider = adapterProvider ?? MCPToolHandler.defaultAdapter
     }
 
@@ -74,6 +76,11 @@ struct MCPToolHandler: @unchecked Sendable {
                 name: "list_agents",
                 description: "List all discovered AI agents and their current availability.",
                 inputSchema: .object(["type": "object", "properties": .object([:]), "required": .array([])])
+            ),
+            Tool(
+                name: "list_catalog",
+                description: "List available MCP servers from the built-in catalog, including their command, args, and required environment variables.",
+                inputSchema: .object(["type": "object", "properties": .object([:]), "required": .array([])])
             )
         ]
     }
@@ -90,6 +97,7 @@ struct MCPToolHandler: @unchecked Sendable {
         case "enable_server":  return await enableServer(args: args)
         case "disable_server": return await disableServer(args: args)
         case "list_agents":    return listAgents()
+        case "list_catalog":   return listCatalog()
         default:
             return toolError("Unknown tool: '\(params.name)'")
         }
@@ -309,6 +317,56 @@ struct MCPToolHandler: @unchecked Sendable {
         guard let data = try? JSONEncoder().encode(summaries),
               let json = String(data: data, encoding: .utf8) else {
             return toolError("Failed to serialize agent list")
+        }
+        return CallTool.Result(content: [.text(text: json, annotations: nil, _meta: nil)], isError: nil)
+    }
+
+    // MARK: - list_catalog
+
+    @MainActor
+    private func listCatalog() -> CallTool.Result {
+        struct EnvVarSummary: Encodable {
+            let name: String
+            let description: String
+            let isRequired: Bool
+            let isSensitive: Bool
+            let defaultValue: String?
+        }
+        struct CatalogSummary: Encodable {
+            let serverKey: String
+            let displayName: String
+            let category: String
+            let shortDescription: String
+            let transportType: String
+            let command: String
+            let args: [String]
+            let envVars: [EnvVarSummary]
+            let isVerified: Bool
+        }
+        let summaries = catalogStore.entries.map { e in
+            CatalogSummary(
+                serverKey: e.serverKey,
+                displayName: e.displayName,
+                category: e.category.rawValue,
+                shortDescription: e.shortDescription,
+                transportType: e.transportType.rawValue,
+                command: e.command,
+                args: e.args,
+                envVars: e.envVars.map { v in
+                    EnvVarSummary(
+                        name: v.name,
+                        description: v.description,
+                        isRequired: v.isRequired,
+                        isSensitive: v.isSensitive,
+                        defaultValue: v.defaultValue
+                    )
+                },
+                isVerified: e.isVerified
+            )
+        }
+        guard let data = try? JSONEncoder().encode(summaries),
+              let json = String(data: data, encoding: .utf8) else {
+            return toolError("Failed to serialize catalog")
         }
         return CallTool.Result(content: [.text(text: json, annotations: nil, _meta: nil)], isError: nil)
     }
