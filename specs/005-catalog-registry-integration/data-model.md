@@ -93,6 +93,11 @@ RegistryEntry: Identifiable, Equatable, Codable
   derivedArgs: [String]?                  npm→["-y", id], pypi/oci→[id]; nil if HTTP-only
   transportType: TransportType            .stdio | .http | .sse
   isActionable: Bool                      has (packageType+identifier) OR remoteURL
+
+**Precedence rule when both `packages` and `remotes` are present**:
+`packageType` non-nil → `.stdio` (stdio takes precedence). The `remoteURL` is ignored.
+If `packageType` is nil → use `remoteType`: `.streamableHTTP` → `.http`, `.sse` → `.sse`.
+This matches spec assumption: stdio is the preferred invocation when available.
 ```
 
 **Transformation rules** (pure static functions, unit-testable):
@@ -112,7 +117,16 @@ RegistryEnvVar: Equatable, Codable
   description: String
   isRequired: Bool
   isSecret: Bool
+  valueTemplate: String?    only populated for HTTP header entries (e.g., "Bearer {api_key}")
 ```
+
+**Nil-coercion rules from `RegistryAPIEnvVar`**:
+- `name`: if nil or empty after trimming → **drop the entry entirely** (not added to the array)
+- `description`: `nil → ""`
+- `isRequired`: `nil → false`
+- `isSecret`: `nil → false`
+- `format`: intentionally dropped (free-form annotation with no actionable use)
+- `value`: preserved as `valueTemplate` for header entries; dropped for env var entries
 
 ---
 
@@ -180,6 +194,8 @@ CategoryCacheEntry: Codable
   fetchedAt: Date
   entries: [RegistryEntry]
 ```
+
+**Cache key note**: Keys are `CatalogCategory.rawValue` strings — the display labels (e.g., `"Code & Development"`, `"Data & Analytics"`). Do not rename enum cases without a cache migration, as existing cache files would produce orphaned keys on next load.
 
 ---
 

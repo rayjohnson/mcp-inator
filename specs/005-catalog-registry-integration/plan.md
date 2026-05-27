@@ -62,7 +62,7 @@ These are explicit architectural requirements, not implementation suggestions. T
 | II. Single Source of Truth | ✅ Pass | Registry data populates browse/search only; user-saved configs remain in the SQLite store; registry is supplemental, not authoritative |
 | III. Non-Destructive Configuration | ✅ Pass | Adding a server from registry creates a new library entry; no existing configs modified; hint env vars require explicit user save |
 | IV. Config Portability | ✅ Pass | No change to adapter layer or config application flow |
-| V. Simplicity & Discoverability | ✅ Pass | This feature directly implements the "pre-defined catalog" requirement; replaces broken static data with live, accurate data |
+| V. Simplicity & Discoverability | ✅ Pass (with trade-off noted) | Replaces broken static catalog with live registry data. **Trade-off**: true first-launch-offline users see an empty catalog until they connect once. The constitution requires a catalog "always available" — the registry cache satisfies this for returning users. A bundled seed cache could close the gap for new users; deferred to a future iteration. |
 
 **Quality Standards**:
 - New `RegistryClient` protocol + `URLSessionRegistryClient` need unit tests (fixture JSON decoding)
@@ -154,11 +154,12 @@ final class RegistryStore: ObservableObject {
     init(client: any RegistryClient = URLSessionRegistryClient(),
          cacheURL: URL = RegistryStore.defaultCacheURL)
 
-    func populateCategories() async   // background refresh, updates categoryStates
-    func search(query: String) async  // live search, updates searchState
-    func cancelSearch()               // called when search text cleared
-    
-    static var defaultCacheURL: URL   // Application Support/mcp-inator/registry-cache.json
+    func populateCategories() async             // background refresh, updates categoryStates
+    func refreshCategory(_ c: CatalogCategory) async  // retry a single failed/uncached category
+    func search(query: String) async           // live search, updates searchState
+    func cancelSearch()                        // called when search text cleared
+
+    static var defaultCacheURL: URL            // Application Support/mcp-inator/registry-cache.json
 }
 ```
 
@@ -192,6 +193,30 @@ For each category in the picker, show:
 - `.uncached` / `.loading`: skeleton/spinner
 - `.loaded(_, entries)`: server list (may be empty → "No servers in this category yet")
 - `.failed`: error message with retry button
+
+### Search cancellation guard
+
+`search(query:)` must guard against race conditions where a cancelled in-flight request completes and overwrites a newer state. Pattern:
+
+```swift
+func search(query: String) async {
+    searchState = .searching
+    do {
+        let results = try await client.search(query: query, pageSize: 100)
+        guard !Task.isCancelled else { return }
+        searchState = results.isEmpty ? .empty : .results(results)
+    } catch let error as URLError where error.code == .notConnectedToInternet
+                                     || error.code == .networkConnectionLost {
+        guard !Task.isCancelled else { return }
+        searchState = .localOnly(cachedFilter(query: query))
+    } catch {
+        guard !Task.isCancelled else { return }
+        searchState = .failed(message: error.localizedDescription)
+    }
+}
+```
+
+The `guard !Task.isCancelled` before each state assignment ensures that if the view's debounce task is cancelled, a stale result from a slow request never lands.
 
 ### MCPToolHandler update
 

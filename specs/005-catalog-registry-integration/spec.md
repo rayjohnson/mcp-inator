@@ -24,7 +24,7 @@ A user opens the catalog browser and sees servers organized by category (Code & 
 
 **Acceptance Scenarios**:
 
-1. **Given** the app is launched for the first time with network access, **When** the user opens the catalog browser, **Then** category listings are populated from the registry in the background, with a loading state shown until ready.
+1. **Given** the app is launched for the first time with network access, **When** the user opens the catalog browser, **Then** category listings are populated from the registry in the background within 10 seconds (SC-001), with a loading indicator shown per category until ready.
 2. **Given** category data has been cached from a previous launch, **When** the user opens the catalog browser on a subsequent launch, **Then** cached results are shown immediately without waiting for a network request.
 3. **Given** cached category data exists, **When** the app launches with network access, **Then** the cache is refreshed in the background and the UI updates if results have changed.
 4. **Given** the app is launched with no network and no cache (true first launch offline), **When** the user opens the catalog browser, **Then** a clear message explains that categories will be available after connecting to the internet once.
@@ -88,7 +88,9 @@ A user selects a server and sees suggested environment variable names pre-popula
 - What if a registry search returns a server whose derived launch command conflicts with an existing user-configured server?
 - What if a registry result has no package data and no remote URL (nothing actionable)?
 - What happens if the user types and clears the search bar rapidly — are stale in-flight results discarded?
-- What if a registry entry has env var data with blank or malformed variable names?
+- What if a registry entry has env var data with blank or malformed variable names? (Resolution: env vars with blank or empty `name` fields are silently dropped during entry mapping.)
+- What if a registry search returns a server whose derived `serverKey` conflicts with an existing user-configured server? (Resolution: FR-018 — show "Already in your library" indicator.)
+- What if a registry entry has both a `packages` (stdio) and `remotes` (HTTP) entry? (Resolution: stdio package takes precedence; remote URL is ignored.)
 
 ## Requirements *(mandatory)*
 
@@ -106,7 +108,7 @@ A user selects a server and sees suggested environment variable names pre-popula
 
 - **FR-006**: The catalog browser MUST include a search bar that queries the MCP registry live when network access is available.
 - **FR-007**: Live search results MUST be filtered to `isLatest: true` entries, deduplicated by server name.
-- **FR-008**: Live search MUST be triggered automatically as the user types (debounced), not requiring an explicit submit.
+- **FR-008**: Live search MUST be triggered automatically as the user types (debounced at 300 ms), not requiring an explicit submit.
 - **FR-009**: When the registry is unreachable, search MUST fall back to filtering cached content locally, with a visible notice.
 
 **Adding Servers**
@@ -118,10 +120,12 @@ A user selects a server and sees suggested environment variable names pre-popula
 
 **Env Var Hints**
 
-- **FR-014**: Env var suggestions from registry data MUST be visually distinguished from user-entered values.
+- **FR-014**: Env var suggestions from registry data MUST be visually distinguished from user-entered values using a "Suggested" badge and a "verify with package docs" tooltip on each hint field.
 - **FR-015**: Each env var suggestion MUST be accompanied by inline copy indicating it is a hint to verify, not an authoritative value.
 - **FR-016**: The hint treatment MUST be cosmetic only — it MUST NOT prevent users from editing, clearing, or saving any value.
 - **FR-017**: If a server entry has no env var data, the configuration UI MUST NOT display empty hint fields.
+
+- **FR-018**: When a user attempts to add a registry server whose derived `serverKey` matches an existing library entry, the UI MUST surface an "Already in your library" indicator and prevent silent duplicate insertion.
 
 ### Key Entities
 
@@ -136,7 +140,7 @@ A user selects a server and sees suggested environment variable names pre-popula
 ### Measurable Outcomes
 
 - **SC-001**: On first launch with network access, all category listings are populated within 10 seconds without any user action.
-- **SC-002**: On subsequent launches, category listings are visible immediately (from cache) — zero wait time for the default browse experience.
+- **SC-002**: On subsequent launches, cached category listings MUST appear in the first rendered frame of CatalogView — no spinner, empty state, or network wait for returning users.
 - **SC-003**: Users who have launched the app at least once can browse all categories while offline — no empty category states for returning users.
 - **SC-004**: Live search results appear within 3 seconds of the user pausing their input.
 - **SC-005**: 100% of env var suggestion fields are accompanied by visible hint copy — no suggestions presented without the "verify with docs" indicator.
@@ -152,3 +156,6 @@ A user selects a server and sees suggested environment variable names pre-popula
 - The registry may return env var data that is incorrect — the hint UI treatment is the mitigation, not server-side validation.
 - The static `catalog.json` file and the `CatalogStore` bundled-load path are removed as part of this feature. The category cache replaces them entirely.
 - Cache invalidation strategy (TTL, manual refresh) is a planning decision — the spec does not prescribe it.
+- Registry remote header entries may include a `value` template (e.g., `"Bearer {api_key}"`). This template is preserved and surfaced as part of the hint in the server detail view — the user must replace the placeholder with their actual token before saving.
+- When a registry entry has both stdio `packages` and HTTP `remotes` defined, the stdio package takes precedence and the remote URL is ignored for command derivation.
+- Env var entries with blank or empty `name` fields are silently dropped during mapping and never shown to the user.
