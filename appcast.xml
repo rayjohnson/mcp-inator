@@ -4,5 +4,17 @@
     <title>mcp-inator</title>
     <link>https://github.com/rayjohnson/mcp-inator</link>
     <description>mcp-inator releases</description>
+    <item>
+      <title>Version 0.1.1-test</title>
+      <pubDate>Wed, 27 May 2026 20:33:37 +0000</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>0.1.1-test</sparkle:shortVersionString>
+      <sparkle:releaseNotesLink>https://github.com/rayjohnson/mcp-inator/releases/tag/v0.1.1-test</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.1-test/mcp-inator-0.1.1-test.dmg"
+        sparkle:edSignature="BVvfa9Al6e5mtLkyhaMMc+oW1BbuAalQ+a75daIsGiX1gYC+5RlJptWRp+9VEf/+FMGXj+s6WNma0wDZekWQAw=="
+        length="3845654"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
