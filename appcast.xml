@@ -40,5 +40,17 @@
         length="3999697"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.1.2</title>
+      <pubDate>Wed, 27 May 2026 23:32:25 +0000</pubDate>
+      <sparkle:version>8</sparkle:version>
+      <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+      <sparkle:releaseNotesLink>https://github.com/rayjohnson/mcp-inator/releases/tag/v0.1.2</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.2/mcp-inator-0.1.2.dmg"
+        sparkle:edSignature="G+Esh3SeVAnsdyQkNUU8Z8LW8g9lxP0QHgT+h5AMJzBuJyL9G0bK0/s5nSVGTqu0TswFMjjUriWWIclKJMcDBw=="
+        length="3999703"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
