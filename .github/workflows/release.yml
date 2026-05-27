@@ -111,45 +111,53 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update appcast
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          BUILD: ${{ github.run_number }}
+          ED_SIG: ${{ steps.sign.outputs.edSignature }}
+          LENGTH: ${{ steps.sign.outputs.length }}
+          DOWNLOAD_URL: ${{ steps.release.outputs.downloadUrl }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          TAG="${{ steps.version.outputs.tag }}"
-          BUILD="${{ github.run_number }}"
-          ED_SIG="${{ steps.sign.outputs.edSignature }}"
-          LENGTH="${{ steps.sign.outputs.length }}"
-          DOWNLOAD_URL="${{ steps.release.outputs.downloadUrl }}"
-          PUB_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
-
-          NEW_ITEM="    <item>
-      <title>Version ${VERSION}</title>
-      <pubDate>${PUB_DATE}</pubDate>
-      <sparkle:version>${BUILD}</sparkle:version>
-      <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
-      <sparkle:releaseNotesLink>https://github.com/${{ github.repository }}/releases/tag/${TAG}</sparkle:releaseNotesLink>
-      <enclosure
-        url=\"${DOWNLOAD_URL}\"
-        sparkle:edSignature=\"${ED_SIG}\"
-        length=\"${LENGTH}\"
-        type=\"application/octet-stream\" />
-    </item>"
-
           # Clone gh-pages, prepend new item, push
           git clone --branch gh-pages \
-            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
             gh-pages-work
 
           cd gh-pages-work || exit 1
 
-          # Insert new item after <description> line
-          python3 - <<PYEOF
-import re, sys
+          python3 - <<'PYEOF'
+import os, datetime
 
-new_item = """${NEW_ITEM}"""
+version = os.environ['VERSION']
+tag = os.environ['TAG']
+build = os.environ['BUILD']
+ed_sig = os.environ['ED_SIG']
+length = os.environ['LENGTH']
+download_url = os.environ['DOWNLOAD_URL']
+repo = os.environ['REPO']
+pub_date = datetime.datetime.now(datetime.timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+new_item = (
+    f"    <item>\n"
+    f"      <title>Version {version}</title>\n"
+    f"      <pubDate>{pub_date}</pubDate>\n"
+    f"      <sparkle:version>{build}</sparkle:version>\n"
+    f"      <sparkle:shortVersionString>{version}</sparkle:shortVersionString>\n"
+    f"      <sparkle:releaseNotesLink>https://github.com/{repo}/releases/tag/{tag}</sparkle:releaseNotesLink>\n"
+    f"      <enclosure\n"
+    f"        url=\"{download_url}\"\n"
+    f"        sparkle:edSignature=\"{ed_sig}\"\n"
+    f"        length=\"{length}\"\n"
+    f"        type=\"application/octet-stream\" />\n"
+    f"    </item>"
+)
 
 with open("appcast.xml", "r") as f:
     content = f.read()
 
-# Insert new item before the closing </channel>
 updated = content.replace("  </channel>", new_item + "\n  </channel>", 1)
 
 with open("appcast.xml", "w") as f:
