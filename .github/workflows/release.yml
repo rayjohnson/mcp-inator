@@ -1,0 +1,163 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & Publish
+    runs-on: macos-15
+    permissions:
+      contents: write
+      pages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+
+      - name: Install tools
+        run: |
+          brew install xcodegen create-dmg
+          gem install xcpretty
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build archive
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project mcp-inator.xcodeproj \
+            -scheme mcp-inator \
+            -configuration Release \
+            -archivePath build/mcp-inator.xcarchive \
+            MARKETING_VERSION="${{ steps.version.outputs.version }}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            | xcpretty --color
+
+      - name: Export app
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/mcp-inator.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist .github/ExportOptions.plist
+
+      - name: Create DMG
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          create-dmg \
+            --volname "mcp-inator" \
+            --icon "mcp-inator.app" 200 190 \
+            --app-drop-link 600 185 \
+            "mcp-inator-${VERSION}.dmg" \
+            "build/export/"
+
+      - name: Sign DMG with Sparkle Ed25519
+        id: sign
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Locate sign_update from the SPM artifact cache
+          SIGN_UPDATE=$(find ~/Library/Developer/Xcode -name "sign_update" 2>/dev/null | grep artifacts | head -1)
+          if [ -z "$SIGN_UPDATE" ]; then
+            echo "ERROR: sign_update not found" && exit 1
+          fi
+
+          # Write private key to temp file
+          KEYFILE=$(mktemp)
+          echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" > "$KEYFILE"
+
+          # Sign and capture output: "sparkle:edSignature="..." length="...""
+          SIGN_OUTPUT=$("$SIGN_UPDATE" --ed-key-file "$KEYFILE" "mcp-inator-${VERSION}.dmg")
+          rm -f "$KEYFILE"
+
+          # Parse edSignature and length
+          ED_SIG=$(echo "$SIGN_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
+          LENGTH=$(echo "$SIGN_OUTPUT" | grep -o 'length="[^"]*"' | cut -d'"' -f2)
+
+          echo "edSignature=$ED_SIG" >> "$GITHUB_OUTPUT"
+          echo "length=$LENGTH" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        id: release
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+
+          gh release create "$TAG" \
+            --title "mcp-inator $VERSION" \
+            --generate-notes \
+            "mcp-inator-${VERSION}.dmg"
+
+          # Build the asset download URL
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/mcp-inator-${VERSION}.dmg"
+          echo "downloadUrl=$DOWNLOAD_URL" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update appcast
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          BUILD="${{ github.run_number }}"
+          ED_SIG="${{ steps.sign.outputs.edSignature }}"
+          LENGTH="${{ steps.sign.outputs.length }}"
+          DOWNLOAD_URL="${{ steps.release.outputs.downloadUrl }}"
+          PUB_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
+
+          NEW_ITEM="    <item>
+      <title>Version ${VERSION}</title>
+      <pubDate>${PUB_DATE}</pubDate>
+      <sparkle:version>${BUILD}</sparkle:version>
+      <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+      <sparkle:releaseNotesLink>https://github.com/${{ github.repository }}/releases/tag/${TAG}</sparkle:releaseNotesLink>
+      <enclosure
+        url=\"${DOWNLOAD_URL}\"
+        sparkle:edSignature=\"${ED_SIG}\"
+        length=\"${LENGTH}\"
+        type=\"application/octet-stream\" />
+    </item>"
+
+          # Clone gh-pages, prepend new item, push
+          git clone --branch gh-pages \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            gh-pages-work
+
+          cd gh-pages-work || exit 1
+
+          # Insert new item after <description> line
+          python3 - <<PYEOF
+import re, sys
+
+new_item = """${NEW_ITEM}"""
+
+with open("appcast.xml", "r") as f:
+    content = f.read()
+
+# Insert new item before the closing </channel>
+updated = content.replace("  </channel>", new_item + "\n  </channel>", 1)
+
+with open("appcast.xml", "w") as f:
+    f.write(updated)
+PYEOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add appcast.xml
+          git commit -m "Release ${VERSION} (build ${BUILD})"
+          git push
