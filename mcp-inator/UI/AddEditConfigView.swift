@@ -263,34 +263,46 @@ private struct EnvVarRow: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            Text(envVar.key)
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(.secondary)
-                .fixedSize()
-            Divider().frame(height: 16)
-            if envVar.isSensitive && !isRevealed {
-                SecureField("value", text: $envVar.value)
-                    .font(.system(.body, design: .monospaced))
-                    .textFieldStyle(.plain)
-            } else {
-                TextField("value", text: $envVar.value)
-                    .font(.system(.body, design: .monospaced))
-                    .textFieldStyle(.plain)
-            }
-            if envVar.isSensitive {
-                Button(action: onToggleReveal) {
-                    Image(systemName: isRevealed ? "eye.slash" : "eye")
+        VStack(alignment: .leading, spacing: 2) {
+            if envVar.isHint {
+                HStack(spacing: 4) {
+                    Image(systemName: "info.circle")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text("Suggested — verify with package docs")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
+            }
+            HStack(spacing: 8) {
+                Text(envVar.key)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .fixedSize()
+                Divider().frame(height: 16)
+                if envVar.isSensitive && !isRevealed {
+                    SecureField("value", text: $envVar.value)
+                        .font(.system(.body, design: .monospaced))
+                        .textFieldStyle(.plain)
+                } else {
+                    TextField("value", text: $envVar.value)
+                        .font(.system(.body, design: .monospaced))
+                        .textFieldStyle(.plain)
+                }
+                if envVar.isSensitive {
+                    Button(action: onToggleReveal) {
+                        Image(systemName: isRevealed ? "eye.slash" : "eye")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.borderless)
+                    .help(isRevealed ? "Hide value" : "Reveal value")
+                }
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "minus.circle.fill")
+                        .foregroundColor(.red)
+                }
                 .buttonStyle(.borderless)
-                .help(isRevealed ? "Hide value" : "Reveal value")
             }
-            Button(role: .destructive, action: onDelete) {
-                Image(systemName: "minus.circle.fill")
-                    .foregroundColor(.red)
-            }
-            .buttonStyle(.borderless)
         }
     }
 }
