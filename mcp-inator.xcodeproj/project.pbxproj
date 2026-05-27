@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		03112027C047E7EAF9BA153E /* Migration004.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE8B8FA13F587123365E245 /* Migration004.swift */; };
+		95A93B8141774F1E9EC70D73 /* Migration005.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B40F139241499AAAA12D07 /* Migration005.swift */; };
 		04D154E8633D90EC5206EB0E /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 9F02EB3D916681BA267ADB14 /* GRDB */; };
 		09F27190B4168272965387B2 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE0A94708E98E71A4BE095 /* AgentIcon.swift */; };
 		0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */; };
@@ -124,6 +125,7 @@
 		A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisibilityTests.swift; sourceTree = "<group>"; };
 		A3B865013EA65AAE8229C657 /* AgentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRecord.swift; sourceTree = "<group>"; };
 		AFE8B8FA13F587123365E245 /* Migration004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration004.swift; sourceTree = "<group>"; };
+		33B40F139241499AAAA12D07 /* Migration005.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration005.swift; sourceTree = "<group>"; };
 		B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveFieldTests.swift; sourceTree = "<group>"; };
 		B9807676F96538CB02A0B159 /* PropagationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationView.swift; sourceTree = "<group>"; };
 		CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerKeyTransformTests.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 				F1A4408041C07C9921071598 /* Migration002.swift */,
 				EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */,
 				AFE8B8FA13F587123365E245 /* Migration004.swift */,
+				33B40F139241499AAAA12D07 /* Migration005.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -493,6 +496,7 @@
 				EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */,
 				522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */,
 				03112027C047E7EAF9BA153E /* Migration004.swift in Sources */,
+				95A93B8141774F1E9EC70D73 /* Migration005.swift in Sources */,
 				18386C1473590D124F999EF6 /* PropagationView.swift in Sources */,
 				EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */,
 				CD942979217CDD9C83888173 /* main.swift in Sources */,
