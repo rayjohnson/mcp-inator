@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/003-gemini-agent-visibility/plan.md`.
+`specs/004-mcp-server/plan.md`.
 <!-- SPECKIT END -->
 
 ## Build & Run

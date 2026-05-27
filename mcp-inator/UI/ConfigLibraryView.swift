@@ -91,12 +91,16 @@ struct ConfigLibraryView: View {
                 let row = statusMatrix.first { $0.config.uuid == config.uuid }
                 ConfigRow(config: config, agentStates: row?.agentStates ?? [])
                     .contentShape(Rectangle())
-                    .onTapGesture { editingConfig = config }
+                    .onTapGesture {
+                        if !config.isBuiltIn { editingConfig = config }
+                    }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            confirmDelete = config
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                        if !config.isBuiltIn {
+                            Button(role: .destructive) {
+                                confirmDelete = config
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
             }
@@ -120,6 +124,11 @@ private struct ConfigRow: View {
             HStack {
                 Text(config.displayName)
                     .fontWeight(.medium)
+                if config.isBuiltIn {
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 Spacer()
                 Text(config.serverKey)
                     .font(.caption)
@@ -143,7 +152,7 @@ private struct ConfigRow: View {
                     Image(systemName: "terminal")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    Text(config.command)
+                    Text(config.displayCommand)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)

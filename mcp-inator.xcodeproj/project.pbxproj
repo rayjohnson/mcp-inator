@@ -13,6 +13,7 @@
 		0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */; };
 		0DF006CA7250138FF808747A /* ConfigAgentAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */; };
 		111DB46129B2AC3E7C8313CD /* claude_code_config.json in Resources */ = {isa = PBXBuildFile; fileRef = F97CA2C41585DD4CD516D00B /* claude_code_config.json */; };
+		13C9B634A309A2877B2B3CC5 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB50265A6511EDB0055B95E /* MCPServer.swift */; };
 		14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B09DE2D809C77FE508549F /* DiscoveryView.swift */; };
 		16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */; };
 		18386C1473590D124F999EF6 /* PropagationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9807676F96538CB02A0B159 /* PropagationView.swift */; };
@@ -21,6 +22,8 @@
 		33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */; };
 		400927860892CA6B0842C128 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */; };
 		478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */; };
+		48E52DCFCDB5F632E463C938 /* MCPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2896F28845955D9DDAF825 /* MCPServerTests.swift */; };
+		49033C3A1B3D608A23D995CE /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 3FDC266E73A2012A10B19689 /* MCP */; };
 		49C139F2C652AF12C85B2621 /* CatalogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */; };
 		4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AA0D309B195442D289C705 /* AddEditConfigView.swift */; };
 		522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */; };
@@ -46,9 +49,11 @@
 		B3F24BE0BA8D8436E74603EE /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A789E346EC685FBD34C7C235 /* CatalogStore.swift */; };
 		BC362B5B9FB7F4C39AB37295 /* ClaudeDesktopAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */; };
 		C29C4A0AB1C1CB59D2F521C0 /* CatalogEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */; };
+		C3FB9A65EFD12042DE880E77 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A762F05A3F65129BC592917 /* MCPTools.swift */; };
 		C5F664311811F2260A829E52 /* ImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */; };
 		C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = 571E43C54CCE0B46A9AA5E44 /* appcast.xml */; };
 		CCCEEB624CD6B6ECF4335159 /* ServerKeyTransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */; };
+		CD942979217CDD9C83888173 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5E12DD5F2F8255785408D2 /* main.swift */; };
 		D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */; };
 		D1C6D075F030E86E687D04A4 /* AgentVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */; };
 		D22C26DC90B06519C84045D6 /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CB9545A4BAAA3E5D7B3892 /* ConfigStore.swift */; };
@@ -59,6 +64,7 @@
 		E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */; };
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
+		F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,14 +88,17 @@
 		1876009CB9EF08303E122849 /* ConfigStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStoreTests.swift; sourceTree = "<group>"; };
 		1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapter.swift; sourceTree = "<group>"; };
 		1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapterTests.swift; sourceTree = "<group>"; };
+		1D5E12DD5F2F8255785408D2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		208282AF3881944515550A89 /* CatalogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStoreTests.swift; sourceTree = "<group>"; };
 		30560F888607C8CDB96E1EDA /* Migration001.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration001.swift; sourceTree = "<group>"; };
 		38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapterTests.swift; sourceTree = "<group>"; };
+		3A762F05A3F65129BC592917 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAdapter.swift; sourceTree = "<group>"; };
 		3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAgentsView.swift; sourceTree = "<group>"; };
 		512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapter.swift; sourceTree = "<group>"; };
 		55B09DE2D809C77FE508549F /* DiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryView.swift; sourceTree = "<group>"; };
+		56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
 		571E43C54CCE0B46A9AA5E44 /* appcast.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
@@ -103,6 +112,7 @@
 		7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigLibraryView.swift; sourceTree = "<group>"; };
 		7FB6678049CEDA09778E112E /* Inator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Inator.png; sourceTree = "<group>"; };
 		82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapter.swift; sourceTree = "<group>"; };
+		8D2896F28845955D9DDAF825 /* MCPServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServerTests.swift; sourceTree = "<group>"; };
 		90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		9109E1A5469B7D25B926FD1E /* gemini_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gemini_config.json; sourceTree = "<group>"; };
 		928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexCLIAdapter.swift; sourceTree = "<group>"; };
@@ -125,6 +135,7 @@
 		F1A4408041C07C9921071598 /* Migration002.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration002.swift; sourceTree = "<group>"; };
 		F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */ = {isa = PBXFileReference; path = codex_config.toml; sourceTree = "<group>"; };
 		F97CA2C41585DD4CD516D00B /* claude_code_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_code_config.json; sourceTree = "<group>"; };
+		FBB50265A6511EDB0055B95E /* MCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +146,7 @@
 				04D154E8633D90EC5206EB0E /* GRDB in Frameworks */,
 				2C67F3E57F8B0B8BEE781321 /* Sparkle in Frameworks */,
 				55EDE08B968A9932A5100EF8 /* TOMLKit in Frameworks */,
+				49033C3A1B3D608A23D995CE /* MCP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +183,7 @@
 			children = (
 				1010CC78BF7CCE042845A58E /* Adapters */,
 				CA126C95E6E31DF909D7073F /* App */,
+				311ADA2BBCBEE096159DDFDD /* MCP */,
 				DB653EB06BB01E80D6589289 /* Models */,
 				37F4DAEA47FE4DE28E86B9E6 /* Resources */,
 				C6B4A8D0B362E2F4A09A21A7 /* Services */,
@@ -178,6 +191,15 @@
 				4AAFCEC1C02B8CA4C695061B /* UI */,
 			);
 			path = "mcp-inator";
+			sourceTree = "<group>";
+		};
+		311ADA2BBCBEE096159DDFDD /* MCP */ = {
+			isa = PBXGroup;
+			children = (
+				FBB50265A6511EDB0055B95E /* MCPServer.swift */,
+				3A762F05A3F65129BC592917 /* MCPTools.swift */,
+			);
+			path = MCP;
 			sourceTree = "<group>";
 		};
 		37F4DAEA47FE4DE28E86B9E6 /* Resources */ = {
@@ -248,6 +270,7 @@
 				90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */,
 				103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */,
 				1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */,
+				8D2896F28845955D9DDAF825 /* MCPServerTests.swift */,
 				8A9D979366B76DF914865EBF /* Fixtures */,
 			);
 			path = Integration;
@@ -261,6 +284,7 @@
 				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
+				56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */,
 				B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */,
 				CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */,
 			);
@@ -296,6 +320,7 @@
 		CA126C95E6E31DF909D7073F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				1D5E12DD5F2F8255785408D2 /* main.swift */,
 				1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */,
 			);
 			path = App;
@@ -351,6 +376,7 @@
 				9F02EB3D916681BA267ADB14 /* GRDB */,
 				4F51316E8731F74700960B78 /* Sparkle */,
 				A8A575E8E03CFB9812734877 /* TOMLKit */,
+				3FDC266E73A2012A10B19689 /* MCP */,
 			);
 			productName = "mcp-inator";
 			productReference = 0804AB63951008ED49D09FF7 /* mcp-inator.app */;
@@ -382,6 +408,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D96136D20D19F96F4277DC6F /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				C7960C163C6131605A021938 /* XCRemoteSwiftPackageReference "swift-sdk" */,
 				9DFA9A924161D278C55C4A94 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				52E7AD8255FE58E4B2D44641 /* XCRemoteSwiftPackageReference "TOMLKit" */,
 			);
@@ -446,7 +473,9 @@
 				5E93AE6C06C1F2916D5724A2 /* GeminiCLIAdapter.swift in Sources */,
 				A2CF25990C93250DD40BEC1F /* GeminiDesktopAdapter.swift in Sources */,
 				C5F664311811F2260A829E52 /* ImportReviewView.swift in Sources */,
+				13C9B634A309A2877B2B3CC5 /* MCPServer.swift in Sources */,
 				E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */,
+				C3FB9A65EFD12042DE880E77 /* MCPTools.swift in Sources */,
 				9BA46DF2391731E8AF7CBDBE /* ManageAgentsView.swift in Sources */,
 				400927860892CA6B0842C128 /* MenuBarView.swift in Sources */,
 				D541D6822382E172DE600A9E /* Migration001.swift in Sources */,
@@ -455,6 +484,7 @@
 				03112027C047E7EAF9BA153E /* Migration004.swift in Sources */,
 				18386C1473590D124F999EF6 /* PropagationView.swift in Sources */,
 				EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */,
+				CD942979217CDD9C83888173 /* main.swift in Sources */,
 				0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -472,6 +502,8 @@
 				739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
 				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,
+				48E52DCFCDB5F632E463C938 /* MCPServerTests.swift in Sources */,
+				F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */,
 				DF9E5F26F37E0D834BFB35DC /* SensitiveFieldTests.swift in Sources */,
 				CCCEEB624CD6B6ECF4335159 /* ServerKeyTransformTests.swift in Sources */,
 			);
@@ -736,6 +768,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		C7960C163C6131605A021938 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.12.1;
+			};
+		};
 		D96136D20D19F96F4277DC6F /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
@@ -747,6 +787,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3FDC266E73A2012A10B19689 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7960C163C6131605A021938 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
 		4F51316E8731F74700960B78 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9DFA9A924161D278C55C4A94 /* XCRemoteSwiftPackageReference "Sparkle" */;

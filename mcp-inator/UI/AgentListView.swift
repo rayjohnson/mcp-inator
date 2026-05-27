@@ -35,7 +35,11 @@ struct AgentListView: View {
     private var configPath: URL { URL(fileURLWithPath: agent.configPath) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        // Access enabledUUIDs unconditionally so SwiftUI registers it as a body dependency.
+        // Without this, it's only accessed inside List/ForEach (lazy), which doesn't reliably
+        // trigger re-renders when the state is set from onAppear.
+        let _ = enabledUUIDs
+        return VStack(alignment: .leading, spacing: 0) {
             agentHeader
             Divider()
             if let pending = pendingWrite {
@@ -119,6 +123,8 @@ struct AgentListView: View {
                 .environmentObject(store)
         }
         .onAppear { refreshEnabledSet() }
+        .onChange(of: store.configs.count) { _ in refreshEnabledSet() }
+        .onChange(of: store.agents.first(where: { $0.id == agent.id })?.isAvailable) { _ in refreshEnabledSet() }
     }
 
     // MARK: - Subviews
@@ -403,7 +409,12 @@ struct AgentListView: View {
     // MARK: - Helpers
 
     private func refreshEnabledSet() {
-        guard let agentId = agent.id, agent.isAvailable else {
+        guard let agentId = agent.id else {
+            enabledUUIDs = []
+            return
+        }
+        let liveAvailable = store.agents.first(where: { $0.id == agentId })?.isAvailable ?? agent.isAvailable
+        guard liveAvailable else {
             enabledUUIDs = []
             return
         }
@@ -478,7 +489,7 @@ private struct ConfigAgentRow: View {
                             .background(Color.secondary.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 3))
                     } else {
-                        Text(([config.command] + config.args).joined(separator: " "))
+                        Text(([config.displayCommand] + config.args).joined(separator: " "))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(1)

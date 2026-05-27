@@ -89,6 +89,22 @@ final class ConfigStore: ObservableObject {
         }
     }
 
+    func seedSelfEntry() throws {
+        let exists = try pool.read { db in
+            try MCPServerConfig
+                .filter(Column("serverKey") == "mcp-inator")
+                .fetchOne(db) != nil
+        }
+        guard !exists else { return }
+        let entry = MCPServerConfig(
+            displayName: "mcp-inator",
+            serverKey: "mcp-inator",
+            command: "",
+            args: ["--mcp-server"]
+        )
+        _ = try insert(entry)
+    }
+
     // MARK: - AgentRecord CRUD (T012)
 
     func upsertAgent(_ agent: AgentRecord) throws -> AgentRecord {
@@ -193,9 +209,12 @@ final class ConfigStore: ObservableObject {
         configPath: URL,
         force: Bool = false
     ) throws -> WriteResult {
-        guard let config = try fetch(uuid: uuid) else {
+        guard var config = try fetch(uuid: uuid) else {
             throw AdapterError.parseFailure(configPath, underlying: NSError(domain: "ConfigStore", code: 1,
                 userInfo: [NSLocalizedDescriptionKey: "Config not found: \(uuid)"]))
+        }
+        if config.isBuiltIn, let execPath = Bundle.main.executableURL?.path {
+            config.command = execPath
         }
 
         let enabledConfigs = try fetchEnabledConfigs(for: agentId)
@@ -240,7 +259,14 @@ final class ConfigStore: ObservableObject {
 
         let expectedValue: MCPServerConfig?
         if !force, let assignment = try fetchAssignment(configUUID: uuid, agentId: agentId) {
-            expectedValue = assignment.lastWrittenSnapshot
+            if var snap = assignment.lastWrittenSnapshot {
+                if snap.isBuiltIn, let execPath = Bundle.main.executableURL?.path {
+                    snap.command = execPath
+                }
+                expectedValue = snap
+            } else {
+                expectedValue = nil
+            }
         } else {
             expectedValue = nil
         }
