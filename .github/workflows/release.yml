@@ -1,6 +1,7 @@
+---
 name: Release
 
-on:
+"on":
   push:
     tags:
       - 'v*'
@@ -72,23 +73,31 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
 
-          # Locate sign_update from the SPM artifact cache
-          SIGN_UPDATE=$(find ~/Library/Developer/Xcode -name "sign_update" 2>/dev/null | grep artifacts | head -1)
+          SIGN_UPDATE=$(
+            find ~/Library/Developer/Xcode -name "sign_update" 2>/dev/null \
+              | grep artifacts | head -1
+          )
           if [ -z "$SIGN_UPDATE" ]; then
             echo "ERROR: sign_update not found" && exit 1
           fi
 
-          # Write private key to temp file
           KEYFILE=$(mktemp)
           echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" > "$KEYFILE"
 
-          # Sign and capture output: "sparkle:edSignature="..." length="...""
-          SIGN_OUTPUT=$("$SIGN_UPDATE" --ed-key-file "$KEYFILE" "mcp-inator-${VERSION}.dmg")
+          SIGN_OUTPUT=$("$SIGN_UPDATE" --ed-key-file "$KEYFILE" \
+            "mcp-inator-${VERSION}.dmg")
           rm -f "$KEYFILE"
 
-          # Parse edSignature and length
-          ED_SIG=$(echo "$SIGN_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
-          LENGTH=$(echo "$SIGN_OUTPUT" | grep -o 'length="[^"]*"' | cut -d'"' -f2)
+          ED_SIG=$(
+            echo "$SIGN_OUTPUT" \
+              | grep -o 'sparkle:edSignature="[^"]*"' \
+              | cut -d'"' -f2
+          )
+          LENGTH=$(
+            echo "$SIGN_OUTPUT" \
+              | grep -o 'length="[^"]*"' \
+              | cut -d'"' -f2
+          )
 
           echo "edSignature=$ED_SIG" >> "$GITHUB_OUTPUT"
           echo "length=$LENGTH" >> "$GITHUB_OUTPUT"
@@ -104,8 +113,9 @@ jobs:
             --generate-notes \
             "mcp-inator-${VERSION}.dmg"
 
-          # Build the asset download URL
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/mcp-inator-${VERSION}.dmg"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}"
+          DOWNLOAD_URL="${DOWNLOAD_URL}/releases/download/${TAG}"
+          DOWNLOAD_URL="${DOWNLOAD_URL}/mcp-inator-${VERSION}.dmg"
           echo "downloadUrl=$DOWNLOAD_URL" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,48 +131,13 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Clone gh-pages, prepend new item, push
           git clone --branch gh-pages \
             "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
             gh-pages-work
 
           cd gh-pages-work || exit 1
 
-          python3 - <<'PYEOF'
-import os, datetime
-
-version = os.environ['VERSION']
-tag = os.environ['TAG']
-build = os.environ['BUILD']
-ed_sig = os.environ['ED_SIG']
-length = os.environ['LENGTH']
-download_url = os.environ['DOWNLOAD_URL']
-repo = os.environ['REPO']
-pub_date = datetime.datetime.now(datetime.timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
-
-new_item = (
-    f"    <item>\n"
-    f"      <title>Version {version}</title>\n"
-    f"      <pubDate>{pub_date}</pubDate>\n"
-    f"      <sparkle:version>{build}</sparkle:version>\n"
-    f"      <sparkle:shortVersionString>{version}</sparkle:shortVersionString>\n"
-    f"      <sparkle:releaseNotesLink>https://github.com/{repo}/releases/tag/{tag}</sparkle:releaseNotesLink>\n"
-    f"      <enclosure\n"
-    f"        url=\"{download_url}\"\n"
-    f"        sparkle:edSignature=\"{ed_sig}\"\n"
-    f"        length=\"{length}\"\n"
-    f"        type=\"application/octet-stream\" />\n"
-    f"    </item>"
-)
-
-with open("appcast.xml", "r") as f:
-    content = f.read()
-
-updated = content.replace("  </channel>", new_item + "\n  </channel>", 1)
-
-with open("appcast.xml", "w") as f:
-    f.write(updated)
-PYEOF
+          python3 "$GITHUB_WORKSPACE/.github/scripts/update_appcast.py"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
