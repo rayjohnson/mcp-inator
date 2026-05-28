@@ -25,6 +25,9 @@ struct AddEditConfigView: View {
     @State private var validationError: String?
     @State private var showPropagation = false
     @State private var savedConfig: MCPServerConfig?
+    @State private var testResult: ConnectionTestResult?
+    @State private var isTesting = false
+    private let tester = ConnectionTester()
 
     init(existing: MCPServerConfig? = nil) {
         self.existing = existing
@@ -142,6 +145,35 @@ struct AddEditConfigView: View {
                     TextEditor(text: $notes)
                         .frame(minHeight: 60)
                 }
+
+                if !isHTTP {
+                    Section {
+                        HStack(spacing: 12) {
+                            Button {
+                                let config = currentStdioConfig()
+                                Task {
+                                    isTesting = true
+                                    testResult = await tester.test(config: config)
+                                    isTesting = false
+                                }
+                            } label: {
+                                if isTesting {
+                                    HStack(spacing: 6) {
+                                        ProgressView().controlSize(.small)
+                                        Text("Testing…")
+                                    }
+                                } else {
+                                    Label("Test Connection", systemImage: "network")
+                                }
+                            }
+                            .disabled(isTesting || command.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                            if let result = testResult, !isTesting {
+                                ConnectionTestResultView(result: result)
+                            }
+                        }
+                    }
+                }
             }
             .formStyle(.grouped)
 
@@ -203,6 +235,15 @@ struct AddEditConfigView: View {
         newEnvValue = ""
     }
 
+    private func currentStdioConfig() -> MCPServerConfig {
+        MCPServerConfig(
+            displayName: displayName,
+            command: command.trimmingCharacters(in: .whitespaces),
+            args: args,
+            envVars: envVars
+        )
+    }
+
     private func save() {
         validationError = nil
         let trimmedName = displayName.trimmingCharacters(in: .whitespaces)
@@ -251,6 +292,22 @@ struct AddEditConfigView: View {
         } catch {
             validationError = "Save failed: \(error.localizedDescription)"
         }
+    }
+}
+
+// MARK: - ConnectionTestResultView
+
+private struct ConnectionTestResultView: View {
+    let result: ConnectionTestResult
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: result.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundColor(result.isSuccess ? .green : .red)
+            Text(result.shortLabel)
+                .foregroundColor(result.isSuccess ? .primary : .red)
+        }
+        .font(.caption)
     }
 }
 
