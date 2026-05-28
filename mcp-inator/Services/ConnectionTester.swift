@@ -59,7 +59,8 @@ actor ConnectionTester {
                 do {
                     try await client.connect(transport: transport)
                     let elapsed = Date().timeIntervalSince(start)
-                    return .success(elapsedSeconds: elapsed)
+                    let toolCount = (try? await client.listTools().tools.count) ?? 0
+                    return .success(elapsedSeconds: elapsed, toolCount: toolCount)
                 } catch {
                     // Distinguish: process still running → protocol error; exited → launch error
                     if process.isRunning {
