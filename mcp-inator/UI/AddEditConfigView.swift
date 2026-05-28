@@ -73,11 +73,16 @@ struct AddEditConfigView: View {
 
                     HStack {
                         TextField("Server Key", text: $serverKey)
-                            .onChange(of: serverKey) { _ in serverKeyEdited = true }
-                        if !serverKey.isEmpty {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .opacity(serverKey == MCPServerConfig.generateKey(from: displayName) ? 0 : 1)
+                            .onChange(of: serverKey) { newValue in
+                                // Empty or matches auto-generated → resume auto-generation.
+                                // Different non-empty value → user has set a custom key.
+                                let generated = MCPServerConfig.generateKey(from: displayName)
+                                serverKeyEdited = !newValue.isEmpty && newValue != generated
+                            }
+                        if serverKeyConflict {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .help("This key is already used by another server.")
                         }
                     }
                     .help("Used as the key in the agent config file. Auto-generated from display name.")
@@ -211,9 +216,18 @@ struct AddEditConfigView: View {
         }
     }
 
+    private var serverKeyConflict: Bool {
+        let key = serverKey.trimmingCharacters(in: .whitespaces)
+        guard !key.isEmpty else { return false }
+        return store.configs.contains { cfg in
+            cfg.serverKey == key && cfg.id != existing?.id
+        }
+    }
+
     private var isSaveDisabled: Bool {
         let name = displayName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty { return true }
+        if serverKeyConflict { return true }
         if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
         return command.trimmingCharacters(in: .whitespaces).isEmpty
     }
