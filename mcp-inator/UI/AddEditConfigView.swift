@@ -172,31 +172,29 @@ struct AddEditConfigView: View {
                             )
                     }
 
-                    // MARK: Test Connection (stdio only)
-                    if !isHTTP {
-                        HStack(spacing: 12) {
-                            Button {
-                                let config = currentStdioConfig()
-                                Task {
-                                    isTesting = true
-                                    testResult = await tester.test(config: config)
-                                    isTesting = false
-                                }
-                            } label: {
-                                if isTesting {
-                                    HStack(spacing: 6) {
-                                        ProgressView().controlSize(.small)
-                                        Text("Testing…")
-                                    }
-                                } else {
-                                    Label("Test Connection", systemImage: "network")
-                                }
+                    // MARK: Test Connection
+                    HStack(spacing: 12) {
+                        Button {
+                            let config = currentConfig()
+                            Task {
+                                isTesting = true
+                                testResult = await tester.test(config: config)
+                                isTesting = false
                             }
-                            .disabled(isTesting || command.trimmingCharacters(in: .whitespaces).isEmpty)
+                        } label: {
+                            if isTesting {
+                                HStack(spacing: 6) {
+                                    ProgressView().controlSize(.small)
+                                    Text("Testing…")
+                                }
+                            } else {
+                                Label("Test Connection", systemImage: "network")
+                            }
+                        }
+                        .disabled(isTesting || testButtonDisabled)
 
-                            if let result = testResult, !isTesting {
-                                ConnectionTestResultView(result: result)
-                            }
+                        if let result = testResult, !isTesting {
+                            ConnectionTestResultView(result: result)
                         }
                     }
 
@@ -340,8 +338,22 @@ struct AddEditConfigView: View {
         newEnvValue = ""
     }
 
-    private func currentStdioConfig() -> MCPServerConfig {
-        MCPServerConfig(
+    private var testButtonDisabled: Bool {
+        if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
+        return command.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    private func currentConfig() -> MCPServerConfig {
+        if isHTTP {
+            return MCPServerConfig(
+                displayName: displayName,
+                serverKey: serverKey,
+                transportType: transportType,
+                url: url.trimmingCharacters(in: .whitespaces),
+                headers: envVars
+            )
+        }
+        return MCPServerConfig(
             displayName: displayName,
             command: command.trimmingCharacters(in: .whitespaces),
             args: args,
@@ -407,12 +419,24 @@ private struct ConnectionTestResultView: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: result.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundColor(result.isSuccess ? .green : .red)
+            Image(systemName: iconName)
+                .foregroundColor(tintColor)
             Text(result.shortLabel)
-                .foregroundColor(result.isSuccess ? .primary : .red)
+                .foregroundColor(result.isSuccess ? .primary : tintColor)
         }
         .font(.caption)
+    }
+
+    private var iconName: String {
+        if result.isSuccess   { return "checkmark.circle.fill" }
+        if result.isWarning   { return "lock.circle.fill" }
+        return "xmark.circle.fill"
+    }
+
+    private var tintColor: Color {
+        if result.isSuccess { return .green }
+        if result.isWarning { return .orange }
+        return .red
     }
 }
 
