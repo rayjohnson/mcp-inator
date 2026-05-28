@@ -9,7 +9,7 @@
       <pubDate>Wed, 27 May 2026 20:33:37 +0000</pubDate>
       <sparkle:version>5</sparkle:version>
       <sparkle:shortVersionString>0.1.1-test</sparkle:shortVersionString>
-      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.1-test</h3><ul><li>Bug fixes and stability improvements</li></ul></body></html>]]></description>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:canvastext;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.1-test</h3><ul><li>Bug fixes and stability improvements</li></ul></body></html>]]></description>
       <enclosure
         url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.1-test/mcp-inator-0.1.1-test.dmg"
         sparkle:edSignature="BVvfa9Al6e5mtLkyhaMMc+oW1BbuAalQ+a75daIsGiX1gYC+5RlJptWRp+9VEf/+FMGXj+s6WNma0wDZekWQAw=="
@@ -21,7 +21,7 @@
       <pubDate>Wed, 27 May 2026 21:58:19 +0000</pubDate>
       <sparkle:version>6</sparkle:version>
       <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
-      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.0</h3><ul><li>Initial release — manage MCP servers across Claude Code, Claude Desktop, Gemini CLI, and Codex CLI from a single menu bar app</li></ul></body></html>]]></description>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:canvastext;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.0</h3><ul><li>Initial release — manage MCP servers across Claude Code, Claude Desktop, Gemini CLI, and Codex CLI from a single menu bar app</li></ul></body></html>]]></description>
       <enclosure
         url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.0/mcp-inator-0.1.0.dmg"
         sparkle:edSignature="ei9KgBdeFp3H0VYiwSd4B5SAsTmMuRJbsSSHt1NEkAopp2ipe+/q0RWcPlmebbno6i3NCQSGkwx6b24Mms1qAQ=="
@@ -33,7 +33,7 @@
       <pubDate>Wed, 27 May 2026 23:08:35 +0000</pubDate>
       <sparkle:version>7</sparkle:version>
       <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.1</h3><ul><li>Stability improvements and bug fixes</li></ul></body></html>]]></description>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:canvastext;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.1</h3><ul><li>Stability improvements and bug fixes</li></ul></body></html>]]></description>
       <enclosure
         url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.1/mcp-inator-0.1.1.dmg"
         sparkle:edSignature="znnXiomPI7qtDr33iJSDYJIxGfaGIHFRoMIBIkjHW+ly5pbwmKRmjvxGaqMm770JYRmta5VrnAlizpaJ7GJQCw=="
@@ -45,7 +45,7 @@
       <pubDate>Wed, 27 May 2026 23:32:25 +0000</pubDate>
       <sparkle:version>8</sparkle:version>
       <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
-      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.2</h3><ul><li>MCP Registry integration — browse and add servers directly from the catalog</li></ul></body></html>]]></description>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:canvastext;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.2</h3><ul><li>MCP Registry integration — browse and add servers directly from the catalog</li></ul></body></html>]]></description>
       <enclosure
         url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.2/mcp-inator-0.1.2.dmg"
         sparkle:edSignature="G+Esh3SeVAnsdyQkNUU8Z8LW8g9lxP0QHgT+h5AMJzBuJyL9G0bK0/s5nSVGTqu0TswFMjjUriWWIclKJMcDBw=="
@@ -57,7 +57,7 @@
       <pubDate>Wed, 27 May 2026 23:46:03 +0000</pubDate>
       <sparkle:version>9</sparkle:version>
       <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
-      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.3</h3><ul><li>Fixed false drift detection that incorrectly flagged configs as externally modified</li></ul></body></html>]]></description>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:canvastext;background:transparent;}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}</style></head><body><h3>What&#8217;s New in 0.1.3</h3><ul><li>Fixed false drift detection that incorrectly flagged configs as externally modified</li></ul></body></html>]]></description>
       <enclosure
         url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.3/mcp-inator-0.1.3.dmg"
         sparkle:edSignature="QUoXSYgI4WYFwegBl/fieo8TOVjm4T8wEhQZMZgWXT5mnpxtNuVqdmkz/FO9nikGXvTx/jaljFrUS4/oRJVKCw=="
