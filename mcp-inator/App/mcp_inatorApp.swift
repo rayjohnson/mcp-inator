@@ -208,15 +208,33 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
 
 // MARK: - SparkleDelegate
 
-/// Strips the Gatekeeper quarantine flag after Sparkle installs an update so
-/// that the unsigned app can relaunch successfully without user intervention.
+/// Strips the Gatekeeper quarantine flag from Sparkle's staging cache before the
+/// update is installed, so the unsigned app can relaunch without user intervention.
+/// Must target the Sparkle cache (not Bundle.main), because `willInstallUpdate` fires
+/// before the new bundle replaces the running one — stripping the running bundle has
+/// no effect on the freshly-downloaded replacement.
 final class SparkleDelegate: NSObject, SPUUpdaterDelegate {
     func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
-        guard let bundlePath = Bundle.main.bundlePath as String? else { return }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
-        process.arguments = ["-dr", "com.apple.quarantine", bundlePath]
-        try? process.run()
-        process.waitUntilExit()
+        let fm = FileManager.default
+        var pathsToStrip: [String] = []
+
+        if let bundleID = Bundle.main.bundleIdentifier,
+           let caches = fm.urls(for: .cachesDirectory, in: .userDomainMask).first {
+            let sparkleCachePath = caches
+                .appendingPathComponent(bundleID)
+                .appendingPathComponent("org.sparkle-project.Sparkle")
+                .path
+            if fm.fileExists(atPath: sparkleCachePath) {
+                pathsToStrip.append(sparkleCachePath)
+            }
+        }
+
+        for path in pathsToStrip {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+            process.arguments = ["-dr", "com.apple.quarantine", path]
+            try? process.run()
+            process.waitUntilExit()
+        }
     }
 }
