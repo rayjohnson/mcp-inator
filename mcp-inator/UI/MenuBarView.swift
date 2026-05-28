@@ -116,8 +116,16 @@ private struct AgentRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: agent.isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundColor(agent.isAvailable ? .green : .red)
+            AgentIcon(agentType: agent.agentType)
+                .frame(width: 28, height: 28)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(alignment: .bottomTrailing) {
+                    Image(systemName: agent.isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(agent.isAvailable ? .green : .red)
+                        .background(Circle().fill(Color(NSColor.windowBackgroundColor)).padding(1))
+                        .offset(x: 3, y: 3)
+                }
             VStack(alignment: .leading) {
                 Text(agent.displayName)
                     .fontWeight(.medium)

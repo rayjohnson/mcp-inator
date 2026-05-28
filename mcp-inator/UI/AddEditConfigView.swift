@@ -23,7 +23,7 @@ struct AddEditConfigView: View {
     @State private var notes: String
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
-    @State private var confirmDelete = false
+    @State private var confirmingDelete = false
     @State private var showPropagation = false
     @State private var savedConfig: MCPServerConfig?
     @State private var testResult: ConnectionTestResult?
@@ -63,6 +63,7 @@ struct AddEditConfigView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
@@ -171,31 +172,29 @@ struct AddEditConfigView: View {
                             )
                     }
 
-                    // MARK: Test Connection (stdio only)
-                    if !isHTTP {
-                        HStack(spacing: 12) {
-                            Button {
-                                let config = currentStdioConfig()
-                                Task {
-                                    isTesting = true
-                                    testResult = await tester.test(config: config)
-                                    isTesting = false
-                                }
-                            } label: {
-                                if isTesting {
-                                    HStack(spacing: 6) {
-                                        ProgressView().controlSize(.small)
-                                        Text("Testing…")
-                                    }
-                                } else {
-                                    Label("Test Connection", systemImage: "network")
-                                }
+                    // MARK: Test Connection
+                    HStack(spacing: 12) {
+                        Button {
+                            let config = currentConfig()
+                            Task {
+                                isTesting = true
+                                testResult = await tester.test(config: config)
+                                isTesting = false
                             }
-                            .disabled(isTesting || command.trimmingCharacters(in: .whitespaces).isEmpty)
+                        } label: {
+                            if isTesting {
+                                HStack(spacing: 6) {
+                                    ProgressView().controlSize(.small)
+                                    Text("Testing…")
+                                }
+                            } else {
+                                Label("Test Connection", systemImage: "network")
+                            }
+                        }
+                        .disabled(isTesting || testButtonDisabled)
 
-                            if let result = testResult, !isTesting {
-                                ConnectionTestResultView(result: result)
-                            }
+                        if let result = testResult, !isTesting {
+                            ConnectionTestResultView(result: result)
                         }
                     }
 
@@ -203,18 +202,44 @@ struct AddEditConfigView: View {
                     if isEditMode {
                         Divider()
                             .padding(.top, 4)
-                        Button(role: .destructive) {
-                            confirmDelete = true
-                        } label: {
-                            Label("Delete Server", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
+                        if confirmingDelete {
+                            VStack(spacing: 8) {
+                                Text("Delete this server? This removes it from your library and disables it for all agents.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                HStack(spacing: 12) {
+                                    Button("Cancel") { confirmingDelete = false }
+                                        .frame(maxWidth: .infinity)
+                                    Button("Delete", role: .destructive) { deleteServer() }
+                                        .buttonStyle(.borderedProminent)
+                                        .tint(.red)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .id("deleteConfirmButtons")
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                confirmingDelete = true
+                            } label: {
+                                Label("Delete Server", systemImage: "trash")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.red)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.red)
                     }
                 }
                 .padding()
             }
+            .onChange(of: confirmingDelete) { isConfirming in
+                if isConfirming {
+                    DispatchQueue.main.async {
+                        withAnimation { proxy.scrollTo("deleteConfirmButtons", anchor: .bottom) }
+                    }
+                }
+            }
+            } // ScrollViewReader
 
             if let error = validationError {
                 Text(error)
@@ -247,16 +272,6 @@ struct AddEditConfigView: View {
         }
         .onChange(of: showPropagation) { isShowing in
             if !isShowing { dismiss() }
-        }
-        .confirmationDialog(
-            "Delete \"\(displayName)\"?",
-            isPresented: $confirmDelete,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) { deleteServer() }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This removes the server from your library and disables it for all agents.")
         }
     }
 
@@ -300,8 +315,12 @@ struct AddEditConfigView: View {
 
     private func deleteServer() {
         guard let config = existing else { return }
-        try? store.delete(config)
-        dismiss()
+        do {
+            try store.delete(config)
+            dismiss()
+        } catch {
+            validationError = "Delete failed: \(error.localizedDescription)"
+        }
     }
 
     private func addArg() {
@@ -319,8 +338,22 @@ struct AddEditConfigView: View {
         newEnvValue = ""
     }
 
-    private func currentStdioConfig() -> MCPServerConfig {
-        MCPServerConfig(
+    private var testButtonDisabled: Bool {
+        if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
+        return command.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    private func currentConfig() -> MCPServerConfig {
+        if isHTTP {
+            return MCPServerConfig(
+                displayName: displayName,
+                serverKey: serverKey,
+                transportType: transportType,
+                url: url.trimmingCharacters(in: .whitespaces),
+                headers: envVars
+            )
+        }
+        return MCPServerConfig(
             displayName: displayName,
             command: command.trimmingCharacters(in: .whitespaces),
             args: args,
@@ -386,12 +419,24 @@ private struct ConnectionTestResultView: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: result.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundColor(result.isSuccess ? .green : .red)
+            Image(systemName: iconName)
+                .foregroundColor(tintColor)
             Text(result.shortLabel)
-                .foregroundColor(result.isSuccess ? .primary : .red)
+                .foregroundColor(result.isSuccess ? .primary : tintColor)
         }
         .font(.caption)
+    }
+
+    private var iconName: String {
+        if result.isSuccess   { return "checkmark.circle.fill" }
+        if result.isWarning   { return "lock.circle.fill" }
+        return "xmark.circle.fill"
+    }
+
+    private var tintColor: Color {
+        if result.isSuccess { return .green }
+        if result.isWarning { return .orange }
+        return .red
     }
 }
 
