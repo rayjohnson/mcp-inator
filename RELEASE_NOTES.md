@@ -1,1 +1,1 @@
-- Fixed: app now correctly reports its version number — all previous releases incorrectly showed 0.1.0 due to hardcoded values in Info.plist
+- Fixed: Import review sheet now shows server rows correctly — previously the list was blank due to the sheet having no explicit size on macOS
