@@ -68,6 +68,7 @@
 		D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */; };
 		DF9E5F26F37E0D834BFB35DC /* SensitiveFieldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */; };
 		E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */; };
+		E7DB809A198910DAEC8A8DA7 /* mcp-inator.icns in Resources */ = {isa = PBXBuildFile; fileRef = 604C4C7C78B843FF1CA596BD /* mcp-inator.icns */; };
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
 		F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */; };
@@ -110,6 +111,7 @@
 		56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
 		571E43C54CCE0B46A9AA5E44 /* appcast.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
+		604C4C7C78B843FF1CA596BD /* mcp-inator.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "mcp-inator.icns"; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		673672951A0D420C1E6170F5 /* Migration005.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration005.swift; sourceTree = "<group>"; };
 		67EC9770AC45367A218213E2 /* mcp-inator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "mcp-inator.entitlements"; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				06F600189546F0C9C3181A74 /* Inator@1x.png */,
 				9AFF47ED4F7D3099F03DF0B6 /* Info.plist */,
 				67EC9770AC45367A218213E2 /* mcp-inator.entitlements */,
+				604C4C7C78B843FF1CA596BD /* mcp-inator.icns */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -462,6 +465,7 @@
 				82A187BE9A23C507DAFE2038 /* Inator.png in Resources */,
 				D5D6668FFE36038FDD0626ED /* Inator@1x.png in Resources */,
 				C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */,
+				E7DB809A198910DAEC8A8DA7 /* mcp-inator.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

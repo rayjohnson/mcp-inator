@@ -49,6 +49,7 @@ targets:
       properties:
         CFBundleName: mcp-inator
         CFBundleDisplayName: mcp-inator
+        CFBundleIconFile: mcp-inator
         CFBundleVersion: "1"
         CFBundleShortVersionString: "0.1.0"
         LSUIElement: true
