@@ -24,11 +24,21 @@ struct AddEditConfigView: View {
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
     @State private var confirmingDelete = false
-    @State private var showPropagation = false
-    @State private var savedConfig: MCPServerConfig?
+    // Propagation state (shown inline after save, no sheet)
+    @State private var propagationAgents: [AgentRecord] = []
+    @State private var propagationConfig: MCPServerConfig?
+    @State private var propagationPushed = false
+    @State private var propagationError: String?
     @State private var testResult: ConnectionTestResult?
     @State private var isTesting = false
     private let tester = ConnectionTester()
+    private let adapters: [AgentType: any AgentAdapter] = [
+        .claudeCode: ClaudeCodeAdapter(),
+        .claudeDesktop: ClaudeDesktopAdapter(),
+        .geminiCLI: GeminiCLIAdapter(),
+        .codexCLI: CodexCLIAdapter(),
+        .geminiDesktop: GeminiDesktopAdapter()
+    ]
 
     init(existing: MCPServerConfig? = nil) {
         self.existing = existing
@@ -62,6 +72,20 @@ struct AddEditConfigView: View {
     private var envLabel: String { isHTTP ? "Request Headers" : "Environment Variables" }
 
     var body: some View {
+        VStack(spacing: 0) {
+            if !propagationAgents.isEmpty || propagationPushed {
+                propagationBody
+            } else {
+                editFormBody
+            }
+        }
+        .navigationTitle((!propagationAgents.isEmpty || propagationPushed) ? "Push Changes" : title)
+        .navigationBarBackButtonHidden(true)
+    }
+
+    // MARK: - Edit Form
+
+    private var editFormBody: some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
             ScrollView {
@@ -262,16 +286,75 @@ struct AddEditConfigView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
         }
-        .navigationTitle(title)
-        .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $showPropagation) {
-            if let saved = savedConfig {
-                PropagationView(config: saved)
-                    .environmentObject(store)
+    }
+
+    // MARK: - Inline Propagation
+
+    private var propagationBody: some View {
+        VStack(spacing: 0) {
+            if propagationPushed {
+                VStack(spacing: 16) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.green)
+                    Text("Changes pushed.")
+                        .font(.headline)
+                    Text("Restart each affected agent to apply them.")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let cfg = propagationConfig {
+                        Text("\"\(cfg.displayName)\" is enabled for these agents. Push the updated config now?")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                            .padding()
+                    }
+                    List(propagationAgents) { agent in
+                        HStack(spacing: 8) {
+                            AgentIcon(agentType: agent.agentType)
+                                .frame(width: 20, height: 20)
+                            Text(agent.displayName)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    .listStyle(.inset)
+                    .frame(minHeight: 80)
+                }
             }
-        }
-        .onChange(of: showPropagation) { isShowing in
-            if !isShowing { dismiss() }
+
+            if let err = propagationError {
+                Text(err)
+                    .foregroundColor(.red)
+                    .font(.callout)
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+            }
+
+            Divider()
+            HStack {
+                if propagationPushed {
+                    Spacer()
+                    Button("Done") { dismiss() }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.return, modifiers: .command)
+                    Spacer()
+                } else {
+                    Button("Skip") { dismiss() }
+                        .keyboardShortcut(.escape, modifiers: [])
+                    Spacer()
+                    Button("Push to All") { doPushAll() }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(propagationAgents.isEmpty)
+                        .keyboardShortcut(.return, modifiers: .command)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
     }
 
@@ -370,6 +453,7 @@ struct AddEditConfigView: View {
         guard !trimmedKey.isEmpty  else { validationError = "Server key is required."; return }
 
         do {
+            let saved: MCPServerConfig
             if var config = existing {
                 config.displayName    = trimmedName
                 config.serverKey      = trimmedKey
@@ -380,7 +464,7 @@ struct AddEditConfigView: View {
                 config.envVars        = envVars
                 config.notes          = notes
                 try store.update(config)
-                savedConfig = config
+                saved = config
             } else {
                 let config: MCPServerConfig
                 if isHTTP {
@@ -397,21 +481,39 @@ struct AddEditConfigView: View {
                         args: args, envVars: envVars, notes: notes
                     )
                 }
-                savedConfig = try store.insert(config)
+                saved = try store.insert(config)
             }
-            let enabledAgents = isEditMode
-                ? (try? store.findEnabledAgents(for: savedConfig!.uuid)) ?? []
+            let visibleIds = Set(store.visibleAgents.compactMap(\.id))
+            let enabledVisible = isEditMode
+                ? ((try? store.findEnabledAgents(for: saved.uuid)) ?? [])
+                    .filter { visibleIds.contains($0.id ?? -1) }
                 : []
-            DispatchQueue.main.async {
-                if !enabledAgents.isEmpty {
-                    showPropagation = true
-                } else {
-                    dismiss()
-                }
+            if !enabledVisible.isEmpty {
+                propagationConfig = saved
+                propagationAgents = enabledVisible
+            } else {
+                dismiss()
             }
         } catch {
             validationError = "Save failed: \(error.localizedDescription)"
         }
+    }
+
+    private func doPushAll() {
+        guard let cfg = propagationConfig else { return }
+        for agent in propagationAgents {
+            guard let agentId = agent.id,
+                  let adapter = adapters[agent.agentType] else { continue }
+            let path = URL(fileURLWithPath: agent.configPath)
+            do {
+                _ = try store.enableConfig(uuid: cfg.uuid, agentId: agentId,
+                                           adapter: adapter, configPath: path)
+            } catch {
+                propagationError = "Failed to push to \(agent.displayName): \(error.localizedDescription)"
+                return
+            }
+        }
+        propagationPushed = true
     }
 }
 

@@ -16,7 +16,6 @@
 		13C9B634A309A2877B2B3CC5 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB50265A6511EDB0055B95E /* MCPServer.swift */; };
 		14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B09DE2D809C77FE508549F /* DiscoveryView.swift */; };
 		16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */; };
-		18386C1473590D124F999EF6 /* PropagationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9807676F96538CB02A0B159 /* PropagationView.swift */; };
 		1F16905A2C802EEA4F149074 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6BDD852709F641ED9CAB7766 /* Assets.xcassets */; };
 		2C67F3E57F8B0B8BEE781321 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 4F51316E8731F74700960B78 /* Sparkle */; };
 		2CAA3A60F6990A6105BB2939 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F59E8CDCBE4E70FF72AE08 /* RegistryEntry.swift */; };
@@ -146,7 +145,6 @@
 		B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveFieldTests.swift; sourceTree = "<group>"; };
 		B1DD36F7DDC9A9860FE4EDEA /* RegistryClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryClientTests.swift; sourceTree = "<group>"; };
 		B1F59E8CDCBE4E70FF72AE08 /* RegistryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryEntry.swift; sourceTree = "<group>"; };
-		B9807676F96538CB02A0B159 /* PropagationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationView.swift; sourceTree = "<group>"; };
 		C2CC96624DE869D9F82E2505 /* RegistryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryStoreTests.swift; sourceTree = "<group>"; };
 		CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerKeyTransformTests.swift; sourceTree = "<group>"; };
 		DF94672DFC83B2A8317F2FCC /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
@@ -264,7 +262,6 @@
 				7682EBE502F6FC97450DF4B5 /* ImportReviewView.swift */,
 				40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */,
 				3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */,
-				B9807676F96538CB02A0B159 /* PropagationView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -531,7 +528,6 @@
 				522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */,
 				03112027C047E7EAF9BA153E /* Migration004.swift in Sources */,
 				3FBF669EF46E71655E39D8F2 /* Migration005.swift in Sources */,
-				18386C1473590D124F999EF6 /* PropagationView.swift in Sources */,
 				698770EB8DB65E6BA481D464 /* RegistryClient.swift in Sources */,
 				2CAA3A60F6990A6105BB2939 /* RegistryEntry.swift in Sources */,
 				CD3D7E4F7290A6B2F6141295 /* RegistryStore.swift in Sources */,
