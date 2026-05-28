@@ -64,5 +64,23 @@
         length="3999702"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.1.4</title>
+      <pubDate>Thu, 28 May 2026 05:12:19 +0000</pubDate>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>0.1.4</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.1.4</h3>
+<ul>
+<li>New app icon with custom artwork — detailed at large sizes, clean silhouette at small sizes</li>
+<li>About panel with Evil Inc. cityscape background and frosted glass design</li>
+<li>Automatic in-app updates via Sparkle with styled release notes (dark mode aware)</li>
+<li>One-line install and uninstall scripts</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.4/mcp-inator-0.1.4.dmg"
+        sparkle:edSignature="qG/kqAlx+pJDQs4zy98++U8yU3ZMUTy+bdCO353dBIucfkKGaBKnX5/sI1gWSVNapFilwCYgwkWzv999zaBeAQ=="
+        length="7387487"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
