@@ -386,12 +386,25 @@ struct AddEditConfigView: View {
         }
     }
 
+    private var isDirty: Bool {
+        guard let e = existing else { return true }
+        return displayName.trimmingCharacters(in: .whitespaces) != e.displayName
+            || serverKey.trimmingCharacters(in: .whitespaces) != e.serverKey
+            || transportType != e.transportType
+            || command.trimmingCharacters(in: .whitespaces) != e.command
+            || args != e.args
+            || url.trimmingCharacters(in: .whitespaces) != e.url
+            || envVars != e.envVars
+            || notes != e.notes
+    }
+
     private var isSaveDisabled: Bool {
         let name = displayName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty { return true }
         if serverKeyConflict { return true }
-        if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
-        return command.trimmingCharacters(in: .whitespaces).isEmpty
+        if isHTTP && url.trimmingCharacters(in: .whitespaces).isEmpty { return true }
+        if !isHTTP && command.trimmingCharacters(in: .whitespaces).isEmpty { return true }
+        return !isDirty
     }
 
     // MARK: - Actions
