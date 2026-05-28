@@ -38,7 +38,9 @@ jobs:
           gem install xcpretty
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: |
+          make generate-version
+          xcodegen generate
 
       - name: Build & test
         run: |
