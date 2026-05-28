@@ -1,5 +1,9 @@
 # mcp-inator
 
+<p align="center">
+  <img src="docs/images/the_mcp-inator.png" alt="mcp-inator" />
+</p>
+
 A macOS menu bar app for managing MCP server configurations across AI agents (Claude Code, Claude Desktop, Gemini CLI, Codex CLI, and more).
 
 ## Installation
