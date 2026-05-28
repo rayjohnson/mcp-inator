@@ -177,5 +177,20 @@
         length="7420106"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.2.0</title>
+      <pubDate>Thu, 28 May 2026 20:27:46 +0000</pubDate>
+      <sparkle:version>16</sparkle:version>
+      <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.2.0</h3>
+<ul>
+<li>Fixed: version number now shows correctly in the About panel and is used by Sparkle for update checks — previously Debug builds always reported 0.1.0</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.2.0/mcp-inator-0.2.0.dmg"
+        sparkle:edSignature="Ol2nXAK+0oq7/lrveV80w2UYLx1PkikuacsfOh9HilmDSJdxJQE4+DoO+g/EPONe1WnjAFVu2mb5CcP0/f0vCw=="
+        length="10728837"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
