@@ -8,11 +8,16 @@ struct mcp_inatorApp: App {
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
 
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-    )
+    private let sparkleDelegate = SparkleDelegate()
+    private let updaterController: SPUStandardUpdaterController
+
+    init() {
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: sparkleDelegate,
+            userDriverDelegate: nil
+        )
+    }
 
     private let adapters: [any AgentAdapter] = [
         ClaudeCodeAdapter(),
@@ -153,5 +158,20 @@ private struct StoreRecoveryView: View {
         }
         .padding()
         .frame(width: 360, height: 280)
+    }
+}
+
+// MARK: - SparkleDelegate
+
+/// Strips the Gatekeeper quarantine flag after Sparkle installs an update so
+/// that the unsigned app can relaunch successfully without user intervention.
+final class SparkleDelegate: NSObject, SPUUpdaterDelegate {
+    func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
+        guard let bundlePath = Bundle.main.bundlePath as String? else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+        process.arguments = ["-dr", "com.apple.quarantine", bundlePath]
+        try? process.run()
+        process.waitUntilExit()
     }
 }
