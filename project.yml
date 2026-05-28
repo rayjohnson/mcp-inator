@@ -19,6 +19,10 @@ packages:
     url: https://github.com/modelcontextprotocol/swift-sdk
     from: "0.12.1"
 
+configFiles:
+  Debug: version.xcconfig
+  Release: version.xcconfig
+
 targets:
   mcp-inator:
     type: application
@@ -50,8 +54,8 @@ targets:
         CFBundleName: mcp-inator
         CFBundleDisplayName: mcp-inator
         CFBundleIconFile: mcp-inator
-        CFBundleVersion: "1"
-        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
         LSUIElement: true
         NSHighResolutionCapable: true
         NSSupportsAutomaticGraphicsSwitching: true
@@ -73,3 +77,22 @@ targets:
         SWIFT_VERSION: "6.0"
         MACOSX_DEPLOYMENT_TARGET: "13.0"
         GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  mcp-inator:
+    build:
+      targets:
+        mcp-inator: all
+        mcp-inatorTests: [test]
+      preActions:
+        - name: Generate version.xcconfig
+          script: "cd \"${SRCROOT}\" && make generate-version"
+          settingsTarget: mcp-inator
+    test:
+      config: Debug
+      targets:
+        - mcp-inatorTests
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -1,1 +1,1 @@
-- Fixed: Import review sheet now shows server rows correctly — previously the list was blank due to the sheet having no explicit size on macOS
+- Fixed: version number now shows correctly in the About panel and is used by Sparkle for update checks — previously Debug builds always reported 0.1.0
