@@ -338,6 +338,7 @@ final class ConfigStore: ObservableObject {
         var results: [(key: String, category: ImportCategory)] = []
 
         for (key, onDisk) in onDiskConfigs {
+            guard key != "mcp-inator" else { continue }
             if let library = try pool.read({ db in
                 try MCPServerConfig.filter(Column("serverKey") == key).fetchOne(db)
             }) {

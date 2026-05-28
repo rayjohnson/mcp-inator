@@ -37,6 +37,7 @@ struct DiscoveryView: View {
                 if let agent = importTarget {
                     ImportReviewView(agent: agent, categories: importCategories)
                         .environmentObject(store)
+                        .frame(width: 440, height: 380)
                 }
             }
         }
