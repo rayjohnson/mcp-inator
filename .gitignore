@@ -36,6 +36,9 @@ build/
 *.o
 *.d
 
+# Generated from VERSION file by make generate-version
+version.xcconfig
+
 # Code coverage
 *.profraw
 *.profdata

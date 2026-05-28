@@ -6,14 +6,19 @@ APP_BUNDLE := $(shell find ~/Library/Developer/Xcode/DerivedData -name "mcp-inat
 CATALOG_SRC := catalog/catalog.json
 CATALOG_DST := mcp-inator/Resources/catalog.json
 
-.PHONY: build test lint run clean sync-catalog
+.PHONY: build test lint run clean sync-catalog generate-version
 
-## Build the app (syncs catalog first)
-build: sync-catalog
+## Write version.xcconfig from VERSION (used by Xcode build settings)
+generate-version:
+	@echo "MARKETING_VERSION = $$(cat VERSION | tr -d '[:space:]')" > version.xcconfig
+	@echo "CURRENT_PROJECT_VERSION = 1" >> version.xcconfig
+
+## Build the app (syncs catalog and version first)
+build: sync-catalog generate-version
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) build
 
 ## Run all tests
-test:
+test: generate-version
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) test
 
 ## Run SwiftLint

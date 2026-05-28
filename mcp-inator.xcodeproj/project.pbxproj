@@ -40,6 +40,7 @@
 		7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 7ACD9873730B56F995155492 /* claude_desktop_config.json */; };
 		817549DE3D56B1B542C04875 /* ConnectionTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */; };
 		82A187BE9A23C507DAFE2038 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FB6678049CEDA09778E112E /* Inator.png */; };
+		836ACE3795330484C937101A /* catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = 624E21650338FFEE2413BE75 /* catalog.json */; };
 		85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75736D0388AAACA14315CAE /* ClaudeCodeAdapter.swift */; };
 		8659AD4092A2503E6C1E79C3 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF94672DFC83B2A8317F2FCC /* CatalogView.swift */; };
 		8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */ = {isa = PBXBuildFile; fileRef = F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */; };
@@ -103,6 +104,7 @@
 		1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapter.swift; sourceTree = "<group>"; };
 		1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapterTests.swift; sourceTree = "<group>"; };
 		1D5E12DD5F2F8255785408D2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		2A0C42E76E92831198F754C1 /* version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = version.xcconfig; sourceTree = "<group>"; };
 		2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryClient.swift; sourceTree = "<group>"; };
 		30560F888607C8CDB96E1EDA /* Migration001.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration001.swift; sourceTree = "<group>"; };
 		37F1FD08B9BD4BAD09187956 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 		5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionTestResult.swift; sourceTree = "<group>"; };
 		604C4C7C78B843FF1CA596BD /* mcp-inator.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "mcp-inator.icns"; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
+		624E21650338FFEE2413BE75 /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.json; sourceTree = "<group>"; };
 		673672951A0D420C1E6170F5 /* Migration005.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration005.swift; sourceTree = "<group>"; };
 		67EC9770AC45367A218213E2 /* mcp-inator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "mcp-inator.entitlements"; sourceTree = "<group>"; };
 		6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentListView.swift; sourceTree = "<group>"; };
@@ -228,6 +231,7 @@
 			children = (
 				571E43C54CCE0B46A9AA5E44 /* appcast.xml */,
 				6BDD852709F641ED9CAB7766 /* Assets.xcassets */,
+				624E21650338FFEE2413BE75 /* catalog.json */,
 				7FB6678049CEDA09778E112E /* Inator.png */,
 				06F600189546F0C9C3181A74 /* Inator@1x.png */,
 				9AFF47ED4F7D3099F03DF0B6 /* Info.plist */,
@@ -269,6 +273,7 @@
 			isa = PBXGroup;
 			children = (
 				244A9F68B02F0B06E1073FA2 /* mcp-inator */,
+				992A929320DDD1924085A4AD /* mcp-inator */,
 				B227B9925A9DF3B6CFB08D9D /* mcp-inatorTests */,
 				B9668A9E62F63D852C69A4B2 /* Products */,
 			);
@@ -297,6 +302,15 @@
 				8A9D979366B76DF914865EBF /* Fixtures */,
 			);
 			path = Integration;
+			sourceTree = "<group>";
+		};
+		992A929320DDD1924085A4AD /* mcp-inator */ = {
+			isa = PBXGroup;
+			children = (
+				2A0C42E76E92831198F754C1 /* version.xcconfig */,
+			);
+			name = "mcp-inator";
+			path = .;
 			sourceTree = "<group>";
 		};
 		9B799A17A60007F437C24AD3 /* Unit */ = {
@@ -474,6 +488,7 @@
 				82A187BE9A23C507DAFE2038 /* Inator.png in Resources */,
 				D5D6668FFE36038FDD0626ED /* Inator@1x.png in Resources */,
 				C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */,
+				836ACE3795330484C937101A /* catalog.json in Resources */,
 				E7DB809A198910DAEC8A8DA7 /* mcp-inator.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -583,6 +598,7 @@
 		};
 		59A20EED97025AC509F46457 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2A0C42E76E92831198F754C1 /* version.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -684,6 +700,7 @@
 		};
 		AA6D1FE76CA5A68F22F8A14A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2A0C42E76E92831198F754C1 /* version.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
