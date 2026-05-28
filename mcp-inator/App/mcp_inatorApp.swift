@@ -37,7 +37,9 @@ struct mcp_inatorApp: App {
                     .environmentObject(store)
                     .environmentObject(registryStore)
                     .environment(\.openAboutWindow, { [aboutController] in
-                        aboutController.show(updater: self.updaterController.updater)
+                        Task { @MainActor in
+                            aboutController.show(updater: self.updaterController.updater)
+                        }
                     })
                     .onAppear {
                         try? store.seedSelfEntry()
