@@ -144,6 +144,7 @@ jobs:
           DOWNLOAD_URL: ${{ steps.release.outputs.downloadUrl }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES_FILE: ${{ github.workspace }}/RELEASE_NOTES.md
         run: |
           git clone --branch gh-pages \
             "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \

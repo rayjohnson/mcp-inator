@@ -25,6 +25,12 @@ struct mcp_inatorApp: App {
     private let discoveryController = DiscoveryWindowController()
 
     var body: some Scene {
+        Window("About mcp-inator", id: "about") {
+            AboutView(updater: updaterController.updater)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+
         MenuBarExtra {
             if let store = storeContainer.store {
                 MenuBarView()
