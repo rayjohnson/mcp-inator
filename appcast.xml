@@ -82,5 +82,33 @@
         length="7387487"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.1.5</title>
+      <pubDate>Thu, 28 May 2026 13:39:11 +0000</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>0.1.5</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.1.5</h3>
+<h3>0.1.5</h3>
+<ul>
+<li>Test Connection button on stdio servers — verifies reachability and shows elapsed time and tool count</li>
+<li>Delete Server option in the Edit Server view with confirmation dialog</li>
+<li>Server key is now auto-generated as a full slug from the display name; conflict detection prevents duplicate keys</li>
+<li>Edit Server form redesigned with labeled, bordered fields so editable areas are obvious</li>
+<li>Fixed About window appearing on launch</li>
+<li>Fixed Sparkle update relaunch after install</li>
+</ul>
+<h3>0.1.4</h3>
+<ul>
+<li>New app icon with custom artwork — detailed at large sizes, clean silhouette at small sizes</li>
+<li>About panel with Evil Inc. cityscape background and frosted glass design</li>
+<li>Automatic in-app updates via Sparkle with styled release notes (dark mode aware)</li>
+<li>One-line install and uninstall scripts</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.5/mcp-inator-0.1.5.dmg"
+        sparkle:edSignature="B7aG6no+zKoXchQBvl4eKsFAqOm7zJ9kklocMNdvn9LivwUqfcJHHVwq+nyfja5uJH2KpTx3GHAxF8p/fA/nAw=="
+        length="7414276"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
