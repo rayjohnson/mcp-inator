@@ -399,12 +399,15 @@ struct AddEditConfigView: View {
                 }
                 savedConfig = try store.insert(config)
             }
-            if let saved = savedConfig, isEditMode,
-               let enabledAgents = try? store.findEnabledAgents(for: saved.uuid),
-               !enabledAgents.isEmpty {
-                showPropagation = true
-            } else {
-                dismiss()
+            let enabledAgents = isEditMode
+                ? (try? store.findEnabledAgents(for: savedConfig!.uuid)) ?? []
+                : []
+            DispatchQueue.main.async {
+                if !enabledAgents.isEmpty {
+                    showPropagation = true
+                } else {
+                    dismiss()
+                }
             }
         } catch {
             validationError = "Save failed: \(error.localizedDescription)"
