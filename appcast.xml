@@ -131,5 +131,21 @@
         length="7418176"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.1.7</title>
+      <pubDate>Thu, 28 May 2026 17:19:11 +0000</pubDate>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>0.1.7</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.1.7</h3>
+<ul>
+<li>Fixed: Sparkle updates now relaunch the app correctly — the release build is consistently ad-hoc signed so macOS no longer rejects the relaunched bundle due to a Sparkle framework Team ID mismatch</li>
+<li>Fixed: Quarantine flag is now stripped from the correct location (Sparkle's staging cache) before the update is installed, preventing Gatekeeper from blocking the relaunch on first run</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.7/mcp-inator-0.1.7.dmg"
+        sparkle:edSignature="rEaRax6ibn+Lc7eEjE56ZAiriWPaVRnXnvioJovidfLFJ0wd81USFNIp2HhSC4TzJvqMm2mxqWo4KwtkJl4VDg=="
+        length="7419922"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
