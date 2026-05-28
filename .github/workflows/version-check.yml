@@ -37,3 +37,15 @@ jobs:
             "${{ steps.latest.outputs.tag }}" \
             "$(cat VERSION | tr -d '[:space:]')" \
             "${{ steps.main.outputs.version }}"
+
+      - name: Check release notes updated
+        run: |
+          BASE="${{ github.base_ref }}"
+          if git diff "origin/${BASE}...HEAD" --name-only | grep -q '^VERSION$'; then
+            if ! git diff "origin/${BASE}...HEAD" --name-only | grep -q '^RELEASE_NOTES\.md$'; then
+              echo "ERROR: VERSION was bumped but RELEASE_NOTES.md was not updated."
+              echo "Run /release-notes in Claude Code to generate them, then commit."
+              exit 1
+            fi
+            echo "RELEASE_NOTES.md updated alongside VERSION — good."
+          fi

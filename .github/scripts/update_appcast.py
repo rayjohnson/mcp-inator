@@ -10,6 +10,8 @@ def md_to_html(text, version):
         "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;"
         "font-size:13px;line-height:1.5;margin:16px;"
         "color:#1d1d1f;background:transparent;}"
+        "@media(prefers-color-scheme:dark){"
+        "body{color:#f5f5f7;}}"
         "h3{font-size:14px;font-weight:600;margin:0 0 10px;}"
         "ul{margin:0;padding-left:18px;}"
         "li{margin-bottom:4px;}"
