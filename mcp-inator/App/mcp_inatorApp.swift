@@ -28,19 +28,17 @@ struct mcp_inatorApp: App {
     ]
 
     private let discoveryController = DiscoveryWindowController()
+    private let aboutController = AboutWindowController()
 
     var body: some Scene {
-        Window("About mcp-inator", id: "about") {
-            AboutView(updater: updaterController.updater)
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-
         MenuBarExtra {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
                     .environmentObject(registryStore)
+                    .environment(\.openAboutWindow, { [aboutController] in
+                        aboutController.show(updater: self.updaterController.updater)
+                    })
                     .onAppear {
                         try? store.seedSelfEntry()
                         Task { await registryStore.populateCategories() }
@@ -158,6 +156,51 @@ private struct StoreRecoveryView: View {
         }
         .padding()
         .frame(width: 360, height: 280)
+    }
+}
+
+// MARK: - OpenAboutWindowKey
+
+private struct OpenAboutWindowKey: EnvironmentKey {
+    static let defaultValue: @Sendable () -> Void = {}
+}
+
+extension EnvironmentValues {
+    var openAboutWindow: @Sendable () -> Void {
+        get { self[OpenAboutWindowKey.self] }
+        set { self[OpenAboutWindowKey.self] = newValue }
+    }
+}
+
+// MARK: - AboutWindowController
+
+@MainActor
+final class AboutWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(updater: SPUUpdater) {
+        if let existing = window {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let hosting = NSHostingController(rootView: AboutView(updater: updater))
+        let win = NSWindow(contentViewController: hosting)
+        win.styleMask = [.titled, .closable]
+        win.title = "About mcp-inator"
+        win.setContentSize(NSSize(width: 380, height: 260))
+        win.titlebarAppearsTransparent = true
+        win.titleVisibility = .hidden
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
     }
 }
 
