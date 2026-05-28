@@ -1,4 +1,4 @@
-- App icon with custom artwork (detailed at large sizes, clean silhouette at small sizes)
+- New app icon with custom artwork — detailed at large sizes, clean silhouette at small sizes
 - About panel with Evil Inc. cityscape background and frosted glass design
+- Automatic in-app updates via Sparkle with styled release notes (dark mode aware)
 - One-line install and uninstall scripts
-- Automatic in-app updates via Sparkle
