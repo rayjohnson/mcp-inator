@@ -23,6 +23,7 @@ struct AddEditConfigView: View {
     @State private var notes: String
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
+    @State private var confirmDelete = false
     @State private var showPropagation = false
     @State private var savedConfig: MCPServerConfig?
     @State private var testResult: ConnectionTestResult?
@@ -197,6 +198,20 @@ struct AddEditConfigView: View {
                             }
                         }
                     }
+
+                    // MARK: Delete (edit mode only)
+                    if isEditMode {
+                        Divider()
+                            .padding(.top, 4)
+                        Button(role: .destructive) {
+                            confirmDelete = true
+                        } label: {
+                            Label("Delete Server", systemImage: "trash")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
+                    }
                 }
                 .padding()
             }
@@ -232,6 +247,16 @@ struct AddEditConfigView: View {
         }
         .onChange(of: showPropagation) { isShowing in
             if !isShowing { dismiss() }
+        }
+        .confirmationDialog(
+            "Delete \"\(displayName)\"?",
+            isPresented: $confirmDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { deleteServer() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This removes the server from your library and disables it for all agents.")
         }
     }
 
@@ -272,6 +297,12 @@ struct AddEditConfigView: View {
     }
 
     // MARK: - Actions
+
+    private func deleteServer() {
+        guard let config = existing else { return }
+        try? store.delete(config)
+        dismiss()
+    }
 
     private func addArg() {
         let trimmed = newArg.trimmingCharacters(in: .whitespaces)
