@@ -1,36 +1,64 @@
 import SwiftUI
+import AppKit
 
 // Root popover content. Uses a tab view: Servers (config library), Agents, and Catalog.
 struct MenuBarView: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var registryStore: RegistryStore
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        TabView {
-            NavigationStack {
-                ConfigLibraryView()
-            }
-            .tabItem {
-                Label("Servers", systemImage: "server.rack")
-            }
+        VStack(spacing: 0) {
+            TabView {
+                NavigationStack {
+                    ConfigLibraryView()
+                }
+                .tabItem {
+                    Label("Servers", systemImage: "server.rack")
+                }
 
-            NavigationStack {
-                AgentsTabView()
-            }
-            .tabItem {
-                Label("Agents", systemImage: "cpu")
-            }
+                NavigationStack {
+                    AgentsTabView()
+                }
+                .tabItem {
+                    Label("Agents", systemImage: "cpu")
+                }
 
-            NavigationStack {
-                CatalogView()
+                NavigationStack {
+                    CatalogView()
+                }
+                .environmentObject(registryStore)
+                .environmentObject(store)
+                .tabItem {
+                    Label("Catalog", systemImage: "square.grid.2x2")
+                }
             }
-            .environmentObject(registryStore)
-            .environmentObject(store)
-            .tabItem {
-                Label("Catalog", systemImage: "square.grid.2x2")
+            .frame(width: 420, height: 548)
+
+            Divider()
+
+            HStack {
+                Button("About mcp-inator…") {
+                    openWindow(id: "about")
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Quit") {
+                    NSApp.terminate(nil)
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
         }
-        .frame(width: 420, height: 580)
+        .frame(width: 420)
         .onAppear {
             try? store.refreshAvailability(adapters: allAdapters)
         }

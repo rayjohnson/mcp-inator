@@ -68,6 +68,7 @@
 		D687F5031913B6860BF343B6 /* AgentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */; };
 		DF9E5F26F37E0D834BFB35DC /* SensitiveFieldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */; };
 		E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */; };
+		E7962FB9AA64E97C3CED7F9C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F1FD08B9BD4BAD09187956 /* AboutView.swift */; };
 		E7DB809A198910DAEC8A8DA7 /* mcp-inator.icns in Resources */ = {isa = PBXBuildFile; fileRef = 604C4C7C78B843FF1CA596BD /* mcp-inator.icns */; };
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
@@ -101,6 +102,7 @@
 		1D5E12DD5F2F8255785408D2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryClient.swift; sourceTree = "<group>"; };
 		30560F888607C8CDB96E1EDA /* Migration001.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration001.swift; sourceTree = "<group>"; };
+		37F1FD08B9BD4BAD09187956 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		3A762F05A3F65129BC592917 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAdapter.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 		4AAFCEC1C02B8CA4C695061B /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				37F1FD08B9BD4BAD09187956 /* AboutView.swift */,
 				E6AA0D309B195442D289C705 /* AddEditConfigView.swift */,
 				97EE0A94708E98E71A4BE095 /* AgentIcon.swift */,
 				6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */,
@@ -476,6 +479,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7962FB9AA64E97C3CED7F9C /* AboutView.swift in Sources */,
 				4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */,
 				A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */,
 				09F27190B4168272965387B2 /* AgentIcon.swift in Sources */,
