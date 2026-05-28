@@ -71,6 +71,21 @@ jobs:
             -exportPath build/export \
             -exportOptionsPlist .github/ExportOptions.plist
 
+      - name: Re-sign with ad-hoc
+        run: |
+          APP="build/export/mcp-inator.app"
+          SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+          codesign --force --deep --sign - \
+            "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
+          codesign --force --deep --sign - \
+            "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
+          codesign --force --deep --sign - \
+            "$SPARKLE/Versions/B/Autoupdate"
+          codesign --force --deep --sign - \
+            "$SPARKLE/Versions/B/Sparkle"
+          codesign --force --deep --sign - "$SPARKLE"
+          codesign --force --deep --sign - "$APP"
+
       - name: Create DMG
         run: |
           VERSION="${{ steps.version.outputs.version }}"

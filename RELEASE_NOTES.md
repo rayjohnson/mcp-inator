@@ -1,7 +1,2 @@
-- Test Connection button on MCP servers — verify a server is reachable before enabling it; shows connection time and tool count, or a clear error if it can't connect
-- HTTP and SSE servers can now be tested too; servers that need OAuth show a friendly "authentication required" notice instead of an error
-- Delete a server directly from the Edit Server screen — scroll to the bottom and confirm inline
-- Agent icons now appear in the Agents tab so you can tell agents apart at a glance
-- Edit Server form redesigned with clearly visible text fields so it's obvious where to type
-- Fixed: Edit Server key is now auto-generated as a readable slug from the server name, and the app prevents duplicate keys
-- Fixed: About window no longer appears automatically on launch
+- Fixed: Sparkle updates now relaunch the app correctly — the release build is consistently ad-hoc signed so macOS no longer rejects the relaunched bundle due to a Sparkle framework Team ID mismatch
+- Fixed: Quarantine flag is now stripped from the correct location (Sparkle's staging cache) before the update is installed, preventing Gatekeeper from blocking the relaunch on first run
