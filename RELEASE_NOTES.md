@@ -1,1 +1,2 @@
-- Fixed: version number now shows correctly in the About panel and is used by Sparkle for update checks — previously Debug builds always reported 0.1.0
+- Fixed: editing a server no longer triggers "Push Changes" when nothing was modified — Save is now disabled until a field actually changes
+- Fixed: "Push Changes" now appears inline in the popover instead of as a separate sheet, preventing the popover from losing focus during the push operation
