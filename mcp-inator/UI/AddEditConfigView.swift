@@ -23,7 +23,7 @@ struct AddEditConfigView: View {
     @State private var notes: String
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
-    @State private var confirmDelete = false
+    @State private var confirmingDelete = false
     @State private var showPropagation = false
     @State private var savedConfig: MCPServerConfig?
     @State private var testResult: ConnectionTestResult?
@@ -63,6 +63,7 @@ struct AddEditConfigView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
@@ -203,18 +204,44 @@ struct AddEditConfigView: View {
                     if isEditMode {
                         Divider()
                             .padding(.top, 4)
-                        Button(role: .destructive) {
-                            confirmDelete = true
-                        } label: {
-                            Label("Delete Server", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
+                        if confirmingDelete {
+                            VStack(spacing: 8) {
+                                Text("Delete this server? This removes it from your library and disables it for all agents.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                HStack(spacing: 12) {
+                                    Button("Cancel") { confirmingDelete = false }
+                                        .frame(maxWidth: .infinity)
+                                    Button("Delete", role: .destructive) { deleteServer() }
+                                        .buttonStyle(.borderedProminent)
+                                        .tint(.red)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .id("deleteConfirmButtons")
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                confirmingDelete = true
+                            } label: {
+                                Label("Delete Server", systemImage: "trash")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.red)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.red)
                     }
                 }
                 .padding()
             }
+            .onChange(of: confirmingDelete) { isConfirming in
+                if isConfirming {
+                    DispatchQueue.main.async {
+                        withAnimation { proxy.scrollTo("deleteConfirmButtons", anchor: .bottom) }
+                    }
+                }
+            }
+            } // ScrollViewReader
 
             if let error = validationError {
                 Text(error)
@@ -247,16 +274,6 @@ struct AddEditConfigView: View {
         }
         .onChange(of: showPropagation) { isShowing in
             if !isShowing { dismiss() }
-        }
-        .confirmationDialog(
-            "Delete \"\(displayName)\"?",
-            isPresented: $confirmDelete,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) { deleteServer() }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This removes the server from your library and disables it for all agents.")
         }
     }
 
@@ -300,8 +317,12 @@ struct AddEditConfigView: View {
 
     private func deleteServer() {
         guard let config = existing else { return }
-        try? store.delete(config)
-        dismiss()
+        do {
+            try store.delete(config)
+            dismiss()
+        } catch {
+            validationError = "Delete failed: \(error.localizedDescription)"
+        }
     }
 
     private func addArg() {
