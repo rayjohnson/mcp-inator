@@ -1,2 +1,1 @@
-- Fixed: Sparkle updates now relaunch the app correctly — the release build is consistently ad-hoc signed so macOS no longer rejects the relaunched bundle due to a Sparkle framework Team ID mismatch
-- Fixed: Quarantine flag is now stripped from the correct location (Sparkle's staging cache) before the update is installed, preventing Gatekeeper from blocking the relaunch on first run
+- Fixed: app now correctly reports its version number — all previous releases incorrectly showed 0.1.0 due to hardcoded values in Info.plist
