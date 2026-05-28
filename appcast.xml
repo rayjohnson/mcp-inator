@@ -162,5 +162,20 @@
         length="7419922"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.1.9</title>
+      <pubDate>Thu, 28 May 2026 19:08:55 +0000</pubDate>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>0.1.9</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.1.9</h3>
+<ul>
+<li>Fixed: Import review sheet now shows server rows correctly — previously the list was blank due to the sheet having no explicit size on macOS</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.1.9/mcp-inator-0.1.9.dmg"
+        sparkle:edSignature="poE8aGycQDOZxl+0TvIxlTDiqHbkOs3LhjL/4vJYnuoDXpa3XobisLd2YcOowdV7nV+fkubaLyv+gz5LLixmAQ=="
+        length="7420106"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
