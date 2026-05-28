@@ -23,8 +23,12 @@ struct AddEditConfigView: View {
     @State private var notes: String
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
+    @State private var confirmDelete = false
     @State private var showPropagation = false
     @State private var savedConfig: MCPServerConfig?
+    @State private var testResult: ConnectionTestResult?
+    @State private var isTesting = false
+    private let tester = ConnectionTester()
 
     init(existing: MCPServerConfig? = nil) {
         self.existing = existing
@@ -59,91 +63,158 @@ struct AddEditConfigView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Form {
-                Section("Server Identity") {
-                    TextField("Display Name", text: $displayName)
-                        .onChange(of: displayName) { newValue in
-                            if !serverKeyEdited {
-                                serverKey = MCPServerConfig.generateKey(from: newValue)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+
+                    // MARK: Server Identity
+                    formSection("Server Identity") {
+                        fieldLabel("Display Name")
+                        TextField("My MCP Server", text: $displayName)
+                            .textFieldStyle(.roundedBorder)
+                            .onChange(of: displayName) { newValue in
+                                if !serverKeyEdited {
+                                    serverKey = MCPServerConfig.generateKey(from: newValue)
+                                }
+                            }
+
+                        fieldLabel("Server Key")
+                        HStack {
+                            TextField("my-server", text: $serverKey)
+                                .textFieldStyle(.roundedBorder)
+                                .onChange(of: serverKey) { newValue in
+                                    let generated = MCPServerConfig.generateKey(from: displayName)
+                                    serverKeyEdited = !newValue.isEmpty && newValue != generated
+                                }
+                                .help("Used as the key in the agent config file. Auto-generated from display name.")
+                            if serverKeyConflict {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                                    .help("This key is already used by another server.")
                             }
                         }
 
-                    HStack {
-                        TextField("Server Key", text: $serverKey)
-                            .onChange(of: serverKey) { _ in serverKeyEdited = true }
-                        if !serverKey.isEmpty {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .opacity(serverKey == MCPServerConfig.generateKey(from: displayName) ? 0 : 1)
+                        fieldLabel("Transport")
+                        Picker("", selection: $transportType) {
+                            Text("stdio (command)").tag(TransportType.stdio)
+                            Text("HTTP").tag(TransportType.http)
+                            Text("SSE").tag(TransportType.sse)
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    }
+
+                    // MARK: Command or URL
+                    if isHTTP {
+                        formSection("URL") {
+                            TextField("https://…", text: $url)
+                                .textFieldStyle(.roundedBorder)
+                        }
+                    } else {
+                        formSection("Command") {
+                            TextField("npx, uvx, or /path/to/tool", text: $command)
+                                .textFieldStyle(.roundedBorder)
+                        }
+
+                        formSection("Arguments") {
+                            ForEach(args.indices, id: \.self) { i in
+                                HStack {
+                                    Text(args[i])
+                                        .font(.system(.body, design: .monospaced))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Button(role: .destructive) { args.remove(at: i) } label: {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundColor(.red)
+                                    }
+                                    .buttonStyle(.borderless)
+                                }
+                            }
+                            HStack {
+                                TextField("Add argument…", text: $newArg)
+                                    .textFieldStyle(.roundedBorder)
+                                    .onSubmit { addArg() }
+                                Button("Add", action: addArg)
+                                    .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
+                            }
                         }
                     }
-                    .help("Used as the key in the agent config file. Auto-generated from display name.")
 
-                    Picker("Transport", selection: $transportType) {
-                        Text("stdio (command)").tag(TransportType.stdio)
-                        Text("HTTP").tag(TransportType.http)
-                        Text("SSE").tag(TransportType.sse)
-                    }
-                    .pickerStyle(.segmented)
-                }
-
-                if isHTTP {
-                    Section("URL") {
-                        TextField("https://…", text: $url)
-                    }
-                } else {
-                    Section("Command") {
-                        TextField("Executable (e.g. npx, /usr/bin/tool)", text: $command)
-                    }
-
-                    Section("Arguments") {
-                        ForEach(args.indices, id: \.self) { i in
-                            HStack {
-                                Text(args[i])
-                                    .font(.system(.body, design: .monospaced))
-                                Spacer()
-                                Button(role: .destructive) { args.remove(at: i) } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                        .foregroundColor(.red)
+                    // MARK: Env vars / Headers
+                    formSection(envLabel) {
+                        ForEach($envVars) { $env in
+                            EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
+                                if revealedEnvIds.contains(env.id) {
+                                    revealedEnvIds.remove(env.id)
+                                } else {
+                                    revealedEnvIds.insert(env.id)
                                 }
-                                .buttonStyle(.borderless)
+                            } onDelete: {
+                                envVars.removeAll { $0.id == env.id }
                             }
                         }
                         HStack {
-                            TextField("Add argument…", text: $newArg)
-                                .onSubmit { addArg() }
-                            Button("Add", action: addArg)
-                                .disabled(newArg.trimmingCharacters(in: .whitespaces).isEmpty)
+                            TextField("Key", text: $newEnvKey)
+                                .textFieldStyle(.roundedBorder)
+                            TextField("Value", text: $newEnvValue)
+                                .textFieldStyle(.roundedBorder)
+                            Button("Add") { addEnvVar() }
+                                .disabled(newEnvKey.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
                     }
-                }
 
-                Section(envLabel) {
-                    ForEach($envVars) { $env in
-                        EnvVarRow(envVar: $env, isRevealed: revealedEnvIds.contains(env.id)) {
-                            if revealedEnvIds.contains(env.id) {
-                                revealedEnvIds.remove(env.id)
-                            } else {
-                                revealedEnvIds.insert(env.id)
+                    // MARK: Notes
+                    formSection("Notes") {
+                        TextEditor(text: $notes)
+                            .frame(minHeight: 60)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
+                            )
+                    }
+
+                    // MARK: Test Connection (stdio only)
+                    if !isHTTP {
+                        HStack(spacing: 12) {
+                            Button {
+                                let config = currentStdioConfig()
+                                Task {
+                                    isTesting = true
+                                    testResult = await tester.test(config: config)
+                                    isTesting = false
+                                }
+                            } label: {
+                                if isTesting {
+                                    HStack(spacing: 6) {
+                                        ProgressView().controlSize(.small)
+                                        Text("Testing…")
+                                    }
+                                } else {
+                                    Label("Test Connection", systemImage: "network")
+                                }
                             }
-                        } onDelete: {
-                            envVars.removeAll { $0.id == env.id }
+                            .disabled(isTesting || command.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                            if let result = testResult, !isTesting {
+                                ConnectionTestResultView(result: result)
+                            }
                         }
                     }
-                    HStack {
-                        TextField("Key", text: $newEnvKey)
-                        TextField("Value", text: $newEnvValue)
-                        Button("Add") { addEnvVar() }
-                            .disabled(newEnvKey.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                    // MARK: Delete (edit mode only)
+                    if isEditMode {
+                        Divider()
+                            .padding(.top, 4)
+                        Button(role: .destructive) {
+                            confirmDelete = true
+                        } label: {
+                            Label("Delete Server", systemImage: "trash")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
                     }
                 }
-
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 60)
-                }
+                .padding()
             }
-            .formStyle(.grouped)
 
             if let error = validationError {
                 Text(error)
@@ -177,16 +248,61 @@ struct AddEditConfigView: View {
         .onChange(of: showPropagation) { isShowing in
             if !isShowing { dismiss() }
         }
+        .confirmationDialog(
+            "Delete \"\(displayName)\"?",
+            isPresented: $confirmDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { deleteServer() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This removes the server from your library and disables it for all agents.")
+        }
+    }
+
+    // MARK: - Section helpers
+
+    @ViewBuilder
+    private func formSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            content()
+        }
+    }
+
+    private func fieldLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundColor(.secondary)
+    }
+
+    // MARK: - Computed properties
+
+    private var serverKeyConflict: Bool {
+        let key = serverKey.trimmingCharacters(in: .whitespaces)
+        guard !key.isEmpty else { return false }
+        return store.configs.contains { cfg in
+            cfg.serverKey == key && cfg.id != existing?.id
+        }
     }
 
     private var isSaveDisabled: Bool {
         let name = displayName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty { return true }
+        if serverKeyConflict { return true }
         if isHTTP { return url.trimmingCharacters(in: .whitespaces).isEmpty }
         return command.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     // MARK: - Actions
+
+    private func deleteServer() {
+        guard let config = existing else { return }
+        try? store.delete(config)
+        dismiss()
+    }
 
     private func addArg() {
         let trimmed = newArg.trimmingCharacters(in: .whitespaces)
@@ -201,6 +317,15 @@ struct AddEditConfigView: View {
         envVars.append(EnvVar(key: key, value: newEnvValue))
         newEnvKey = ""
         newEnvValue = ""
+    }
+
+    private func currentStdioConfig() -> MCPServerConfig {
+        MCPServerConfig(
+            displayName: displayName,
+            command: command.trimmingCharacters(in: .whitespaces),
+            args: args,
+            envVars: envVars
+        )
     }
 
     private func save() {
@@ -251,6 +376,22 @@ struct AddEditConfigView: View {
         } catch {
             validationError = "Save failed: \(error.localizedDescription)"
         }
+    }
+}
+
+// MARK: - ConnectionTestResultView
+
+private struct ConnectionTestResultView: View {
+    let result: ConnectionTestResult
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: result.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundColor(result.isSuccess ? .green : .red)
+            Text(result.shortLabel)
+                .foregroundColor(result.isSuccess ? .primary : .red)
+        }
+        .font(.caption)
     }
 }
 

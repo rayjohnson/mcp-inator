@@ -38,6 +38,7 @@
 		71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */; };
 		739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1876009CB9EF08303E122849 /* ConfigStoreTests.swift */; };
 		7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 7ACD9873730B56F995155492 /* claude_desktop_config.json */; };
+		817549DE3D56B1B542C04875 /* ConnectionTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */; };
 		82A187BE9A23C507DAFE2038 /* Inator.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FB6678049CEDA09778E112E /* Inator.png */; };
 		85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75736D0388AAACA14315CAE /* ClaudeCodeAdapter.swift */; };
 		8659AD4092A2503E6C1E79C3 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF94672DFC83B2A8317F2FCC /* CatalogView.swift */; };
@@ -73,6 +74,7 @@
 		EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */; };
 		EEE87A7537B8A8060DE9F9CF /* Migration002.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A4408041C07C9921071598 /* Migration002.swift */; };
 		F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */; };
+		FD7AB207DB5CDC0018E0984A /* ConnectionTestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +88,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionTester.swift; sourceTree = "<group>"; };
 		016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDetailView.swift; sourceTree = "<group>"; };
 		062B29929666B95C6887ECAE /* MCPServerConfigEquatableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServerConfigEquatableTests.swift; sourceTree = "<group>"; };
 		06F600189546F0C9C3181A74 /* Inator@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Inator@1x.png"; sourceTree = "<group>"; };
@@ -113,6 +116,7 @@
 		56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
 		571E43C54CCE0B46A9AA5E44 /* appcast.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
+		5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionTestResult.swift; sourceTree = "<group>"; };
 		604C4C7C78B843FF1CA596BD /* mcp-inator.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "mcp-inator.icns"; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		673672951A0D420C1E6170F5 /* Migration005.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration005.swift; sourceTree = "<group>"; };
@@ -334,6 +338,7 @@
 		C6B4A8D0B362E2F4A09A21A7 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */,
 				2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */,
 				14925175871D556D6556A060 /* RegistryStore.swift */,
 			);
@@ -355,6 +360,7 @@
 				A3B865013EA65AAE8229C657 /* AgentRecord.swift */,
 				ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */,
 				9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */,
+				5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */,
 				7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */,
 				B1F59E8CDCBE4E70FF72AE08 /* RegistryEntry.swift */,
 			);
@@ -494,6 +500,8 @@
 				0DF006CA7250138FF808747A /* ConfigAgentAssignment.swift in Sources */,
 				478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */,
 				D22C26DC90B06519C84045D6 /* ConfigStore.swift in Sources */,
+				FD7AB207DB5CDC0018E0984A /* ConnectionTestResult.swift in Sources */,
+				817549DE3D56B1B542C04875 /* ConnectionTester.swift in Sources */,
 				14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */,
 				5E93AE6C06C1F2916D5724A2 /* GeminiCLIAdapter.swift in Sources */,
 				A2CF25990C93250DD40BEC1F /* GeminiDesktopAdapter.swift in Sources */,

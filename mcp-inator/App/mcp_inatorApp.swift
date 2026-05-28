@@ -8,11 +8,16 @@ struct mcp_inatorApp: App {
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
 
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-    )
+    private let sparkleDelegate = SparkleDelegate()
+    private let updaterController: SPUStandardUpdaterController
+
+    init() {
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: sparkleDelegate,
+            userDriverDelegate: nil
+        )
+    }
 
     private let adapters: [any AgentAdapter] = [
         ClaudeCodeAdapter(),
@@ -23,19 +28,19 @@ struct mcp_inatorApp: App {
     ]
 
     private let discoveryController = DiscoveryWindowController()
+    private let aboutController = AboutWindowController()
 
     var body: some Scene {
-        Window("About mcp-inator", id: "about") {
-            AboutView(updater: updaterController.updater)
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-
         MenuBarExtra {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
                     .environmentObject(registryStore)
+                    .environment(\.openAboutWindow, { [aboutController] in
+                        Task { @MainActor in
+                            aboutController.show(updater: self.updaterController.updater)
+                        }
+                    })
                     .onAppear {
                         try? store.seedSelfEntry()
                         Task { await registryStore.populateCategories() }
@@ -153,5 +158,65 @@ private struct StoreRecoveryView: View {
         }
         .padding()
         .frame(width: 360, height: 280)
+    }
+}
+
+// MARK: - OpenAboutWindowKey
+
+private struct OpenAboutWindowKey: EnvironmentKey {
+    static let defaultValue: @Sendable () -> Void = {}
+}
+
+extension EnvironmentValues {
+    var openAboutWindow: @Sendable () -> Void {
+        get { self[OpenAboutWindowKey.self] }
+        set { self[OpenAboutWindowKey.self] = newValue }
+    }
+}
+
+// MARK: - AboutWindowController
+
+@MainActor
+final class AboutWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(updater: SPUUpdater) {
+        if let existing = window {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let hosting = NSHostingController(rootView: AboutView(updater: updater))
+        let win = NSWindow(contentViewController: hosting)
+        win.styleMask = [.titled, .closable]
+        win.title = "About mcp-inator"
+        win.setContentSize(NSSize(width: 380, height: 260))
+        win.titlebarAppearsTransparent = true
+        win.titleVisibility = .hidden
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
+}
+
+// MARK: - SparkleDelegate
+
+/// Strips the Gatekeeper quarantine flag after Sparkle installs an update so
+/// that the unsigned app can relaunch successfully without user intervention.
+final class SparkleDelegate: NSObject, SPUUpdaterDelegate {
+    func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
+        guard let bundlePath = Bundle.main.bundlePath as String? else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+        process.arguments = ["-dr", "com.apple.quarantine", bundlePath]
+        try? process.run()
+        process.waitUntilExit()
     }
 }

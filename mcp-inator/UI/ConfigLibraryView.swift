@@ -31,6 +31,7 @@ struct ConfigLibraryView: View {
         }
         .onAppear { loadMatrix() }
         .onChange(of: store.configs.count) { _ in loadMatrix() }
+        .onChange(of: store.configs.map(\.updatedAt)) { _ in loadMatrix() }
         .navigationTitle("MCP Servers")
         .navigationDestination(isPresented: $showAddConfig) {
             AddEditConfigView()

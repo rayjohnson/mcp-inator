@@ -5,7 +5,7 @@ import AppKit
 struct MenuBarView: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var registryStore: RegistryStore
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openAboutWindow) private var openAboutWindow: @Sendable () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,8 +39,7 @@ struct MenuBarView: View {
 
             HStack {
                 Button("About mcp-inator…") {
-                    openWindow(id: "about")
-                    NSApp.activate(ignoringOtherApps: true)
+                    openAboutWindow()
                 }
                 .buttonStyle(.plain)
                 .font(.caption)
