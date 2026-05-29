@@ -60,13 +60,13 @@ final class CatalogClientTests: XCTestCase {
     }
 
     private var badURL: URL {
-        URL(string: "file:///nonexistent/path/that/does/not/exist.json")!
+        URL(fileURLWithPath: "/nonexistent/path/that/does/not/exist.json")
     }
 
     // MARK: - Fallback to cache
 
     func testFallsBackToCacheWhenLiveFails() async throws {
-        let cacheURL   = try writeCacheJSON(entries: singleEntryJSON)
+        let cacheURL = try writeCacheJSON(entries: singleEntryJSON)
         let bundledURL = try writeTempJSON(emptyCatalogJSON)
         let client = CatalogClient(serversURL: badURL, statsURL: badURL,
                                    cacheURL: cacheURL, bundledURL: bundledURL)
@@ -87,7 +87,7 @@ final class CatalogClientTests: XCTestCase {
           "fetchedAt": \(Date().timeIntervalSinceReferenceDate)
         }
         """
-        let cacheURL   = FileManager.default.temporaryDirectory
+        let cacheURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString + "-cache.json")
         try Data(metricsEntry.utf8).write(to: cacheURL)
         let bundledURL = try writeTempJSON(emptyCatalogJSON)

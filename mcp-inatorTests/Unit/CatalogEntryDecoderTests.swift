@@ -164,13 +164,13 @@ final class CatalogEntryDecoderTests: XCTestCase {
           "isTrending": false
         }
         """
-        let m = try decode(ServerMetrics.self, from: json)
-        XCTAssertEqual(m.serverKey, "github-mcp")
-        XCTAssertFalse(m.isArchived)
-        XCTAssertFalse(m.isTrending)
-        XCTAssertNil(m.starCount)
-        XCTAssertNil(m.trendingScore)
-        XCTAssertNil(m.sentimentSummary)
+        let metrics = try decode(ServerMetrics.self, from: json)
+        XCTAssertEqual(metrics.serverKey, "github-mcp")
+        XCTAssertFalse(metrics.isArchived)
+        XCTAssertFalse(metrics.isTrending)
+        XCTAssertNil(metrics.starCount)
+        XCTAssertNil(metrics.trendingScore)
+        XCTAssertNil(metrics.sentimentSummary)
     }
 
     func testDecodeFullMetrics() throws {
@@ -196,25 +196,25 @@ final class CatalogEntryDecoderTests: XCTestCase {
           "usageAggregatedAt": "2026-05-06T00:00:00Z"
         }
         """
-        let m = try decode(ServerMetrics.self, from: json)
-        XCTAssertEqual(m.starCount, 1234)
-        XCTAssertEqual(m.forkCount, 56)
-        XCTAssertEqual(m.openIssueCount, 7)
-        XCTAssertTrue(m.isTrending)
-        XCTAssertEqual(m.trendingScore, 82)
-        XCTAssertEqual(m.sentimentSummary, "Highly regarded in the community.")
-        XCTAssertEqual(m.mentionCount, 42)
-        XCTAssertEqual(m.periodDays, 30)
-        XCTAssertEqual(m.userCount, 500)
+        let metrics = try decode(ServerMetrics.self, from: json)
+        XCTAssertEqual(metrics.starCount, 1234)
+        XCTAssertEqual(metrics.forkCount, 56)
+        XCTAssertEqual(metrics.openIssueCount, 7)
+        XCTAssertTrue(metrics.isTrending)
+        XCTAssertEqual(metrics.trendingScore, 82)
+        XCTAssertEqual(metrics.sentimentSummary, "Highly regarded in the community.")
+        XCTAssertEqual(metrics.mentionCount, 42)
+        XCTAssertEqual(metrics.periodDays, 30)
+        XCTAssertEqual(metrics.userCount, 500)
     }
 
     func testMetricsMissingBoolsDefaultToFalse() throws {
         let json = """
         { "serverKey": "x" }
         """
-        let m = try decode(ServerMetrics.self, from: json)
-        XCTAssertFalse(m.isArchived)
-        XCTAssertFalse(m.isTrending)
+        let metrics = try decode(ServerMetrics.self, from: json)
+        XCTAssertFalse(metrics.isArchived)
+        XCTAssertFalse(metrics.isTrending)
     }
 
     // MARK: - StatsFile (stats.json)

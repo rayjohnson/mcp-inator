@@ -39,7 +39,7 @@ final class CatalogStoreTests: XCTestCase {
         let vms = [
             makeVM(id: "a", isTrending: true, trendingScore: 60),
             makeVM(id: "b", isTrending: false),
-            makeVM(id: "c", isTrending: true, trendingScore: 80),
+            makeVM(id: "c", isTrending: true, trendingScore: 80)
         ]
         let store = CatalogStore(viewModels: vms)
         let trending = store.trendingEntries
@@ -54,9 +54,9 @@ final class CatalogStoreTests: XCTestCase {
 
     func testTrendingEntriesSortedByScoreDescending() {
         let vms = [
-            makeVM(id: "low",  isTrending: true, trendingScore: 30),
+            makeVM(id: "low", isTrending: true, trendingScore: 30),
             makeVM(id: "high", isTrending: true, trendingScore: 90),
-            makeVM(id: "mid",  isTrending: true, trendingScore: 55),
+            makeVM(id: "mid", isTrending: true, trendingScore: 55)
         ]
         let store = CatalogStore(viewModels: vms)
         XCTAssertEqual(store.trendingEntries.map(\.id), ["high", "mid", "low"])
@@ -68,7 +68,7 @@ final class CatalogStoreTests: XCTestCase {
         let vms = [
             makeVM(id: "a", category: .productivity),
             makeVM(id: "b", category: .productivity),
-            makeVM(id: "c", category: .codeAndDevelopment),
+            makeVM(id: "c", category: .codeAndDevelopment)
         ]
         let store = CatalogStore(viewModels: vms)
         XCTAssertEqual(store.entriesByCategory[.productivity]?.count, 2)
@@ -78,8 +78,8 @@ final class CatalogStoreTests: XCTestCase {
 
     func testEntriesByCategoryExcludesAlternatives() {
         let vms = [
-            makeVM(id: "primary",     category: .productivity),
-            makeVM(id: "alternative", category: .productivity, alternativeTo: "primary"),
+            makeVM(id: "primary", category: .productivity),
+            makeVM(id: "alternative", category: .productivity, alternativeTo: "primary")
         ]
         let store = CatalogStore(viewModels: vms)
         let productivityEntries = store.entriesByCategory[.productivity] ?? []
@@ -91,8 +91,8 @@ final class CatalogStoreTests: XCTestCase {
 
     func testTopLevelReturnsNonAlternatives() {
         let vms = [
-            makeVM(id: "pick",  category: .productivity),
-            makeVM(id: "alt",   category: .productivity, alternativeTo: "pick"),
+            makeVM(id: "pick", category: .productivity),
+            makeVM(id: "alt", category: .productivity, alternativeTo: "pick")
         ]
         let store = CatalogStore(viewModels: vms)
         let top = store.topLevel(for: .productivity)
@@ -111,7 +111,7 @@ final class CatalogStoreTests: XCTestCase {
             makeVM(id: "notion-mcp"),
             makeVM(id: "notion-alt1", alternativeTo: "notion-mcp"),
             makeVM(id: "notion-alt2", alternativeTo: "notion-mcp"),
-            makeVM(id: "github-mcp"),
+            makeVM(id: "github-mcp")
         ]
         let store = CatalogStore(viewModels: vms)
         let alts = store.alternatives(for: "notion-mcp")
@@ -126,7 +126,7 @@ final class CatalogStoreTests: XCTestCase {
     func testAlternativesDoNotIncludeTopLevelEntry() {
         let vms = [
             makeVM(id: "notion-mcp"),
-            makeVM(id: "notion-alt", alternativeTo: "notion-mcp"),
+            makeVM(id: "notion-alt", alternativeTo: "notion-mcp")
         ]
         let store = CatalogStore(viewModels: vms)
         let alts = store.alternatives(for: "notion-mcp")
@@ -181,4 +181,3 @@ private final class CountingClient: CatalogFetching, @unchecked Sendable {
         return ([], [:])
     }
 }
-

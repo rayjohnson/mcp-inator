@@ -56,24 +56,24 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
     }
 
     init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        id              = try c.decode(String.self, forKey: .id)
-        displayName     = try c.decode(String.self, forKey: .displayName)
-        category        = try c.decode(CatalogCategory.self, forKey: .category)
-        shortDescription = try c.decode(String.self, forKey: .shortDescription)
-        curatorNote     = try c.decodeIfPresent(String.self, forKey: .curatorNote)
-        transportType   = try c.decode(String.self, forKey: .transportType)
-        command         = try c.decode(String.self, forKey: .command)
-        args            = try c.decode([String].self, forKey: .args)
-        url             = try c.decodeIfPresent(String.self, forKey: .url)
-        envVars         = try c.decode([EnvVarDefinition].self, forKey: .envVars)
-        requiredArgs    = try c.decodeIfPresent([RequiredArgDefinition].self, forKey: .requiredArgs)
-        documentationURL = try c.decodeIfPresent(String.self, forKey: .documentationURL)
-        repositoryURL   = try c.decodeIfPresent(String.self, forKey: .repositoryURL)
-        isVerified      = (try? c.decodeIfPresent(Bool.self, forKey: .isVerified)) ?? false
-        isFirstParty    = (try? c.decodeIfPresent(Bool.self, forKey: .isFirstParty)) ?? false
-        alternativeTo   = try c.decodeIfPresent(String.self, forKey: .alternativeTo)
-        serverKey       = try c.decode(String.self, forKey: .serverKey)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        category = try container.decode(CatalogCategory.self, forKey: .category)
+        shortDescription = try container.decode(String.self, forKey: .shortDescription)
+        curatorNote = try container.decodeIfPresent(String.self, forKey: .curatorNote)
+        transportType = try container.decode(String.self, forKey: .transportType)
+        command = try container.decode(String.self, forKey: .command)
+        args = try container.decode([String].self, forKey: .args)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        envVars = try container.decode([EnvVarDefinition].self, forKey: .envVars)
+        requiredArgs = try container.decodeIfPresent([RequiredArgDefinition].self, forKey: .requiredArgs)
+        documentationURL = try container.decodeIfPresent(String.self, forKey: .documentationURL)
+        repositoryURL = try container.decodeIfPresent(String.self, forKey: .repositoryURL)
+        isVerified = (try? container.decodeIfPresent(Bool.self, forKey: .isVerified)) ?? false
+        isFirstParty = (try? container.decodeIfPresent(Bool.self, forKey: .isFirstParty)) ?? false
+        alternativeTo = try container.decodeIfPresent(String.self, forKey: .alternativeTo)
+        serverKey = try container.decode(String.self, forKey: .serverKey)
     }
 
     init(
@@ -170,25 +170,25 @@ struct ServerMetrics: Codable, Sendable {
     }
 
     init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        serverKey          = try c.decode(String.self, forKey: .serverKey)
-        repositoryURL      = try c.decodeIfPresent(String.self, forKey: .repositoryURL)
-        starCount          = try c.decodeIfPresent(Int.self, forKey: .starCount)
-        forkCount          = try c.decodeIfPresent(Int.self, forKey: .forkCount)
-        lastCommitDate     = try c.decodeIfPresent(String.self, forKey: .lastCommitDate)
-        openIssueCount     = try c.decodeIfPresent(Int.self, forKey: .openIssueCount)
-        isArchived         = (try? c.decodeIfPresent(Bool.self, forKey: .isArchived)) ?? false
-        githubFetchedAt    = try c.decodeIfPresent(String.self, forKey: .githubFetchedAt)
-        isTrending         = (try? c.decodeIfPresent(Bool.self, forKey: .isTrending)) ?? false
-        trendingScore      = try c.decodeIfPresent(Int.self, forKey: .trendingScore)
-        sentimentSummary   = try c.decodeIfPresent(String.self, forKey: .sentimentSummary)
-        mentionCount       = try c.decodeIfPresent(Int.self, forKey: .mentionCount)
-        periodDays         = try c.decodeIfPresent(Int.self, forKey: .periodDays)
-        sentimentComputedAt = try c.decodeIfPresent(String.self, forKey: .sentimentComputedAt)
-        userCount          = try c.decodeIfPresent(Int.self, forKey: .userCount)
-        enabledCount       = try c.decodeIfPresent(Int.self, forKey: .enabledCount)
-        weeklyActiveCount  = try c.decodeIfPresent(Int.self, forKey: .weeklyActiveCount)
-        usageAggregatedAt  = try c.decodeIfPresent(String.self, forKey: .usageAggregatedAt)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        serverKey = try container.decode(String.self, forKey: .serverKey)
+        repositoryURL = try container.decodeIfPresent(String.self, forKey: .repositoryURL)
+        starCount = try container.decodeIfPresent(Int.self, forKey: .starCount)
+        forkCount = try container.decodeIfPresent(Int.self, forKey: .forkCount)
+        lastCommitDate = try container.decodeIfPresent(String.self, forKey: .lastCommitDate)
+        openIssueCount = try container.decodeIfPresent(Int.self, forKey: .openIssueCount)
+        isArchived = (try? container.decodeIfPresent(Bool.self, forKey: .isArchived)) ?? false
+        githubFetchedAt = try container.decodeIfPresent(String.self, forKey: .githubFetchedAt)
+        isTrending = (try? container.decodeIfPresent(Bool.self, forKey: .isTrending)) ?? false
+        trendingScore = try container.decodeIfPresent(Int.self, forKey: .trendingScore)
+        sentimentSummary = try container.decodeIfPresent(String.self, forKey: .sentimentSummary)
+        mentionCount = try container.decodeIfPresent(Int.self, forKey: .mentionCount)
+        periodDays = try container.decodeIfPresent(Int.self, forKey: .periodDays)
+        sentimentComputedAt = try container.decodeIfPresent(String.self, forKey: .sentimentComputedAt)
+        userCount = try container.decodeIfPresent(Int.self, forKey: .userCount)
+        enabledCount = try container.decodeIfPresent(Int.self, forKey: .enabledCount)
+        weeklyActiveCount = try container.decodeIfPresent(Int.self, forKey: .weeklyActiveCount)
+        usageAggregatedAt = try container.decodeIfPresent(String.self, forKey: .usageAggregatedAt)
     }
 
     init(
@@ -229,11 +229,11 @@ struct CatalogViewModel: Identifiable, Sendable {
 
     var id: String { entry.id }
 
-    var isTrending: Bool   { metrics?.isTrending ?? false }
+    var isTrending: Bool { metrics?.isTrending ?? false }
     var trendingScore: Int? { metrics?.trendingScore }
-    var starCount: Int?    { metrics?.starCount }
+    var starCount: Int? { metrics?.starCount }
     var lastCommitDate: String? { metrics?.lastCommitDate }
-    var userCount: Int?    { metrics?.userCount }
+    var userCount: Int? { metrics?.userCount }
     var sentimentSummary: String? { metrics?.sentimentSummary }
     var isAlternative: Bool { entry.alternativeTo != nil }
 }
@@ -243,8 +243,8 @@ struct CatalogViewModel: Identifiable, Sendable {
 extension MCPServerConfig {
     init(from entry: CatalogEntry) {
         let transport: TransportType = entry.transportType == "http" ? .http : .stdio
-        let envVars = entry.envVars.map { v -> EnvVar in
-            var ev = EnvVar(key: v.name, value: "", isSensitive: v.isSensitive)
+        let envVars = entry.envVars.map { envVar -> EnvVar in
+            var ev = EnvVar(key: envVar.name, value: "", isSensitive: envVar.isSensitive)
             ev.isHint = true
             return ev
         }

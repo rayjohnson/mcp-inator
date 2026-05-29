@@ -15,10 +15,13 @@ actor CatalogClient: CatalogFetching {
     private let cacheURL: URL
     private let bundledURL: URL
 
+    // swiftlint:disable:next force_unwrapping
     static let defaultServersURL = URL(string: "https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/servers.json")!
-    static let defaultStatsURL   = URL(string: "https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/stats.json")!
+    // swiftlint:disable:next force_unwrapping
+    static let defaultStatsURL = URL(string: "https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/stats.json")!
 
     static var defaultCacheURL: URL {
+        // swiftlint:disable:next force_unwrapping
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let dir = appSupport.appendingPathComponent("mcp-inator")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -26,6 +29,7 @@ actor CatalogClient: CatalogFetching {
     }
 
     static var defaultBundledURL: URL {
+        // swiftlint:disable:next force_unwrapping
         Bundle.main.url(forResource: "catalog", withExtension: "json")!
     }
 
