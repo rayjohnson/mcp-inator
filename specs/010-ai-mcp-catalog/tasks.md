@@ -1,0 +1,225 @@
+---
+description: "Task list for AI-Curated MCP Server Catalog"
+---
+
+# Tasks: AI-Curated MCP Server Catalog
+
+**Input**: Design documents from `/specs/010-ai-mcp-catalog/`
+
+**Prerequisites**: plan.md, spec.md, data-model.md, research.md, contracts/
+
+**Organization**: Tasks grouped by user story. Two repos involved:
+- `mcp-catalog/` = new `rayjohnson/mcp-catalog` public GitHub repo
+- `mcp-inator/` = existing `rayjohnson/mcp-inator` app repo (this branch)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel (different files, no blocking dependencies)
+- **[Story]**: Which user story (US1–US5) from spec.md
+
+---
+
+## Phase 1: Setup (Shared Catalog Repo Infrastructure)
+
+**Purpose**: Create the `rayjohnson/mcp-catalog` repo structure and initial JSON files. All subsequent pipeline and app work depends on these files existing with correct schemas.
+
+- [ ] T001 Create mcp-catalog repo directory layout and root README.md with curator workflow, label guide, and weekly job overview
+- [ ] T002 [P] Create mcp-catalog/servers.json initial file (schemaVersion 2, one complete sample entry with all fields per contracts/servers-json.md)
+- [ ] T003 [P] Create mcp-catalog/stats.json initial file (schemaVersion 1, empty stats object per contracts/stats-json.md)
+- [ ] T004 [P] Create mcp-catalog/trending.json initial file (schemaVersion 1, empty trending object per contracts/trending-json.md)
+- [ ] T005 [P] Create mcp-catalog/usage.json initial file (schemaVersion 1, empty usage object per contracts/usage-json.md)
+
+---
+
+## Phase 2: Foundational (Blocking — App-Side Data Model)
+
+**Purpose**: Swift model and bundled catalog update that ALL app-side user stories depend on. Must be complete before any UI work begins.
+
+**⚠️ CRITICAL**: US1, US5 app tasks cannot start until T006–T009 are complete.
+
+- [ ] T006 Create mcp-inator/Models/CatalogEntry.swift with Codable structs: CatalogEntry (all fields per contracts/servers-json.md including curatorNote, isFirstParty, alternativeTo), EnvVarDefinition, RequiredArgDefinition, ServerStats, TrendingEntry, UsageStats — all use decodeIfPresent for new optional fields
+- [ ] T007 Add CatalogViewModel struct to mcp-inator/Models/CatalogEntry.swift: joins CatalogEntry + ServerStats? + TrendingEntry? + UsageStats? into single display model; missing supplementary fields degrade to nil gracefully
+- [ ] T008 Update mcp-inator/Resources/catalog.json to schemaVersion 2: add curatorNote, isFirstParty (false), alternativeTo (null), requiredArgs ([]) to all 18 existing entries with realistic placeholder curator notes
+- [ ] T009 Update project.yml to include new Swift source files, then run `xcodegen generate` to register them in mcp-inator.xcodeproj/project.pbxproj
+
+**Checkpoint**: Build must succeed (`xcodebuild ... build`) before proceeding to US1 tasks.
+
+---
+
+## Phase 3: User Story 1 — Rich Catalog Display (Priority: P1) 🎯 MVP
+
+**Goal**: App fetches from `rayjohnson/mcp-catalog` and renders enriched entries with curator notes, first-party badges, star counts, env var documentation, and trending signals.
+
+**Independent Test**: Populate `mcp-catalog/servers.json` with 10 hand-crafted entries. Launch the app, open Catalog tab, verify: curator note shown, first-party badge visible on eligible entries, env vars listed with descriptions, documentation link works, trending badge appears for score ≥ 70.
+
+- [ ] T010 [P] [US1] Create mcp-inator/Services/CatalogClient.swift: fetch servers.json, stats.json, trending.json, usage.json in parallel using `async let`; on any network failure fall back to bundled mcp-inator/Resources/catalog.json; cache result to App Support/mcp-inator/catalog-cache.json on success
+- [ ] T011 [P] [US1] Create mcp-inator/Services/CatalogStore.swift: @MainActor ObservableObject; holds [CatalogViewModel]; exposes trendingEntries (score ≥ configurable threshold, default 70) and entriesByCategory; fetches once per session; loads from cache on init
+- [ ] T012 [US1] Wire CatalogClient and CatalogStore into mcp-inator/App/mcp_inatorApp.swift: instantiate CatalogStore as @StateObject, inject into environment
+- [ ] T013 [US1] Update mcp-inator/UI/CatalogView.swift to use CatalogStore: add Trending section at top for high-score entries; show first-party badge ("Made by [Service]") on entry rows; show star count and last-commit recency chip; show one-line curator note preview
+- [ ] T014 [US1] Create mcp-inator/UI/CatalogEntryDetailView.swift: full detail sheet with curator note, all env vars (name + description + required/sensitive badges), usage count ("used by N mcp-inator users"), documentation link, recommended-vs-alternative indicator (alternativeTo), GitHub stats
+- [ ] T015 [P] [US1] Create mcp-inatorTests/Unit/CatalogEntryTests.swift: decoder tests against fixture JSON files covering schemaVersion 2 with all new fields, missing optional fields (degrades gracefully), alternativeTo self-reference
+- [ ] T016 [US1] Verify offline fallback in CatalogClient: write a test or manually confirm that when all fetches fail the app shows bundled catalog.json entries without any error UI
+
+**Checkpoint**: US1 fully functional — user can browse, read curator notes, see env var requirements, and add a server without visiting external docs.
+
+---
+
+## Phase 4: User Story 2 — Community Submission Pipeline (Priority: P1)
+
+**Goal**: A GitHub Issue with a repo URL triggers AI enrichment and produces a draft PR within 10 minutes.
+
+**Independent Test**: Open a real GitHub Issue in `mcp-catalog` with the submission template and a valid MCP server URL. Verify a draft PR appears within 10 minutes with all required fields populated from the repo's README.
+
+- [ ] T017 [US2] Create mcp-catalog/.github/ISSUE_TEMPLATE/submit-server.yml: structured form with required `repository_url` field (GitHub URL), optional `why_i_like_it` textarea, instructions about expected pipeline behavior
+- [ ] T018 [US2] Create mcp-catalog/.github/workflows/enrich-submission.yml: trigger on `issues: types: [labeled]` where label is `submission`; job runs `pip install anthropic requests PyGithub` then `scripts/enrich.py`; uses `peter-evans/create-pull-request@v8` to open draft PR; `timeout-minutes: 15`; injects `ANTHROPIC_API_KEY` and `GITHUB_TOKEN` from secrets
+- [ ] T019 [US2] Create mcp-catalog/scripts/enrich.py: (1) extract GitHub repo URL from issue body; (2) fetch README.md + package.json/pyproject.toml/go.mod via GitHub Contents API; (3) call Claude API with structured prompt to produce a complete CatalogEntry JSON; (4) check for duplicate repositoryURL in servers.json — if duplicate, comment on issue and exit without PR; (5) if service already cataloged under different URL, include comparison comment on PR; (6) write enriched entry to temp file for peter-evans action to stage
+- [ ] T020 [US2] Add "submission" label to mcp-catalog repo (document manual step); add duplicate-detection test case to mcp-catalog/scripts/tests/test_enrich.py covering: valid URL, duplicate URL, non-GitHub URL (should comment + close issue)
+
+**Checkpoint**: US2 independently testable — open a real issue, pipeline fires, PR appears.
+
+---
+
+## Phase 5: User Story 3 — Weekly Freshness (Priority: P2)
+
+**Goal**: Stats stay current; archived repos and env-var drift are flagged automatically.
+
+**Independent Test**: Manually dispatch `weekly-refresh.yml`. Verify `stats.json` is updated in the catalog repo commit history with current star counts. Alter a test entry to have wrong env vars; verify a drift PR is opened.
+
+- [ ] T021 [US3] Create mcp-catalog/.github/workflows/weekly-refresh.yml: cron `0 2 * * 1` (Monday 2am UTC); runs `scripts/refresh.py`; commits stats.json update directly (no PR needed for stats); opens individual PRs for entries with significant drift (archived, env-var changes); injects `GITHUB_TOKEN` and `ANTHROPIC_API_KEY`
+- [ ] T022 [US3] Create mcp-catalog/scripts/refresh.py: (1) read servers.json; (2) for each repositoryURL, call GitHub REST API for starCount, forkCount, lastCommitDate, openIssueCount, isArchived; (3) write complete stats.json; (4) for archived repos open a PR flagging the entry for removal; (5) diff current README env vars against catalog envVars using Claude; open drift PR if mismatch found
+
+**Checkpoint**: US3 independently testable via manual workflow dispatch.
+
+---
+
+## Phase 6: User Story 5 — Anonymous Usage Sharing (Priority: P2)
+
+**Goal**: Opt-in telemetry flow → per-server "used by N users" counts in catalog.
+
+**Independent Test**: Enable sharing in debug settings. Open SharingReviewView, verify sanitized payload matches telemetry-payload contract (no values, paths redacted). Submit. Verify usage.json in catalog repo reflects incremented count.
+
+- [ ] T023 [US5] Create mcp-catalog/cloudflare-worker/index.js: handle `POST /report`; validate schemaVersion; for each server entry increment usage.json via GitHub Contents API (GET for SHA → PUT updated content); flag isKnownCatalogEntry:false entries in candidate-submissions.json; discard sessionToken; never log client IP; return `{"status":"ok","accepted":N}`
+- [ ] T024 [US5] Add Cloudflare Worker deployment documentation to mcp-catalog/cloudflare-worker/README.md: wrangler setup, required secrets (fine-grained PAT scoped to `rayjohnson/mcp-catalog` Contents read+write), deploy command
+- [ ] T025 [US5] Create mcp-inator/Services/UsageSharingService.swift: build SanitizedServerEntry from MCPServerConfig per Decision 6 rules (command allowlist, path redaction, env-var key-only); construct UsageReport payload; POST to Cloudflare Worker URL; retry up to 3× with exponential backoff; queue locally in UserDefaults on failure; retry on next launch; drop after 3 failed attempts silently
+- [ ] T026 [P] [US5] Create mcp-inator/UI/SharingConsentView.swift: non-intrusive prompt shown when firstLaunchDate > 7 days ago AND ≥1 enabled server; two actions: "Review what I'd share" (leads to SharingReviewView) and "Not now" (defers, never auto-submits)
+- [ ] T027 [P] [US5] Create mcp-inator/UI/SharingReviewView.swift: show each opted-in server's sanitized fields (serverKey, command, sanitizedArgs, envVarKeys); per-server toggle to exclude; "Submit" button calls UsageSharingService; "Cancel" exits without submitting
+- [ ] T028 [US5] Add sharing preference keys to UserDefaults and update mcp-inator/UI/SettingsView.swift: "Contributing Usage Data" section with current opt-in status, "Withdraw participation" button (prevents future submissions), link to privacy explanation
+- [ ] T029 [US5] Wire sharing eligibility check into mcp-inator/App/mcp_inatorApp.swift: on app foreground, evaluate eligibility (days since first launch, enabled server count, not already shown this session); present SharingConsentView as sheet when eligible
+
+**Checkpoint**: US5 independently testable — full flow from consent prompt → review → submit → usage.json updated.
+
+---
+
+## Phase 7: User Story 4 — Reddit Sentiment Signals (Priority: P3)
+
+**Goal**: Weekly Reddit mention analysis produces one-line sentiment summaries and trending scores in trending.json, displayed in the app.
+
+**Independent Test**: Manually dispatch `weekly-sentiment.yml`. Verify `trending.json` is updated with non-empty sentimentSummary and trendingScore for servers with known Reddit discussion. Verify app shows them in Trending section.
+
+- [ ] T030 [US4] Create mcp-catalog/.github/workflows/weekly-sentiment.yml: cron `0 4 * * 1` (Monday 4am UTC, after refresh); runs `scripts/sentiment.py`; commits updated trending.json; injects `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `ANTHROPIC_API_KEY` from secrets; if Reddit API unavailable, exits 0 without overwriting trending.json
+- [ ] T031 [US4] Create mcp-catalog/scripts/sentiment.py: (1) Reddit OAuth client-credentials flow; (2) for each catalog entry, search r/ClaudeAI, r/mcp, r/MachineLearning, r/LocalLLaMA by server displayName; (3) collect post titles, scores, comment counts from last 30 days; (4) for servers with ≥1 mention: call Claude to produce sentimentSummary + trendingScore (0–100) per contracts/trending-json.md score methodology; (5) write complete trending.json; omit servers with 0 mentions
+- [ ] T032 [US4] Update mcp-inator/UI/CatalogEntryDetailView.swift to display sentimentSummary when present; confirm CatalogView.swift Trending section already works from T013 (trendingScore threshold already wired)
+
+**Checkpoint**: US4 independently testable — manual dispatch of sentiment workflow, app shows updated trending data.
+
+---
+
+## Phase 8: Polish & Cross-Cutting Concerns
+
+**Purpose**: Pre-merge housekeeping, settings polish, and release prep.
+
+- [ ] T033 Update mcp-inator/UI/SettingsView.swift sharing section: ensure "Withdraw participation" correctly clears opt-in state and displays confirmation; verify withdrawn state persists across app restarts
+- [ ] T034 [P] Run `make test` in mcp-inator repo and fix any regressions introduced by new Swift files; confirm all existing tests still pass
+- [ ] T035 [P] Add mcp-catalog/scripts/tests/test_refresh.py with basic assertions for stats.json output shape and drift detection logic
+- [ ] T036 Bump VERSION and update RELEASE_NOTES.md in mcp-inator repo before PR merge
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: No dependencies — start immediately in mcp-catalog repo
+- **Foundational (Phase 2)**: No dependencies on Phase 1 — can start immediately in mcp-inator repo
+- **US1 (Phase 3)**: Depends on Foundational (T006–T009 complete)
+- **US2 (Phase 4)**: Depends on Phase 1 (mcp-catalog JSON files exist); independent of US1
+- **US3 (Phase 5)**: Depends on Phase 1 (mcp-catalog JSON files) and US2 (servers.json has entries); independent of US1
+- **US5 (Phase 6)**: Depends on Foundational (T006–T009) and Phase 1 (usage.json exists); can parallel with US1 after Foundational
+- **US4 (Phase 7)**: Depends on Phase 1 (trending.json exists) and US3 (refresh runs first weekly); independent of US1/US5
+- **Polish (Phase 8)**: Depends on all desired stories complete
+
+### User Story Dependencies
+
+- **US1 (P1)**: Can start after Foundational — no dependency on mcp-catalog pipeline
+- **US2 (P1)**: Can start after Phase 1 (Setup) — entirely in mcp-catalog repo, no app dependency
+- **US3 (P2)**: Can start after Phase 1 and US2 merges at least one entry
+- **US5 (P2)**: Can start after Foundational — app-side only until Worker deployment
+- **US4 (P3)**: Can start after Phase 1 — entirely in mcp-catalog repo
+
+### Within Each User Story
+
+- Models before services; services before UI
+- CatalogClient (T010) and CatalogStore (T011) can be developed in parallel
+- SharingConsentView (T026) and SharingReviewView (T027) can be developed in parallel
+- mcp-catalog Python scripts (enrich.py, refresh.py, sentiment.py) are independent of each other
+
+### Parallel Opportunities
+
+```bash
+# Phase 1 — all JSON files in parallel:
+T002 Create servers.json
+T003 Create stats.json
+T004 Create trending.json
+T005 Create usage.json
+
+# Phase 2 + Phase 1 simultaneously (different repos):
+T006–T009 (mcp-inator model work) || T001–T005 (mcp-catalog repo setup)
+
+# Phase 3 US1 — client and store in parallel:
+T010 CatalogClient.swift
+T011 CatalogStore.swift
+T015 CatalogEntryTests.swift
+
+# Phase 6 US5 — consent and review views in parallel:
+T026 SharingConsentView.swift
+T027 SharingReviewView.swift
+```
+
+---
+
+## Implementation Strategy
+
+### MVP: User Story 1 Only
+
+1. Complete Phase 1 (Setup) — populate mcp-catalog with hand-crafted entries
+2. Complete Phase 2 (Foundational) — Swift model and bundled catalog update
+3. Complete Phase 3 (US1) — rich catalog display in app
+4. **STOP and VALIDATE**: Open catalog tab, verify all new fields render
+5. This delivers SC-001 (user can find and add a server in under 2 minutes)
+
+### Incremental Delivery
+
+1. Foundation + US1 → Rich catalog display (MVP — ship this first)
+2. Add US2 → Community submission pipeline (first AI-enriched entries)
+3. Add US3 + US5 → Freshness + usage telemetry (living catalog)
+4. Add US4 → Trending signals (polish)
+5. Each story adds value independently
+
+### Parallel Team Strategy
+
+Two independent workstreams after Phase 1:
+- **App track**: Foundational → US1 → US5
+- **Pipeline track**: US2 → US3 → US4 (all in mcp-catalog repo)
+
+---
+
+## Notes
+
+- `[P]` = different files, no blocking dependencies between them
+- mcp-catalog tasks run in a separate repo from mcp-inator tasks — no project.yml/xcodegen needed for pipeline work
+- `touch` edited Swift files before `xcodebuild` to force recompilation
+- Run `xcodegen generate` after any new Swift files are added to project.yml
+- Run `make test` before each PR merge
+- Bump VERSION + update RELEASE_NOTES.md before every merge (required by project standards)
+- PRs from `peter-evans/create-pull-request@v8` using `GITHUB_TOKEN` do NOT trigger `pull_request` CI — this is expected (documented in research.md Decision 1)
+- Cloudflare Worker PAT must be a fine-grained token scoped only to `rayjohnson/mcp-catalog` Contents read+write — never embed in app binary
