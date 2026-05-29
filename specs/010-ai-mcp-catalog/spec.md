@@ -27,18 +27,19 @@ A user opens the mcp-inator catalog tab looking for an MCP server for a service 
 
 ### User Story 2 — Submit a New Server via GitHub Issue (Priority: P1)
 
-A community member finds an MCP server they love and wants to add it to the catalog. They open a GitHub Issue in the catalog repo, paste the server's GitHub URL, optionally add a sentence about why they like it, and submit. Within minutes an AI pipeline produces a fully-populated draft catalog entry — description, env vars, command, first-party flag, curator note — and opens a PR. The curator reads it, tweaks a sentence if needed, and merges. The server appears in the app on the next catalog refresh.
+A community member finds an MCP server they love and wants to add it to the catalog. They open a GitHub Issue in the catalog repo and paste whatever they know about the server — a repo URL, an npm package name like `@anthropic/mcp-server-everything`, a uvx command like `fastmcp`, or a Docker image. They optionally add a sentence about why they like it and submit. Within minutes an AI pipeline resolves the identifier, fetches available documentation, produces a fully-populated draft catalog entry, and opens a PR. The curator reads it, tweaks a sentence if needed, and merges. The server appears in the app on the next catalog refresh.
 
 **Why this priority**: The submission pipeline is what keeps the catalog growing without the curator doing data entry. Without it, the catalog stagnates.
 
-**Independent Test**: Open a GitHub Issue with a real MCP server's repo URL. Verify the pipeline fires, a PR opens within 10 minutes, the PR contains a valid `servers.json` entry with all required fields populated from the repo's actual README content.
+**Independent Test**: Open a GitHub Issue with a uvx package name (e.g. `fastmcp`). Verify the pipeline fires, a PR opens within 10 minutes, the PR contains a valid `servers.json` entry with all available fields populated.
 
 **Acceptance Scenarios**:
 
-1. **Given** a submitter opens an issue using the submission template with a valid GitHub repo URL, **When** the pipeline runs, **Then** a PR is opened containing a complete catalog entry with all required fields populated.
+1. **Given** a submitter opens an issue using the submission template with any valid server identifier (repo URL, package name, or Docker image), **When** the pipeline runs, **Then** a PR is opened containing a catalog entry with all fields that could be resolved populated.
 2. **Given** a submission is for a service already in the catalog, **When** the pipeline runs, **Then** the PR includes a comparison comment (stars, maintenance recency, first-party status) without automatically replacing the existing entry.
-3. **Given** a submitted repo has a missing or unreadable README, **When** the pipeline runs, **Then** a PR is still opened with fields that could be extracted and remaining fields flagged for human completion.
-4. **Given** a submission duplicates an existing catalog entry (same repo URL), **When** the pipeline runs, **Then** no PR is created and a comment explains the server is already listed.
+3. **Given** a submitted identifier resolves but has sparse documentation, **When** the pipeline runs, **Then** a PR is still opened with available fields populated and missing fields flagged for curator completion.
+4. **Given** a submission duplicates an existing catalog entry (same identifier already cataloged), **When** the pipeline runs, **Then** no PR is created and a comment explains the server is already listed.
+5. **Given** a submitted identifier cannot be resolved (URL 404s, package not found in any registry), **When** the pipeline runs, **Then** no PR is created and a comment explains what was tried.
 
 ---
 
@@ -99,11 +100,11 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 ### Edge Cases
 
 - What if the GitHub API is rate-limited during the submission pipeline? Pipeline retries up to 3 times with backoff; if still failing, the PR opens with a note that stats could not be fetched.
-- What if a submitted URL is not a GitHub repo (e.g. an npm page)? The pipeline comments on the issue asking for a GitHub URL and closes it without creating a PR.
+- What if a submitted identifier cannot be resolved at all (URL 404s, package name not found in any registry, unrecognized format)? The pipeline comments on the issue explaining what was tried and closes it without creating a PR. Partial resolution (e.g. package found but no README) still produces a PR with available fields populated and missing fields flagged for curator completion.
 - What if `servers.json` is malformed after a bad merge? The app falls back to the bundled catalog silently.
 - What if a server changes its install command between refreshes? The drift PR flags the change for curator review.
 - What if the Reddit API is unavailable during the weekly run? The sentiment job skips gracefully; existing `trending.json` data is preserved unchanged.
-- What if a user's server list contains commands with internal paths (e.g. `/Users/ray/internal-tool`)? The sharing payload replaces any filesystem path that isn't a well-known package manager command with `[redacted]` before display and before transmission.
+- What if a user's server list contains commands with internal paths (e.g. `/Users/ray/internal-tool`)? The sharing payload replaces any filesystem path that isn't a well-known package manager command with `[path]` before display and before transmission.
 - What if the usage data aggregation endpoint is unavailable? The app queues the payload locally and retries on the next app launch; after 3 failed attempts it silently drops the payload rather than showing an error.
 
 ---
@@ -115,11 +116,11 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 **Catalog Repository**
 
 - **FR-001**: The catalog MUST be stored as a public GitHub repository containing two human-readable JSON files: `servers.json` (curated entries, human-reviewed) and `stats.json` (all computed per-server metrics: GitHub stats, Reddit sentiment, and usage counts — auto-updated weekly).
-- **FR-002**: Submissions MUST be accepted via a structured GitHub Issue template requiring at minimum a GitHub repository URL.
-- **FR-003**: The AI enrichment pipeline MUST produce a complete catalog entry from a GitHub repo URL, populating: display name, description, curator note, command, args, required args, env vars (name / description / required / sensitive), transport type, first-party flag, documentation URL, repository URL, and category.
+- **FR-002**: Submissions MUST be accepted via a structured GitHub Issue template. The submitter provides a server identifier — any of: a repo URL (GitHub, GitLab, Bitbucket, or other), an npm package name, a PyPI/uvx package name, a Docker image name, or a CLI command. The template MUST NOT require a GitHub URL specifically.
+- **FR-003**: The AI enrichment pipeline MUST produce a complete catalog entry from the submitted server identifier, populating: display name, description, curator note, command, args, required args, env vars (name / description / required / sensitive), transport type, first-party flag, documentation URL, repository URL, and category. Resolution strategy by identifier type: repo URL → fetch README from that host; npm package → fetch npm registry metadata and README; PyPI/uvx package → fetch PyPI metadata and linked docs; Docker image → fetch Docker Hub description. Fields that cannot be inferred from available sources MUST be flagged for curator completion rather than blocking the PR.
 - **FR-004**: When a submission is for a service already in the catalog, the pipeline MUST produce a comparison comment on the PR (stars, maintenance recency, first-party status) rather than silently replacing the existing entry.
 - **FR-005**: Every valid submission MUST result in a draft PR; no entry may enter `servers.json` without human review and merge.
-- **FR-006**: Duplicate submissions (same repo URL already cataloged) MUST be detected and rejected with an explanatory issue comment; no PR is created.
+- **FR-006**: Duplicate submissions (same server identifier already cataloged, matched by repositoryURL or package name) MUST be detected and rejected with an explanatory issue comment; no PR is created.
 - **FR-007**: The weekly refresh MUST update `stats.json` with current GitHub star count, fork count, last commit date, and open issue count for every catalog entry.
 - **FR-008**: The weekly refresh MUST detect significant drift (archived repos, new or removed required env vars) and open PRs flagging affected entries.
 - **FR-009**: The weekly Reddit sentiment job MUST search a curated list of subreddits for each server by name, summarize community sentiment in one sentence, assign a trending score (0–100), and set the `isTrending` flag in `stats.json`. The initial subreddit list is r/ClaudeAI, r/ClaudeCode, r/MCPservers. The active list MUST be stored in `config.json` in the catalog repo. On a monthly cadence the sentiment job MUST ask Claude to evaluate the current subreddit list quality and discover emerging MCP communities, updating `config.json` if better sources are found — no human intervention required.
@@ -174,7 +175,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - GitHub Actions free tier (2,000 minutes/month for public repos) is sufficient for the submission pipeline and weekly jobs at expected volume.
 - The Claude API is used for AI enrichment; a GitHub Actions secret stores the API key. Cost per submission is estimated at $0.03–$0.10 depending on repo size.
 - Reddit's public API (free tier) is used for sentiment; rate limits are manageable for weekly batch processing of up to 200 entries.
-- v1 supports GitHub-hosted repos only; servers on GitLab, Bitbucket, or distributed via npm/PyPI without a GitHub repo are out of scope.
+- The enrichment pipeline supports any server identifier: repo URLs (GitHub, GitLab, Bitbucket, or other), npm package names, PyPI/uvx package names, and Docker image names. Servers with no resolvable online presence (private repos, intranet-only tools) are out of scope for the submission pipeline but may still appear via usage sharing.
 - The curator (repo owner) reviews and merges all PRs; no automated merging occurs.
 - The existing mcp-inator catalog data model is extended rather than replaced; new fields are additive and the app gracefully handles entries missing optional fields.
 - The bundled fallback catalog is updated manually with each mcp-inator app release; it is not auto-synced from the live catalog repo.
