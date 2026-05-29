@@ -130,7 +130,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **FR-011**: The app MUST fall back to a bundled catalog when the live fetch fails, with no visible error to the user.
 - **FR-012**: Each catalog entry MUST display: display name, description, curator note, first-party badge (when applicable), GitHub star count, last-commit recency, required env vars with descriptions, and a documentation link.
 - **FR-013**: Servers with a trending score above a configurable threshold MUST appear in a dedicated "Trending" section at the top of the catalog.
-- **FR-014**: When multiple servers exist for the same service, one MUST be shown as the recommended pick with alternatives listed below it.
+- **FR-014**: When multiple servers exist for the same service, the recommended pick MUST be shown at full size in the catalog list. Alternatives (entries whose `alternativeTo` points to the recommended pick's `id`) MUST be collapsed beneath it behind a disclosure control (e.g. "2 alternatives"). Expanding the disclosure reveals the alternatives inline. Only the recommended pick appears at top level by default.
 - **FR-015**: The catalog MUST refresh live data at most once per app session and cache the result locally for offline use.
 
 **Usage Data Sharing (mcp-inator App)**
