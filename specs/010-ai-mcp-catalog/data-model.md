@@ -72,7 +72,8 @@ Stored in `stats.json` (auto-updated weekly). Keyed by `serverKey`. Consolidates
 | openIssueCount | Int? | no | Open issue count |
 | isArchived | Bool | yes | Whether the GitHub repo is archived. `true` triggers a drift PR |
 | githubFetchedAt | String (ISO 8601) | yes | When GitHub API was last called for this entry |
-| trendingScore | Int (0–100)? | no | Absent if no Reddit mentions in lookback window |
+| isTrending | Bool | yes | Set by sentiment job based on score distribution analysis. `true` = appears in app's Trending section. Default `false` |
+| trendingScore | Int (0–100)? | no | Absent if no Reddit mentions in lookback window. Used for ordering within the Trending section, not for determining membership |
 | sentimentSummary | String? | no | One-sentence community sentiment. Absent (not shown) if no mentions |
 | mentionCount | Int? | no | Reddit posts/comments in the lookback window. Absent if 0 |
 | periodDays | Int? | no | Lookback window in days (typically 30) |

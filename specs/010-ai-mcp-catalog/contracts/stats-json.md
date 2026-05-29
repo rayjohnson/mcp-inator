@@ -64,13 +64,14 @@ This file consolidates all computed per-server signals. The app only needs `serv
 
 | Field | Constraint |
 |-------|-----------|
-| `trendingScore` | Integer 0–100. Absent if no Reddit mentions in the lookback window. |
+| `isTrending` | Boolean. Set by the sentiment job based on score distribution analysis (e.g. top N% that week). The app renders this flag directly — no threshold logic in the app. Defaults to `false`; absent = `false`. |
+| `trendingScore` | Integer 0–100. Absent if no Reddit mentions in the lookback window. Used for ordering within the Trending section, not for determining membership. |
 | `sentimentSummary` | 1–2 sentences. Absent if no mentions. MUST NOT be shown as "No mentions found" — simply omit. |
 | `mentionCount` | Non-negative integer. Absent (not 0) if no mentions. |
 | `periodDays` | Integer, typically 30. |
 | `sentimentComputedAt` | ISO 8601. |
 
-Servers with no Reddit activity have all sentiment fields absent. The sentiment job reads the existing entry and patches only the sentiment fields, preserving GitHub stats written earlier in the same Monday run.
+Servers with no Reddit activity have all sentiment fields absent and `isTrending: false`. The sentiment job reads the existing entry and patches only the sentiment fields, preserving GitHub stats written earlier in the same Monday run.
 
 ### Usage Counts (folded in by weekly-refresh.yml from internal usage.json)
 

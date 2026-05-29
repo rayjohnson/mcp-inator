@@ -116,7 +116,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 
 - **FR-001**: The catalog MUST be stored as a public GitHub repository containing two human-readable JSON files: `servers.json` (curated entries, human-reviewed) and `stats.json` (all computed per-server metrics: GitHub stats, Reddit sentiment, and usage counts — auto-updated weekly).
 - **FR-002**: Submissions MUST be accepted via a structured GitHub Issue template requiring at minimum a GitHub repository URL.
-- **FR-003**: The AI enrichment pipeline MUST produce a complete catalog entry from a GitHub repo URL, populating: display name, description, curator note, command, args, env vars (name / description / required / sensitive), transport type, first-party flag, documentation URL, repository URL, and category.
+- **FR-003**: The AI enrichment pipeline MUST produce a complete catalog entry from a GitHub repo URL, populating: display name, description, curator note, command, args, required args, env vars (name / description / required / sensitive), transport type, first-party flag, documentation URL, repository URL, and category.
 - **FR-004**: When a submission is for a service already in the catalog, the pipeline MUST produce a comparison comment on the PR (stars, maintenance recency, first-party status) rather than silently replacing the existing entry.
 - **FR-005**: Every valid submission MUST result in a draft PR; no entry may enter `servers.json` without human review and merge.
 - **FR-006**: Duplicate submissions (same repo URL already cataloged) MUST be detected and rejected with an explanatory issue comment; no PR is created.
@@ -129,7 +129,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **FR-010**: The app MUST fetch live catalog data from the catalog repository's raw file URLs, merging `servers.json` and `stats.json` into a unified display model.
 - **FR-011**: The app MUST fall back to a bundled catalog when the live fetch fails, with no visible error to the user.
 - **FR-012**: Each catalog entry MUST display: display name, description, curator note, first-party badge (when applicable), GitHub star count, last-commit recency, required env vars with descriptions, and a documentation link.
-- **FR-013**: Servers with a trending score above a configurable threshold MUST appear in a dedicated "Trending" section at the top of the catalog.
+- **FR-013**: Servers flagged as `isTrending: true` in `stats.json` MUST appear in a dedicated "Trending" section at the top of the catalog. The weekly sentiment job is responsible for setting this flag based on its analysis of score distributions — the app applies the flag as-is with no threshold logic of its own.
 - **FR-014**: When multiple servers exist for the same service, the recommended pick MUST be shown at full size in the catalog list. Alternatives (entries whose `alternativeTo` points to the recommended pick's `id`) MUST be collapsed beneath it behind a disclosure control (e.g. "2 alternatives"). Expanding the disclosure reveals the alternatives inline. Only the recommended pick appears at top level by default.
 - **FR-015**: The catalog MUST refresh live data at most once per app session and cache the result locally for offline use.
 
