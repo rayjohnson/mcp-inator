@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct CatalogView: View {
-    @EnvironmentObject private var registryStore: RegistryStore
+    @EnvironmentObject private var catalogStore: CatalogStore
     @EnvironmentObject private var store: ConfigStore
 
     @State private var searchText: String = ""
     @State private var selectedCategory: CatalogCategory?
-    @State private var searchTask: Task<Void, Never>?
 
     private var isSearchActive: Bool {
         !searchText.trimmingCharacters(in: .whitespaces).isEmpty
@@ -17,18 +16,18 @@ struct CatalogView: View {
             searchBar
             Divider()
 
-            if isSearchActive {
+            if catalogStore.isLoading && catalogStore.viewModels.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if isSearchActive {
                 searchResultsView
             } else {
                 categoryFilterBar
                 Divider()
-                categoryBrowseView
+                browseView
             }
         }
         .navigationTitle("Catalog")
-        .onChange(of: searchText) { text in
-            scheduleSearch(query: text)
-        }
     }
 
     // MARK: - Search Bar
@@ -42,7 +41,6 @@ struct CatalogView: View {
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
-                    registryStore.cancelSearch()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.secondary)
@@ -74,33 +72,87 @@ struct CatalogView: View {
         }
     }
 
-    // MARK: - Category Browse
+    // MARK: - Browse
 
     @ViewBuilder
-    private var categoryBrowseView: some View {
-        let pairs = browsePairs
-        let visibleCategories = selectedCategory.map { [$0] } ?? CatalogCategory.allCases
-        let anyLoading = visibleCategories.contains {
-            if case .loading = registryStore.categoryState(for: $0) { return true }
-            return false
+    private var browseView: some View {
+        let trending = catalogStore.trendingEntries
+        let categories = selectedCategory.map { [$0] } ?? CatalogCategory.allCases
+
+        if catalogStore.viewModels.isEmpty {
+            emptyState
+        } else {
+            List {
+                if selectedCategory == nil && !trending.isEmpty {
+                    trendingSection(trending)
+                }
+                ForEach(categories, id: \.self) { cat in
+                    let entries = catalogStore.topLevel(for: cat)
+                    if !entries.isEmpty {
+                        Section(cat.rawValue) {
+                            ForEach(entries) { vm in
+                                entryRow(vm, showCategory: false)
+                            }
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    private func trendingSection(_ entries: [CatalogViewModel]) -> some View {
+        Section {
+            ForEach(entries) { vm in
+                entryRow(vm, showCategory: true)
+            }
+        } header: {
+            Label("Trending", systemImage: "chart.line.uptrend.xyaxis")
+                .font(.headline)
+                .foregroundColor(.primary)
+                .padding(.top, 4)
+        }
+    }
+
+    @ViewBuilder
+    private func entryRow(_ vm: CatalogViewModel, showCategory: Bool) -> some View {
+        let alts = catalogStore.alternatives(for: vm.entry.id)
+        if alts.isEmpty {
+            NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary(vm))
+            }
+            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+        } else {
+            AlternativesRow(
+                vm: vm,
+                alternatives: alts,
+                showCategory: showCategory,
+                isInLibrary: isInLibrary(vm),
+                altIsInLibrary: { isInLibrary($0) },
+                store: store
+            )
+            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+        }
+    }
+
+    // MARK: - Search Results
+
+    @ViewBuilder
+    private var searchResultsView: some View {
+        let query = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+        let results = catalogStore.viewModels.filter { vm in
+            vm.entry.displayName.lowercased().contains(query) ||
+            vm.entry.shortDescription.lowercased().contains(query) ||
+            (vm.entry.curatorNote?.lowercased().contains(query) ?? false)
         }
 
-        if pairs.isEmpty && anyLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if pairs.isEmpty {
-            emptyBrowseState
+        if results.isEmpty {
+            emptySearchState
         } else {
-            List(pairs, id: \.entry.id) { item in
-                NavigationLink(destination:
-                    CatalogDetailView(entry: item.entry, category: item.category)
-                        .environmentObject(store)
-                ) {
-                    CatalogRow(
-                        entry: item.entry,
-                        category: item.category,
-                        isInLibrary: isInLibrary(entry: item.entry)
-                    )
+            List(results) { vm in
+                NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                    CatalogRow(vm: vm, showCategory: true, isInLibrary: isInLibrary(vm))
                 }
                 .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
             }
@@ -108,19 +160,7 @@ struct CatalogView: View {
         }
     }
 
-    private var browsePairs: [(entry: RegistryEntry, category: CatalogCategory)] {
-        let categories = selectedCategory.map { [$0] } ?? CatalogCategory.allCases
-        var seen = Set<String>()
-        return categories.flatMap { cat in
-            registryStore.entries(for: cat).compactMap { entry in
-                guard seen.insert(entry.id).inserted else { return nil }
-                return (entry, cat)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var emptyBrowseState: some View {
+    private var emptyState: some View {
         VStack(spacing: 12) {
             Spacer()
             Image(systemName: "tray")
@@ -136,61 +176,6 @@ struct CatalogView: View {
         .padding()
     }
 
-    // MARK: - Search Results
-
-    @ViewBuilder
-    private var searchResultsView: some View {
-        switch registryStore.searchState {
-        case .idle:
-            Color.clear
-        case .searching:
-            ProgressView("Searching…")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        case .results(let entries):
-            searchList(entries)
-        case .localOnly(let entries):
-            VStack(spacing: 0) {
-                offlineBanner
-                searchList(entries)
-            }
-        case .empty:
-            emptySearchState
-        case .failed(let msg):
-            searchErrorState(msg)
-        }
-    }
-
-    private var offlineBanner: some View {
-        HStack {
-            Image(systemName: "wifi.slash")
-            Text("Offline — showing cached results")
-                .font(.caption)
-        }
-        .foregroundColor(.secondary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondary.opacity(0.08))
-    }
-
-    private func searchList(_ entries: [RegistryEntry]) -> some View {
-        List(entries) { entry in
-            NavigationLink(destination:
-                CatalogDetailView(entry: entry, category: nil)
-                    .environmentObject(store)
-            ) {
-                CatalogRow(
-                    entry: entry,
-                    category: nil,
-                    isInLibrary: isInLibrary(entry: entry)
-                )
-            }
-            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
-        }
-        .listStyle(.plain)
-    }
-
-    @ViewBuilder
     private var emptySearchState: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -202,69 +187,36 @@ struct CatalogView: View {
             Text("No servers matched \"\(searchText)\"")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Button("Clear Search") {
-                searchText = ""
-            }
+            Button("Clear Search") { searchText = "" }
             Spacer()
         }
         .padding()
     }
 
-    private func searchErrorState(_ msg: String) -> some View {
-        VStack(spacing: 12) {
-            Spacer()
-            Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
-            Text("Search failed")
-                .font(.headline)
-            Text(msg)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            Spacer()
-        }
-        .padding()
-    }
-
-    // MARK: - Helpers
-
-    private func isInLibrary(entry: RegistryEntry) -> Bool {
-        let key = MCPServerConfig.generateKey(from: entry.displayName)
-        return store.configs.contains { $0.serverKey == key }
-    }
-
-    private func scheduleSearch(query: String) {
-        searchTask?.cancel()
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else {
-            registryStore.cancelSearch()
-            return
-        }
-        searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            guard !Task.isCancelled else { return }
-            await registryStore.search(query: trimmed)
-        }
+    private func isInLibrary(_ vm: CatalogViewModel) -> Bool {
+        store.configs.contains { $0.serverKey == vm.entry.serverKey }
     }
 }
 
 // MARK: - CatalogRow
 
-private struct CatalogRow: View {
-    let entry: RegistryEntry
-    let category: CatalogCategory?
+struct CatalogRow: View {
+    let vm: CatalogViewModel
+    let showCategory: Bool
     let isInLibrary: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text(entry.displayName)
+                    Text(vm.entry.displayName)
                         .font(.body)
                         .fontWeight(.medium)
-                    if let cat = category {
-                        CategoryBadge(category: cat)
+                    if vm.entry.isFirstParty {
+                        FirstPartyBadge()
+                    }
+                    if showCategory {
+                        CategoryBadge(category: vm.entry.category)
                     }
                     Spacer()
                     if isInLibrary {
@@ -275,13 +227,96 @@ private struct CatalogRow: View {
                             .help("Already in your library")
                     }
                 }
-                Text(entry.description)
+
+                HStack(spacing: 8) {
+                    if let stars = vm.starCount {
+                        Label(formatStars(stars), systemImage: "star")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    if let dateStr = vm.lastCommitDate, let age = relativeAge(from: dateStr) {
+                        Text(age)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Text(vm.entry.shortDescription)
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
+
+                if let note = vm.entry.curatorNote {
+                    Text(note)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .italic()
+                        .lineLimit(1)
+                }
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+// MARK: - AlternativesRow
+
+private struct AlternativesRow: View {
+    let vm: CatalogViewModel
+    let alternatives: [CatalogViewModel]
+    let showCategory: Bool
+    let isInLibrary: Bool
+    let altIsInLibrary: (CatalogViewModel) -> Bool
+    let store: ConfigStore
+
+    @State private var expanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary)
+            }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { expanded.toggle() }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: expanded ? "chevron.down" : "chevron.right")
+                        .font(.caption2)
+                    Text("\(alternatives.count) alternative\(alternatives.count == 1 ? "" : "s")")
+                        .font(.caption2)
+                }
+                .foregroundColor(.accentColor)
+                .padding(.top, 2)
+                .padding(.leading, 4)
+            }
+            .buttonStyle(.borderless)
+
+            if expanded {
+                ForEach(alternatives) { alt in
+                    NavigationLink(destination: CatalogEntryDetailView(vm: alt).environmentObject(store)) {
+                        CatalogRow(vm: alt, showCategory: false, isInLibrary: altIsInLibrary(alt))
+                            .padding(.leading, 16)
+                    }
+                    .padding(.top, 4)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - FirstPartyBadge
+
+struct FirstPartyBadge: View {
+    var body: some View {
+        Text("Official")
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(Color.blue.opacity(0.15))
+            .foregroundColor(.blue)
+            .clipShape(RoundedRectangle(cornerRadius: 3))
     }
 }
 
@@ -307,5 +342,37 @@ private struct FilterChip: View {
                 )
         }
         .buttonStyle(.borderless)
+    }
+}
+
+// MARK: - Formatting helpers
+
+func formatStars(_ count: Int) -> String {
+    if count >= 1000 {
+        let k = Double(count) / 1000.0
+        return String(format: k >= 10 ? "%.0fK" : "%.1fK", k)
+    }
+    return "\(count)"
+}
+
+func relativeAge(from iso8601: String) -> String? {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    var date = formatter.date(from: iso8601)
+    if date == nil {
+        formatter.formatOptions = [.withInternetDateTime]
+        date = formatter.date(from: iso8601)
+    }
+    guard let date else { return nil }
+    let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+    switch days {
+    case 0:      return "today"
+    case 1:      return "yesterday"
+    case 2...6:  return "\(days) days ago"
+    case 7...13: return "1 week ago"
+    case 14...29: return "\(days / 7) weeks ago"
+    case 30...59: return "1 month ago"
+    case 60...364: return "\(days / 30) months ago"
+    default:     return "\(days / 365) year\(days / 365 == 1 ? "" : "s") ago"
     }
 }

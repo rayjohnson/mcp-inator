@@ -8,6 +8,7 @@ struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
+    @StateObject private var catalogStore  = CatalogStore()
 
     private let sparkleDelegate = SparkleDelegate()
     private let updaterController: SPUStandardUpdaterController
@@ -50,9 +51,11 @@ struct mcp_inatorApp: App {
                             aboutController.show(updater: self.updaterController.updater)
                         }
                     })
+                    .environmentObject(catalogStore)
                     .onAppear {
                         try? store.seedSelfEntry()
                         Task { await registryStore.populateCategories() }
+                        Task { await catalogStore.fetchIfNeeded() }
                         runAgentScan(store: store)
                     }
             } else {
