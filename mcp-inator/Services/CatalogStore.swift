@@ -9,11 +9,18 @@ final class CatalogStore: ObservableObject {
     @Published private(set) var viewModels: [CatalogViewModel] = []
     @Published private(set) var isLoading: Bool = false
 
-    private let client: CatalogClient
+    private let client: any CatalogFetching
     private var didFetch = false
 
-    init(client: CatalogClient = CatalogClient()) {
+    init(client: any CatalogFetching = CatalogClient()) {
         self.client = client
+    }
+
+    /// Initializer for unit tests — seeds viewModels directly without any network call.
+    init(viewModels: [CatalogViewModel]) {
+        self.client = _NullCatalogClient()
+        self.viewModels = viewModels
+        self.didFetch = true
     }
 
     // MARK: - Public API
@@ -51,4 +58,10 @@ final class CatalogStore: ObservableObject {
         }
         isLoading = false
     }
+}
+
+// MARK: - _NullCatalogClient
+
+private struct _NullCatalogClient: CatalogFetching {
+    func fetch() async -> ([CatalogEntry], [String: ServerMetrics]) { ([], [:]) }
 }

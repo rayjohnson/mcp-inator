@@ -75,6 +75,34 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
         alternativeTo   = try c.decodeIfPresent(String.self, forKey: .alternativeTo)
         serverKey       = try c.decode(String.self, forKey: .serverKey)
     }
+
+    init(
+        id: String, displayName: String, category: CatalogCategory,
+        shortDescription: String, curatorNote: String? = nil,
+        transportType: String = "stdio", command: String = "", args: [String] = [],
+        url: String? = nil, envVars: [EnvVarDefinition] = [], requiredArgs: [RequiredArgDefinition]? = nil,
+        documentationURL: String? = nil, repositoryURL: String? = nil,
+        isVerified: Bool = false, isFirstParty: Bool = false,
+        alternativeTo: String? = nil, serverKey: String
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.category = category
+        self.shortDescription = shortDescription
+        self.curatorNote = curatorNote
+        self.transportType = transportType
+        self.command = command
+        self.args = args
+        self.url = url
+        self.envVars = envVars
+        self.requiredArgs = requiredArgs
+        self.documentationURL = documentationURL
+        self.repositoryURL = repositoryURL
+        self.isVerified = isVerified
+        self.isFirstParty = isFirstParty
+        self.alternativeTo = alternativeTo
+        self.serverKey = serverKey
+    }
 }
 
 // MARK: - EnvVarDefinition
@@ -161,6 +189,35 @@ struct ServerMetrics: Codable, Sendable {
         enabledCount       = try c.decodeIfPresent(Int.self, forKey: .enabledCount)
         weeklyActiveCount  = try c.decodeIfPresent(Int.self, forKey: .weeklyActiveCount)
         usageAggregatedAt  = try c.decodeIfPresent(String.self, forKey: .usageAggregatedAt)
+    }
+
+    init(
+        serverKey: String, repositoryURL: String? = nil,
+        starCount: Int? = nil, forkCount: Int? = nil, lastCommitDate: String? = nil,
+        openIssueCount: Int? = nil, isArchived: Bool = false, githubFetchedAt: String? = nil,
+        isTrending: Bool = false, trendingScore: Int? = nil,
+        sentimentSummary: String? = nil, mentionCount: Int? = nil, periodDays: Int? = nil,
+        sentimentComputedAt: String? = nil, userCount: Int? = nil, enabledCount: Int? = nil,
+        weeklyActiveCount: Int? = nil, usageAggregatedAt: String? = nil
+    ) {
+        self.serverKey = serverKey
+        self.repositoryURL = repositoryURL
+        self.starCount = starCount
+        self.forkCount = forkCount
+        self.lastCommitDate = lastCommitDate
+        self.openIssueCount = openIssueCount
+        self.isArchived = isArchived
+        self.githubFetchedAt = githubFetchedAt
+        self.isTrending = isTrending
+        self.trendingScore = trendingScore
+        self.sentimentSummary = sentimentSummary
+        self.mentionCount = mentionCount
+        self.periodDays = periodDays
+        self.sentimentComputedAt = sentimentComputedAt
+        self.userCount = userCount
+        self.enabledCount = enabledCount
+        self.weeklyActiveCount = weeklyActiveCount
+        self.usageAggregatedAt = usageAggregatedAt
     }
 }
 

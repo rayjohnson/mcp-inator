@@ -38,9 +38,11 @@
 		544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E57B58837265AE3A8812BC /* ClaudeCodeAdapterTests.swift */; };
 		55EDE08B968A9932A5100EF8 /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = A8A575E8E03CFB9812734877 /* TOMLKit */; };
 		5E93AE6C06C1F2916D5724A2 /* GeminiCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */; };
+		60216F1F5B4BA2BFF4BE0523 /* CatalogEntryDecoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED892903CE9FF14BF00DB02 /* CatalogEntryDecoderTests.swift */; };
 		698770EB8DB65E6BA481D464 /* RegistryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */; };
 		71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */; };
 		739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1876009CB9EF08303E122849 /* ConfigStoreTests.swift */; };
+		774A7276EC90260DBDB284F4 /* CatalogClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5136483F029BD505D48D581C /* CatalogClientTests.swift */; };
 		7877C4D786F70D5589D2BC2D /* ImportSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D93EC8166B021EEC823482 /* ImportSource.swift */; };
 		7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 7ACD9873730B56F995155492 /* claude_desktop_config.json */; };
 		817549DE3D56B1B542C04875 /* ConnectionTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */; };
@@ -51,6 +53,7 @@
 		8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */ = {isa = PBXBuildFile; fileRef = F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */; };
 		8CDC219ECE6787F6C010819C /* ImportSourceScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A99FC7DF6D6744F5A22A16 /* ImportSourceScannerTests.swift */; };
 		92676DE4508191620304B216 /* gemini_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 9109E1A5469B7D25B926FD1E /* gemini_config.json */; };
+		941B0061DDDBE840AB3F815A /* CatalogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208282AF3881944515550A89 /* CatalogStoreTests.swift */; };
 		95EE55C2F28E746E65CF804D /* AgentRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B865013EA65AAE8229C657 /* AgentRecord.swift */; };
 		9680CAFED3EC68BA8DEBD628 /* MCPServerConfigEquatableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062B29929666B95C6887ECAE /* MCPServerConfigEquatableTests.swift */; };
 		9BA46DF2391731E8AF7CBDBE /* ManageAgentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */; };
@@ -112,6 +115,7 @@
 		1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapter.swift; sourceTree = "<group>"; };
 		1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapterTests.swift; sourceTree = "<group>"; };
 		1D5E12DD5F2F8255785408D2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		208282AF3881944515550A89 /* CatalogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStoreTests.swift; sourceTree = "<group>"; };
 		28A99FC7DF6D6744F5A22A16 /* ImportSourceScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSourceScannerTests.swift; sourceTree = "<group>"; };
 		2A0C42E76E92831198F754C1 /* version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = version.xcconfig; sourceTree = "<group>"; };
 		2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryClient.swift; sourceTree = "<group>"; };
@@ -124,11 +128,13 @@
 		3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAgentsView.swift; sourceTree = "<group>"; };
 		512E05EE9732BFAB0F62924E /* ClaudeDesktopAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeDesktopAdapter.swift; sourceTree = "<group>"; };
+		5136483F029BD505D48D581C /* CatalogClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogClientTests.swift; sourceTree = "<group>"; };
 		55B09DE2D809C77FE508549F /* DiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryView.swift; sourceTree = "<group>"; };
 		56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
 		571E43C54CCE0B46A9AA5E44 /* appcast.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryTests.swift; sourceTree = "<group>"; };
 		5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionTestResult.swift; sourceTree = "<group>"; };
+		5ED892903CE9FF14BF00DB02 /* CatalogEntryDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntryDecoderTests.swift; sourceTree = "<group>"; };
 		604C4C7C78B843FF1CA596BD /* mcp-inator.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "mcp-inator.icns"; sourceTree = "<group>"; };
 		61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		624E21650338FFEE2413BE75 /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.json; sourceTree = "<group>"; };
@@ -342,7 +348,10 @@
 			isa = PBXGroup;
 			children = (
 				A121873BD13A5AEFF0413CE9 /* AgentVisibilityTests.swift */,
+				5136483F029BD505D48D581C /* CatalogClientTests.swift */,
+				5ED892903CE9FF14BF00DB02 /* CatalogEntryDecoderTests.swift */,
 				58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */,
+				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
 				28A99FC7DF6D6744F5A22A16 /* ImportSourceScannerTests.swift */,
@@ -584,7 +593,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1C6D075F030E86E687D04A4 /* AgentVisibilityTests.swift in Sources */,
+				774A7276EC90260DBDB284F4 /* CatalogClientTests.swift in Sources */,
+				60216F1F5B4BA2BFF4BE0523 /* CatalogEntryDecoderTests.swift in Sources */,
 				C29C4A0AB1C1CB59D2F521C0 /* CatalogEntryTests.swift in Sources */,
+				941B0061DDDBE840AB3F815A /* CatalogStoreTests.swift in Sources */,
 				544D1B195DBAA778AC333642 /* ClaudeCodeAdapterTests.swift in Sources */,
 				D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */,
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,

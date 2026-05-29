@@ -1,8 +1,14 @@
 import Foundation
 
+// MARK: - CatalogFetching
+
+protocol CatalogFetching: Sendable {
+    func fetch() async -> ([CatalogEntry], [String: ServerMetrics])
+}
+
 // MARK: - CatalogClient
 
-actor CatalogClient {
+actor CatalogClient: CatalogFetching {
 
     private let serversURL: URL
     private let statsURL: URL
