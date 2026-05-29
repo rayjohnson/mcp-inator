@@ -75,6 +75,27 @@ A server generating buzz on Reddit appears with a one-line community sentiment s
 
 ---
 
+### User Story 5 — Anonymous Usage Data Sharing (Priority: P2)
+
+A user who has been running several MCP servers for a few weeks sees a prompt in mcp-inator asking if they'd like to contribute their usage data to improve the catalog. They tap "Review what I'd share" and see a clear list: server keys, commands, which env var names (not values) are configured, and — optionally — any descriptions they've written for their own servers. They uncheck one internal server they don't want to share, then submit. Their anonymized data joins a pool that makes the catalog's popularity rankings reflect real-world usage rather than GitHub stars.
+
+Over time, as more users contribute, the catalog gains a "used by N mcp-inator users" count per server — a signal no other registry has.
+
+**Why this priority**: This is the highest-quality popularity signal available and gets better with every user who opts in. It also creates a feedback loop where users feel invested in the catalog's quality. Ranked P2 because it requires the catalog infrastructure (US1/US2) to exist first and introduces privacy/consent complexity that warrants a separate implementation pass.
+
+**Independent Test**: Enable sharing in settings, open the sharing review screen, verify the payload shown matches the sanitized format (no env var values, no internal paths, per-server opt-out works). Submit and verify the aggregation endpoint receives valid data. Verify the resulting `usage.json` in the catalog repo reflects the contributed server keys with incremented counts.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user has never been asked about sharing, **When** they have used mcp-inator for at least 7 days with at least one enabled server, **Then** a non-intrusive prompt appears offering to let them review and share usage data — opt-in only, never automatic.
+2. **Given** a user opens the sharing review screen, **When** they view it, **Then** they see: each server's key and command, the list of env var names configured (no values), whether the server is currently enabled, and any description they've written — with a per-server toggle to exclude individual entries.
+3. **Given** a user submits their usage data, **When** the payload is sent, **Then** it contains no env var values, no file system paths that could identify the machine, no user identifiers, and no IP address is stored by the receiving endpoint.
+4. **Given** a user has opted in to sharing, **When** they open Settings, **Then** they can withdraw participation at any time, which prevents any future sharing and removes their identifier from the sharing pool.
+5. **Given** usage data has been received from multiple users, **When** the weekly aggregation job runs, **Then** `usage.json` in the catalog repo is updated with per-server usage counts that the app can display as "used by N mcp-inator users."
+6. **Given** a server in a user's library is not in the catalog, **When** the user shares usage data, **Then** that server's data is included in the payload and flagged as a potential new catalog candidate for the AI enrichment pipeline to process.
+
+---
+
 ### Edge Cases
 
 - What if the GitHub API is rate-limited during the submission pipeline? Pipeline retries up to 3 times with backoff; if still failing, the PR opens with a note that stats could not be fetched.
@@ -82,6 +103,8 @@ A server generating buzz on Reddit appears with a one-line community sentiment s
 - What if `servers.json` is malformed after a bad merge? The app falls back to the bundled catalog silently.
 - What if a server changes its install command between refreshes? The drift PR flags the change for curator review.
 - What if the Reddit API is unavailable during the weekly run? The sentiment job skips gracefully; existing `trending.json` data is preserved unchanged.
+- What if a user's server list contains commands with internal paths (e.g. `/Users/ray/internal-tool`)? The sharing payload replaces any filesystem path that isn't a well-known package manager command with `[redacted]` before display and before transmission.
+- What if the usage data aggregation endpoint is unavailable? The app queues the payload locally and retries on the next app launch; after 3 failed attempts it silently drops the payload rather than showing an error.
 
 ---
 
@@ -110,12 +133,25 @@ A server generating buzz on Reddit appears with a one-line community sentiment s
 - **FR-014**: When multiple servers exist for the same service, one MUST be shown as the recommended pick with alternatives listed below it.
 - **FR-015**: The catalog MUST refresh live data at most once per app session and cache the result locally for offline use.
 
+**Usage Data Sharing (mcp-inator App)**
+
+- **FR-016**: The app MUST present the sharing opt-in as an explicit, reviewable prompt — never as a pre-checked preference or background upload. Sharing MUST be off by default.
+- **FR-017**: Before any data is transmitted, the user MUST be shown a review screen displaying the exact sanitized payload, with a per-server toggle to exclude individual entries.
+- **FR-018**: The sharing payload MUST exclude: all env var values, any filesystem paths not matching a known package manager pattern (replaced with `[redacted]`), any device identifiers, and any usernames or account information.
+- **FR-019**: The sharing payload MUST include for each opted-in server: server key, command, sanitized args, transport type, enabled/disabled state, env var key names (no values), and optionally the user's own description if they choose to include it.
+- **FR-020**: Users MUST be able to withdraw from sharing at any time via Settings, which prevents future submissions.
+- **FR-021**: When a user's library contains a server not present in the catalog, that server's sanitized data MUST be included in the sharing payload and flagged as a potential new catalog entry for AI enrichment.
+- **FR-022**: The weekly aggregation job MUST combine received usage reports into a `usage.json` file in the catalog repo containing per-server usage counts, which the app displays as "used by N mcp-inator users."
+- **FR-023**: The aggregation endpoint MUST NOT store IP addresses or any information that could re-identify a contributor.
+
 ### Key Entities
 
 - **CatalogEntry**: A curated MCP server record. Key fields: id, displayName, shortDescription, curatorNote, command, args, envVars, requiredArgs, transportType, isFirstParty, documentationURL, repositoryURL, category, alternativeTo (optional — links to the recommended entry when this is a ranked alternative).
 - **EnvVarDefinition**: name, description, isRequired, isSensitive.
 - **ServerStats**: repositoryURL, starCount, forkCount, lastCommitDate, openIssueCount, fetchedAt.
 - **TrendingEntry**: repositoryURL, trendingScore (0–100), sentimentSummary, mentionCount, periodDays, computedAt.
+- **UsageReport**: An anonymized snapshot of one user's opted-in server library. Fields: reportedAt, servers (array of sanitized server entries). Never stored with any user identifier beyond a random session token that resets on each submission.
+- **UsageStats**: Per-server aggregated counts. Fields: serverKey, userCount, enabledCount, weeklyActiveCount, lastAggregatedAt. Published as `usage.json` in the catalog repo.
 
 ---
 
@@ -129,6 +165,8 @@ A server generating buzz on Reddit appears with a one-line community sentiment s
 - **SC-004**: The weekly refresh detects and flags archived or significantly drifted entries within 24 hours of the change occurring on GitHub.
 - **SC-005**: The catalog contains at least 50 high-quality entries within 60 days of launch, without the curator manually typing metadata for any of them.
 - **SC-006**: Total infrastructure cost remains $0 in hosting and under $5/month in AI API costs at steady state.
+- **SC-007**: Usage sharing opt-in rate reaches at least 20% of active users within 90 days of the feature launching, as measured by non-zero entries in `usage.json`.
+- **SC-008**: Within 30 days of usage sharing launch, at least 5 servers not previously in the catalog are discovered via user reports and added through the AI enrichment pipeline.
 
 ---
 
@@ -142,3 +180,6 @@ A server generating buzz on Reddit appears with a one-line community sentiment s
 - The curator (repo owner) reviews and merges all PRs; no automated merging occurs.
 - The existing mcp-inator catalog data model is extended rather than replaced; new fields are additive and the app gracefully handles entries missing optional fields.
 - The bundled fallback catalog is updated manually with each mcp-inator app release; it is not auto-synced from the live catalog repo.
+- Usage data sharing requires a minimal serverless endpoint (e.g. a Cloudflare Worker on the free tier) to receive payloads and write aggregated counts to the catalog repo via the GitHub API. This is the only infrastructure required and has no maintenance burden or ongoing cost.
+- The sharing prompt is shown no earlier than 7 days after first launch and only when the user has at least one enabled server — avoiding prompting users who haven't meaningfully used the app.
+- "Used by N users" counts are aggregated weekly; they reflect the number of distinct contributors who included a server in their most recent report, not a cumulative all-time count.
