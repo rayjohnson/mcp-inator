@@ -58,49 +58,44 @@ Embedded in `CatalogEntry.requiredArgs`. Documents positional CLI arguments the 
 
 ---
 
-## ServerStats
+## ServerMetrics
 
-Stored in `stats.json` (auto-updated weekly by GitHub Action). Keyed by `repositoryURL` to decouple from `servers.json` evolution.
-
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| repositoryURL | String | yes | GitHub repo URL — foreign key into CatalogEntry |
-| starCount | Int | yes | Current GitHub star count |
-| forkCount | Int | yes | Current GitHub fork count |
-| lastCommitDate | String (ISO 8601) | yes | Date of most recent commit to default branch |
-| openIssueCount | Int | yes | Open issue count |
-| isArchived | Bool | yes | Whether the GitHub repo is archived |
-| fetchedAt | String (ISO 8601) | yes | When this record was fetched |
-
----
-
-## TrendingEntry
-
-Stored in `trending.json` (auto-updated weekly by GitHub Action). Only present for servers with Reddit activity.
+Stored in `stats.json` (auto-updated weekly). Keyed by `serverKey`. Consolidates all computed per-server signals — GitHub stats, Reddit sentiment, and usage counts. Written in two passes each Monday: refresh job writes GitHub stats + usage counts at 2am; sentiment job patches sentiment fields at 4am.
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| repositoryURL | String | yes | GitHub repo URL — foreign key into CatalogEntry |
-| trendingScore | Int (0–100) | yes | Composite score: mention velocity × recency × sentiment |
-| sentimentSummary | String | yes | One-sentence community sentiment, e.g. `"Widely praised for easy setup; occasional auth issues on older versions"` |
-| mentionCount | Int | yes | Number of Reddit posts/comments in the lookback window |
-| periodDays | Int | yes | Lookback window in days (typically 30) |
-| computedAt | String (ISO 8601) | yes | When this entry was computed |
+| serverKey | String | yes | Primary key — matches `CatalogEntry.serverKey` |
+| repositoryURL | String? | no | GitHub repo URL. May be absent for servers without a public repo |
+| starCount | Int? | no | Current GitHub star count |
+| forkCount | Int? | no | Current GitHub fork count |
+| lastCommitDate | String (ISO 8601)? | no | Date of most recent commit to default branch |
+| openIssueCount | Int? | no | Open issue count |
+| isArchived | Bool | yes | Whether the GitHub repo is archived. `true` triggers a drift PR |
+| githubFetchedAt | String (ISO 8601) | yes | When GitHub API was last called for this entry |
+| trendingScore | Int (0–100)? | no | Absent if no Reddit mentions in lookback window |
+| sentimentSummary | String? | no | One-sentence community sentiment. Absent (not shown) if no mentions |
+| mentionCount | Int? | no | Reddit posts/comments in the lookback window. Absent if 0 |
+| periodDays | Int? | no | Lookback window in days (typically 30) |
+| sentimentComputedAt | String (ISO 8601)? | no | When sentiment was last computed |
+| userCount | Int? | no | Distinct contributors who included this server in their most recent weekly report |
+| enabledCount | Int? | no | Of `userCount`, how many reported the server as currently enabled |
+| weeklyActiveCount | Int? | no | Reports in the past 7 days that include this server |
+| usageAggregatedAt | String (ISO 8601)? | no | When usage counts were last folded in from `usage.json` |
 
-**Invariant**: If `mentionCount` is 0 the entry is omitted entirely (absent ≠ "no mentions found").
+**App behavior**: All optional fields degrade gracefully — no `trendingScore` → no Trending badge; no `userCount` → no "used by N users" label.
 
 ---
 
 ## UsageReport
 
-Payload sent from mcp-inator to the Cloudflare Worker endpoint (never stored as-is). Represents one user's anonymized opted-in server snapshot.
+Payload sent from mcp-inator to the Cloudflare Worker endpoint (never stored as-is). Represents one user's anonymized opted-in server snapshot. The Worker accumulates these into the internal `usage.json` file; the weekly refresh job folds counts into `stats.json`.
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | reportedAt | String (ISO 8601) | yes | Client-side timestamp |
 | servers | [SanitizedServerEntry] | yes | Opted-in servers after client-side sanitization |
 
-**Privacy invariants**: No user identifier, no IP, no hostname, no UUID. The session token (random, per-submission) is discarded by the Worker after aggregation.
+**Privacy invariants**: No user identifier, no IP, no hostname, no UUID. The session token (random, per-submission) is discarded by the Worker after the report is counted.
 
 ---
 
@@ -121,28 +116,12 @@ Embedded in `UsageReport.servers`. One server from the user's library after sani
 
 ---
 
-## UsageStats
-
-Stored in `usage.json` in `rayjohnson/mcp-catalog`. Updated weekly by aggregation job. Displayed in mcp-inator as "used by N mcp-inator users".
-
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| serverKey | String | yes | Matches `CatalogEntry.serverKey` (or discovered key) |
-| userCount | Int | yes | Distinct contributors who included this server in their most recent report |
-| enabledCount | Int | yes | Of those, how many have it currently enabled |
-| weeklyActiveCount | Int | yes | Submissions in the past 7 days that include this server |
-| lastAggregatedAt | String (ISO 8601) | yes | When this row was last computed |
-
----
-
 ## Relationships
 
 ```
 CatalogEntry 1──* EnvVarDefinition        (envVars array)
 CatalogEntry 1──* RequiredArgDefinition   (requiredArgs array)
-CatalogEntry ──── ServerStats             (via repositoryURL)
-CatalogEntry ──── TrendingEntry           (via repositoryURL)
-CatalogEntry ──── UsageStats              (via serverKey)
+CatalogEntry ──── ServerMetrics           (via serverKey)
 CatalogEntry ──── CatalogEntry            (alternativeTo: self-referential)
 UsageReport  1──* SanitizedServerEntry    (servers array, client-side only)
 ```
@@ -151,13 +130,13 @@ UsageReport  1──* SanitizedServerEntry    (servers array, client-side only)
 
 ## App-Side Merge Model
 
-The mcp-inator app fetches three files in parallel and merges them into a display model:
+The mcp-inator app fetches **two files** in parallel and merges them into a display model:
 
 ```
-servers.json  →  [CatalogEntry]
-stats.json    →  [ServerStats]    (keyed by repositoryURL)
-trending.json →  [TrendingEntry]  (keyed by repositoryURL)
-usage.json    →  [UsageStats]     (keyed by serverKey)
+servers.json  →  [CatalogEntry]    (curated catalog, human-reviewed)
+stats.json    →  [ServerMetrics]   (all computed signals, keyed by serverKey)
 ```
 
-The merged view model attaches stats/trending/usage to each CatalogEntry by key. Fields absent in stats/trending/usage degrade gracefully to `nil`/hidden in the UI — no entry becomes unrenderable due to missing supplementary data.
+The merged view model attaches ServerMetrics to each CatalogEntry by `serverKey`. All ServerMetrics fields are optional — absent fields degrade gracefully to nil/hidden in the UI.
+
+The internal `usage.json` (Cloudflare Worker accumulator) is never fetched by the app. Usage counts reach the app only after the weekly refresh job folds them into `stats.json`.

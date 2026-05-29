@@ -66,13 +66,11 @@
 
 **Rationale**: The catalog is a community artifact — it should be independently forkable, have its own issue templates and review process, and be adoptable by other tools without requiring knowledge of the Swift codebase. Separating concerns also means catalog PRs (from the AI pipeline) don't pollute the app's git history.
 
-**App fetch strategy**: Three raw GitHub content URLs:
+**App fetch strategy**: Two raw GitHub content URLs:
 - `https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/servers.json`
 - `https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/stats.json`
-- `https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/trending.json`
-- `https://raw.githubusercontent.com/rayjohnson/mcp-catalog/main/usage.json`
 
-All fetched in parallel on app launch (once per session). Merged into a unified in-memory model.
+Both fetched in parallel on app launch (once per session). Merged into a unified in-memory model. `stats.json` consolidates GitHub stats, Reddit sentiment, and usage counts — the app never fetches `trending.json` or `usage.json` directly.
 
 ---
 

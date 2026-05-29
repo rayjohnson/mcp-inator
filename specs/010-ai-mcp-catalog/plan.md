@@ -22,9 +22,9 @@ Build a curated, AI-enriched MCP server catalog backed by a separate public GitH
 - Worker: Cloudflare Workers runtime, GitHub Contents REST API (v3)
 
 **Storage**:
-- Catalog data: JSON files in `rayjohnson/mcp-catalog` GitHub repo (free CDN via raw.githubusercontent.com)
+- Catalog data: Two JSON files in `rayjohnson/mcp-catalog` GitHub repo (free CDN via raw.githubusercontent.com): `servers.json` (curated entries) and `stats.json` (all computed metrics)
 - App cache: `App Support/mcp-inator/catalog-cache.json` (session cache, existing pattern)
-- Usage aggregation: `usage.json` in catalog repo (written via GitHub Contents API from Worker)
+- Worker accumulator: `usage.json` in catalog repo (written by Cloudflare Worker in real-time; read by weekly refresh job; never fetched by app)
 
 **Testing**:
 - App: XCTest (existing), fixture JSON files for catalog decoder tests
@@ -98,18 +98,17 @@ mcp-catalog/
 │   │   └── submit-server.yml          # Structured issue form: GitHub URL + freetext
 │   └── workflows/
 │       ├── enrich-submission.yml      # Triggered by issue label; calls enrich.py; opens draft PR
-│       ├── weekly-refresh.yml         # Cron: updates stats.json; opens drift PRs
-│       └── weekly-sentiment.yml       # Cron: searches Reddit; writes trending.json
+│       ├── weekly-refresh.yml         # Cron: updates stats.json (GitHub stats + usage fold-in); opens drift PRs
+│       └── weekly-sentiment.yml       # Cron: searches Reddit; patches sentiment fields in stats.json
 ├── scripts/
 │   ├── enrich.py                      # AI enrichment: reads repo → populates catalog entry
-│   ├── refresh.py                     # Stats refresh: GitHub API → stats.json
-│   └── sentiment.py                   # Reddit search → Claude → trending.json
+│   ├── refresh.py                     # Stats refresh: GitHub API → stats.json; folds usage.json counts in
+│   └── sentiment.py                   # Reddit search → Claude → patches stats.json sentiment fields
 ├── cloudflare-worker/
-│   └── index.js                       # Telemetry Worker: receives reports, updates usage.json
-├── servers.json                       # Curated catalog entries (hand-reviewed)
-├── stats.json                         # GitHub stats (auto-updated weekly)
-├── trending.json                      # Reddit sentiment scores (auto-updated weekly)
-└── usage.json                         # Aggregated usage counts (auto-updated weekly)
+│   └── index.js                       # Telemetry Worker: receives reports, accumulates usage.json (internal)
+├── servers.json                       # Curated catalog entries (hand-reviewed) — APP-FACING
+├── stats.json                         # All computed metrics: GitHub stats + sentiment + usage — APP-FACING
+└── usage.json                         # Internal Worker accumulator (NOT fetched by app)
 ```
 
 #### rayjohnson/mcp-inator (existing repo, this branch)

@@ -25,9 +25,9 @@ description: "Task list for AI-Curated MCP Server Catalog"
 
 - [ ] T001 Create mcp-catalog repo directory layout and root README.md with curator workflow, label guide, and weekly job overview
 - [ ] T002 [P] Create mcp-catalog/servers.json initial file (schemaVersion 2, one complete sample entry with all fields per contracts/servers-json.md)
-- [ ] T003 [P] Create mcp-catalog/stats.json initial file (schemaVersion 1, empty stats object per contracts/stats-json.md)
-- [ ] T004 [P] Create mcp-catalog/trending.json initial file (schemaVersion 1, empty trending object per contracts/trending-json.md)
-- [ ] T005 [P] Create mcp-catalog/usage.json initial file (schemaVersion 1, empty usage object per contracts/usage-json.md)
+- [ ] T003 [P] Create mcp-catalog/stats.json initial file (schemaVersion 2, empty servers object per contracts/stats-json.md — includes GitHub stats, sentiment, and usage count sections)
+- [ ] T004 [P] Create mcp-catalog/usage.json initial file (internal Worker accumulator, schemaVersion 1, empty usage object per contracts/usage-json.md — NOT fetched by app)
+- [ ] T005 [P] Create mcp-catalog/.github/ISSUE_TEMPLATE/config.yml to disable blank issues and direct users to the submission template
 
 ---
 
@@ -37,8 +37,8 @@ description: "Task list for AI-Curated MCP Server Catalog"
 
 **⚠️ CRITICAL**: US1, US5 app tasks cannot start until T006–T009 are complete.
 
-- [ ] T006 Create mcp-inator/Models/CatalogEntry.swift with Codable structs: CatalogEntry (all fields per contracts/servers-json.md including curatorNote, isFirstParty, alternativeTo), EnvVarDefinition, RequiredArgDefinition, ServerStats, TrendingEntry, UsageStats — all use decodeIfPresent for new optional fields
-- [ ] T007 Add CatalogViewModel struct to mcp-inator/Models/CatalogEntry.swift: joins CatalogEntry + ServerStats? + TrendingEntry? + UsageStats? into single display model; missing supplementary fields degrade to nil gracefully
+- [ ] T006 Create mcp-inator/Models/CatalogEntry.swift with Codable structs: CatalogEntry (all fields per contracts/servers-json.md including curatorNote, isFirstParty, alternativeTo, requiredArgs), EnvVarDefinition, RequiredArgDefinition, ServerMetrics (all fields per contracts/stats-json.md — GitHub stats + sentiment + usage counts) — all optional fields use decodeIfPresent
+- [ ] T007 Add CatalogViewModel struct to mcp-inator/Models/CatalogEntry.swift: joins CatalogEntry + ServerMetrics? into single display model; all ServerMetrics fields are optional and degrade to nil gracefully
 - [ ] T008 Update mcp-inator/Resources/catalog.json to schemaVersion 2: add curatorNote, isFirstParty (false), alternativeTo (null), requiredArgs ([]) to all 18 existing entries with realistic placeholder curator notes
 - [ ] T009 Update project.yml to include new Swift source files, then run `xcodegen generate` to register them in mcp-inator.xcodeproj/project.pbxproj
 
@@ -52,7 +52,7 @@ description: "Task list for AI-Curated MCP Server Catalog"
 
 **Independent Test**: Populate `mcp-catalog/servers.json` with 10 hand-crafted entries. Launch the app, open Catalog tab, verify: curator note shown, first-party badge visible on eligible entries, env vars listed with descriptions, documentation link works, trending badge appears for score ≥ 70.
 
-- [ ] T010 [P] [US1] Create mcp-inator/Services/CatalogClient.swift: fetch servers.json, stats.json, trending.json, usage.json in parallel using `async let`; on any network failure fall back to bundled mcp-inator/Resources/catalog.json; cache result to App Support/mcp-inator/catalog-cache.json on success
+- [ ] T010 [P] [US1] Create mcp-inator/Services/CatalogClient.swift: fetch servers.json and stats.json in parallel using `async let`; on any network failure fall back to bundled mcp-inator/Resources/catalog.json; cache result to App Support/mcp-inator/catalog-cache.json on success
 - [ ] T011 [P] [US1] Create mcp-inator/Services/CatalogStore.swift: @MainActor ObservableObject; holds [CatalogViewModel]; exposes trendingEntries (score ≥ configurable threshold, default 70) and entriesByCategory; fetches once per session; loads from cache on init
 - [ ] T012 [US1] Wire CatalogClient and CatalogStore into mcp-inator/App/mcp_inatorApp.swift: instantiate CatalogStore as @StateObject, inject into environment
 - [ ] T013 [US1] Update mcp-inator/UI/CatalogView.swift to use CatalogStore: add Trending section at top for high-score entries; show first-party badge ("Made by [Service]") on entry rows; show star count and last-commit recency chip; show one-line curator note preview
@@ -86,7 +86,7 @@ description: "Task list for AI-Curated MCP Server Catalog"
 **Independent Test**: Manually dispatch `weekly-refresh.yml`. Verify `stats.json` is updated in the catalog repo commit history with current star counts. Alter a test entry to have wrong env vars; verify a drift PR is opened.
 
 - [ ] T021 [US3] Create mcp-catalog/.github/workflows/weekly-refresh.yml: cron `0 2 * * 1` (Monday 2am UTC); runs `scripts/refresh.py`; commits stats.json update directly (no PR needed for stats); opens individual PRs for entries with significant drift (archived, env-var changes); injects `GITHUB_TOKEN` and `ANTHROPIC_API_KEY`
-- [ ] T022 [US3] Create mcp-catalog/scripts/refresh.py: (1) read servers.json; (2) for each repositoryURL, call GitHub REST API for starCount, forkCount, lastCommitDate, openIssueCount, isArchived; (3) write complete stats.json; (4) for archived repos open a PR flagging the entry for removal; (5) diff current README env vars against catalog envVars using Claude; open drift PR if mismatch found
+- [ ] T022 [US3] Create mcp-catalog/scripts/refresh.py: (1) read servers.json; (2) for each entry, call GitHub REST API for starCount, forkCount, lastCommitDate, openIssueCount, isArchived; (3) read usage.json and fold userCount/enabledCount/weeklyActiveCount into per-entry metrics; (4) write complete stats.json (preserving any existing sentiment fields); (5) for archived repos open a PR flagging the entry for removal; (6) diff current README env vars against catalog envVars using Claude; open drift PR if mismatch found
 
 **Checkpoint**: US3 independently testable via manual workflow dispatch.
 
@@ -96,7 +96,7 @@ description: "Task list for AI-Curated MCP Server Catalog"
 
 **Goal**: Opt-in telemetry flow → per-server "used by N users" counts in catalog.
 
-**Independent Test**: Enable sharing in debug settings. Open SharingReviewView, verify sanitized payload matches telemetry-payload contract (no values, paths redacted). Submit. Verify usage.json in catalog repo reflects incremented count.
+**Independent Test**: Enable sharing in debug settings. Open SharingReviewView, verify sanitized payload matches telemetry-payload contract (no values, paths replaced with `[path]`). Submit. Verify usage.json (internal Worker file) reflects incremented count. After next weekly refresh cycle, verify counts appear in stats.json.
 
 - [ ] T023 [US5] Create mcp-catalog/cloudflare-worker/index.js: handle `POST /report`; validate schemaVersion; for each server entry increment usage.json via GitHub Contents API (GET for SHA → PUT updated content); flag isKnownCatalogEntry:false entries in candidate-submissions.json; discard sessionToken; never log client IP; return `{"status":"ok","accepted":N}`
 - [ ] T024 [US5] Add Cloudflare Worker deployment documentation to mcp-catalog/cloudflare-worker/README.md: wrangler setup, required secrets (fine-grained PAT scoped to `rayjohnson/mcp-catalog` Contents read+write), deploy command
@@ -112,13 +112,13 @@ description: "Task list for AI-Curated MCP Server Catalog"
 
 ## Phase 7: User Story 4 — Reddit Sentiment Signals (Priority: P3)
 
-**Goal**: Weekly Reddit mention analysis produces one-line sentiment summaries and trending scores in trending.json, displayed in the app.
+**Goal**: Weekly Reddit mention analysis produces one-line sentiment summaries and trending scores folded into stats.json, displayed in the app.
 
-**Independent Test**: Manually dispatch `weekly-sentiment.yml`. Verify `trending.json` is updated with non-empty sentimentSummary and trendingScore for servers with known Reddit discussion. Verify app shows them in Trending section.
+**Independent Test**: Manually dispatch `weekly-sentiment.yml`. Verify `stats.json` is updated with non-empty sentimentSummary and trendingScore fields for servers with known Reddit discussion. Verify app shows them in Trending section.
 
-- [ ] T030 [US4] Create mcp-catalog/.github/workflows/weekly-sentiment.yml: cron `0 4 * * 1` (Monday 4am UTC, after refresh); runs `scripts/sentiment.py`; commits updated trending.json; injects `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `ANTHROPIC_API_KEY` from secrets; if Reddit API unavailable, exits 0 without overwriting trending.json
-- [ ] T031 [US4] Create mcp-catalog/scripts/sentiment.py: (1) Reddit OAuth client-credentials flow; (2) for each catalog entry, search r/ClaudeAI, r/mcp, r/MachineLearning, r/LocalLLaMA by server displayName; (3) collect post titles, scores, comment counts from last 30 days; (4) for servers with ≥1 mention: call Claude to produce sentimentSummary + trendingScore (0–100) per contracts/trending-json.md score methodology; (5) write complete trending.json; omit servers with 0 mentions
-- [ ] T032 [US4] Update mcp-inator/UI/CatalogEntryDetailView.swift to display sentimentSummary when present; confirm CatalogView.swift Trending section already works from T013 (trendingScore threshold already wired)
+- [ ] T030 [US4] Create mcp-catalog/.github/workflows/weekly-sentiment.yml: cron `0 4 * * 1` (Monday 4am UTC, after refresh); runs `scripts/sentiment.py`; commits updated stats.json (sentiment fields only); injects `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `ANTHROPIC_API_KEY` from secrets; if Reddit API unavailable, exits 0 without touching stats.json
+- [ ] T031 [US4] Create mcp-catalog/scripts/sentiment.py: (1) Reddit OAuth client-credentials flow; (2) for each catalog entry, search r/ClaudeAI, r/mcp, r/MachineLearning, r/LocalLLaMA by server displayName; (3) collect post titles, scores, comment counts from last 30 days; (4) for servers with ≥1 mention: call Claude to produce sentimentSummary + trendingScore (0–100); (5) read existing stats.json and patch only the sentiment fields (trendingScore, sentimentSummary, mentionCount, periodDays, sentimentComputedAt) for each server; servers with 0 mentions have sentiment fields removed; write updated stats.json
+- [ ] T032 [US4] Update mcp-inator/UI/CatalogEntryDetailView.swift to display sentimentSummary when present on the ServerMetrics model; confirm CatalogView.swift Trending section already works from T013 (trendingScore threshold already wired via CatalogStore)
 
 **Checkpoint**: US4 independently testable — manual dispatch of sentiment workflow, app shows updated trending data.
 
@@ -144,8 +144,8 @@ description: "Task list for AI-Curated MCP Server Catalog"
 - **US1 (Phase 3)**: Depends on Foundational (T006–T009 complete)
 - **US2 (Phase 4)**: Depends on Phase 1 (mcp-catalog JSON files exist); independent of US1
 - **US3 (Phase 5)**: Depends on Phase 1 (mcp-catalog JSON files) and US2 (servers.json has entries); independent of US1
-- **US5 (Phase 6)**: Depends on Foundational (T006–T009) and Phase 1 (usage.json exists); can parallel with US1 after Foundational
-- **US4 (Phase 7)**: Depends on Phase 1 (trending.json exists) and US3 (refresh runs first weekly); independent of US1/US5
+- **US5 (Phase 6)**: Depends on Foundational (T006–T009) and Phase 1 (usage.json accumulator exists); can parallel with US1 after Foundational
+- **US4 (Phase 7)**: Depends on Phase 1 (stats.json exists) and US3 (refresh runs first weekly, establishing the file structure sentiment.py patches); independent of US1/US5
 - **Polish (Phase 8)**: Depends on all desired stories complete
 
 ### User Story Dependencies
@@ -166,11 +166,11 @@ description: "Task list for AI-Curated MCP Server Catalog"
 ### Parallel Opportunities
 
 ```bash
-# Phase 1 — all JSON files in parallel:
+# Phase 1 — all setup tasks in parallel:
 T002 Create servers.json
-T003 Create stats.json
-T004 Create trending.json
-T005 Create usage.json
+T003 Create stats.json (expanded schema)
+T004 Create usage.json (internal accumulator)
+T005 Create .github/ISSUE_TEMPLATE/config.yml
 
 # Phase 2 + Phase 1 simultaneously (different repos):
 T006–T009 (mcp-inator model work) || T001–T005 (mcp-catalog repo setup)

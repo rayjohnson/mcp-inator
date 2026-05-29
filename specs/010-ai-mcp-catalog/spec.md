@@ -114,7 +114,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 
 **Catalog Repository**
 
-- **FR-001**: The catalog MUST be stored as a public GitHub repository containing human-reviewable JSON files: `servers.json` (curated entries), `stats.json` (GitHub metrics), `trending.json` (Reddit signals).
+- **FR-001**: The catalog MUST be stored as a public GitHub repository containing two human-readable JSON files: `servers.json` (curated entries, human-reviewed) and `stats.json` (all computed per-server metrics: GitHub stats, Reddit sentiment, and usage counts — auto-updated weekly).
 - **FR-002**: Submissions MUST be accepted via a structured GitHub Issue template requiring at minimum a GitHub repository URL.
 - **FR-003**: The AI enrichment pipeline MUST produce a complete catalog entry from a GitHub repo URL, populating: display name, description, curator note, command, args, env vars (name / description / required / sensitive), transport type, first-party flag, documentation URL, repository URL, and category.
 - **FR-004**: When a submission is for a service already in the catalog, the pipeline MUST produce a comparison comment on the PR (stars, maintenance recency, first-party status) rather than silently replacing the existing entry.
@@ -126,7 +126,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 
 **mcp-inator App**
 
-- **FR-010**: The app MUST fetch live catalog data from the catalog repository's raw file URLs, merging `servers.json`, `stats.json`, and `trending.json` into a unified display model.
+- **FR-010**: The app MUST fetch live catalog data from the catalog repository's raw file URLs, merging `servers.json` and `stats.json` into a unified display model.
 - **FR-011**: The app MUST fall back to a bundled catalog when the live fetch fails, with no visible error to the user.
 - **FR-012**: Each catalog entry MUST display: display name, description, curator note, first-party badge (when applicable), GitHub star count, last-commit recency, required env vars with descriptions, and a documentation link.
 - **FR-013**: Servers with a trending score above a configurable threshold MUST appear in a dedicated "Trending" section at the top of the catalog.
@@ -141,17 +141,15 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **FR-019**: The sharing payload MUST include for each opted-in server: server key, command, sanitized args, transport type, enabled/disabled state, env var key names (no values), and optionally the user's own description if they choose to include it.
 - **FR-020**: Users MUST be able to withdraw from sharing at any time via Settings, which prevents future submissions.
 - **FR-021**: When a user's library contains a server not present in the catalog, that server's sanitized data MUST be included in the sharing payload and flagged as a potential new catalog entry for AI enrichment.
-- **FR-022**: The weekly aggregation job MUST combine received usage reports into a `usage.json` file in the catalog repo containing per-server usage counts, which the app displays as "used by N mcp-inator users."
+- **FR-022**: The Cloudflare Worker MUST accumulate received usage reports into an internal `usage.json` file (not fetched by the app). The weekly refresh job MUST fold per-server usage counts from `usage.json` into `stats.json`, which the app downloads and displays as "used by N mcp-inator users."
 - **FR-023**: The aggregation endpoint MUST NOT store IP addresses or any information that could re-identify a contributor.
 
 ### Key Entities
 
 - **CatalogEntry**: A curated MCP server record. Key fields: id, displayName, shortDescription, curatorNote, command, args, envVars, requiredArgs, transportType, isFirstParty, documentationURL, repositoryURL, category, alternativeTo (optional — links to the recommended entry when this is a ranked alternative).
 - **EnvVarDefinition**: name, description, isRequired, isSensitive.
-- **ServerStats**: repositoryURL, starCount, forkCount, lastCommitDate, openIssueCount, fetchedAt.
-- **TrendingEntry**: repositoryURL, trendingScore (0–100), sentimentSummary, mentionCount, periodDays, computedAt.
-- **UsageReport**: An anonymized snapshot of one user's opted-in server library. Fields: reportedAt, servers (array of sanitized server entries). Never stored with any user identifier beyond a random session token that resets on each submission.
-- **UsageStats**: Per-server aggregated counts. Fields: serverKey, userCount, enabledCount, weeklyActiveCount, lastAggregatedAt. Published as `usage.json` in the catalog repo.
+- **ServerMetrics**: All computed per-server signals, published in `stats.json`. Fields: serverKey, repositoryURL, starCount, forkCount, lastCommitDate, openIssueCount, isArchived, githubFetchedAt, trendingScore (0–100), sentimentSummary, mentionCount, sentimentComputedAt, userCount, enabledCount, weeklyActiveCount, usageAggregatedAt.
+- **UsageReport**: An anonymized snapshot of one user's opted-in server library. Fields: reportedAt, servers (array of sanitized server entries). Never stored with any user identifier beyond a random session token that resets on each submission. Accumulated in the catalog repo's internal `usage.json` by the Cloudflare Worker; folded into `stats.json` by the weekly refresh job.
 
 ---
 
@@ -162,7 +160,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **SC-001**: A user can find, evaluate, and add an MCP server from the catalog in under 2 minutes without visiting any external page to understand what env vars are required.
 - **SC-002**: 100% of catalog entries have all required fields populated — no blank descriptions, no missing env var lists.
 - **SC-003**: A community submission results in a reviewable PR within 10 minutes of the issue being opened.
-- **SC-004**: The weekly refresh detects and flags archived or significantly drifted entries within 24 hours of the change occurring on GitHub.
+- **SC-004**: The weekly refresh detects and flags archived or significantly drifted entries within one week of the change occurring on GitHub.
 - **SC-005**: The catalog contains at least 50 high-quality entries within 60 days of launch, without the curator manually typing metadata for any of them.
 - **SC-006**: Total infrastructure cost remains $0 in hosting and under $5/month in AI API costs at steady state.
 - **SC-007**: Usage sharing opt-in rate reaches at least 20% of active users within 90 days of the feature launching, as measured by non-zero entries in `usage.json`.
