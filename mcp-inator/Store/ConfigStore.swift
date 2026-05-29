@@ -358,7 +358,7 @@ final class ConfigStore: ObservableObject {
 
     func applyImportDecisions(
         _ decisions: [(key: String, config: MCPServerConfig)],
-        agentId: Int64
+        agentId: Int64?
     ) throws {
         for (_, config) in decisions {
             if let existing = try pool.read({ db in
@@ -368,16 +368,20 @@ final class ConfigStore: ObservableObject {
                 updated.id = existing.id
                 updated.uuid = existing.uuid
                 try update(updated)
-                try setAssignmentState(
-                    configUUID: existing.uuid, agentId: agentId,
-                    state: .enabled, snapshot: updated
-                )
+                if let agentId {
+                    try setAssignmentState(
+                        configUUID: existing.uuid, agentId: agentId,
+                        state: .enabled, snapshot: updated
+                    )
+                }
             } else {
                 let inserted = try insert(config)
-                try setAssignmentState(
-                    configUUID: inserted.uuid, agentId: agentId,
-                    state: .enabled, snapshot: inserted
-                )
+                if let agentId {
+                    try setAssignmentState(
+                        configUUID: inserted.uuid, agentId: agentId,
+                        state: .enabled, snapshot: inserted
+                    )
+                }
             }
         }
     }
