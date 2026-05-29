@@ -108,7 +108,8 @@ mcp-catalog/
 │   └── index.js                       # Telemetry Worker: receives reports, accumulates usage.json (internal)
 ├── servers.json                       # Curated catalog entries (hand-reviewed) — APP-FACING
 ├── stats.json                         # All computed metrics: GitHub stats + sentiment + usage — APP-FACING
-└── usage.json                         # Internal Worker accumulator (NOT fetched by app)
+├── usage.json                         # Internal Worker accumulator (NOT fetched by app)
+└── config.json                        # Pipeline config: active subreddit list (AI-managed, NOT fetched by app)
 ```
 
 #### rayjohnson/mcp-inator (existing repo, this branch)

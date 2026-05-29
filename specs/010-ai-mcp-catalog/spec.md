@@ -122,7 +122,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **FR-006**: Duplicate submissions (same repo URL already cataloged) MUST be detected and rejected with an explanatory issue comment; no PR is created.
 - **FR-007**: The weekly refresh MUST update `stats.json` with current GitHub star count, fork count, last commit date, and open issue count for every catalog entry.
 - **FR-008**: The weekly refresh MUST detect significant drift (archived repos, new or removed required env vars) and open PRs flagging affected entries.
-- **FR-009**: The weekly Reddit sentiment job MUST search relevant subreddits for each server by name, summarize community sentiment in one sentence, and assign a trending score (0–100) written to `trending.json`.
+- **FR-009**: The weekly Reddit sentiment job MUST search a curated list of subreddits for each server by name, summarize community sentiment in one sentence, assign a trending score (0–100), and set the `isTrending` flag in `stats.json`. The initial subreddit list is r/ClaudeAI, r/ClaudeCode, r/MCPservers. The active list MUST be stored in `config.json` in the catalog repo. On a monthly cadence the sentiment job MUST ask Claude to evaluate the current subreddit list quality and discover emerging MCP communities, updating `config.json` if better sources are found — no human intervention required.
 
 **mcp-inator App**
 
