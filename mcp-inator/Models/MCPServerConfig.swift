@@ -20,6 +20,7 @@ struct MCPServerConfig: Identifiable {
     var url: String           // http/sse only
     var envVars: [EnvVar]     // stdio: env vars; http/sse: request headers
     var notes: String
+    var isPrivate: Bool       // excludes server from usage sharing and catalog stats
     var createdAt: Date
     var updatedAt: Date
 
@@ -30,7 +31,8 @@ struct MCPServerConfig: Identifiable {
         command: String,
         args: [String] = [],
         envVars: [EnvVar] = [],
-        notes: String = ""
+        notes: String = "",
+        isPrivate: Bool = false
     ) {
         self.id = nil
         self.uuid = UUID()
@@ -42,6 +44,7 @@ struct MCPServerConfig: Identifiable {
         self.url = ""
         self.envVars = envVars
         self.notes = notes
+        self.isPrivate = isPrivate
         let now = Date()
         self.createdAt = now
         self.updatedAt = now
@@ -54,7 +57,8 @@ struct MCPServerConfig: Identifiable {
         transportType: TransportType,
         url: String,
         headers: [EnvVar] = [],
-        notes: String = ""
+        notes: String = "",
+        isPrivate: Bool = false
     ) {
         self.id = nil
         self.uuid = UUID()
@@ -66,6 +70,7 @@ struct MCPServerConfig: Identifiable {
         self.url = url
         self.envVars = headers
         self.notes = notes
+        self.isPrivate = isPrivate
         let now = Date()
         self.createdAt = now
         self.updatedAt = now
@@ -168,6 +173,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         envVars = (try? JSONDecoder().decode([EnvVar].self, from: Data(envJSON.utf8))) ?? []
 
         notes = row["notes"] ?? ""
+        isPrivate = (row["isPrivate"] as? Bool) ?? false
 
         let created: Double = row["createdAt"]
         createdAt = Date(timeIntervalSince1970: created)
@@ -186,6 +192,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         container["args"] = String(data: try JSONEncoder().encode(args), encoding: .utf8) ?? "[]"
         container["envVars"] = String(data: try JSONEncoder().encode(envVars), encoding: .utf8) ?? "[]"
         container["notes"] = notes
+        container["isPrivate"] = isPrivate
         container["createdAt"] = createdAt.timeIntervalSince1970
         container["updatedAt"] = updatedAt.timeIntervalSince1970
     }
@@ -199,7 +206,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
 
 extension MCPServerConfig: Codable {
     enum CodingKeys: String, CodingKey {
-        case uuid, displayName, serverKey, transportType, command, args, url, envVars, notes, createdAt, updatedAt
+        case uuid, displayName, serverKey, transportType, command, args, url, envVars, notes, isPrivate, createdAt, updatedAt
     }
 }
 
