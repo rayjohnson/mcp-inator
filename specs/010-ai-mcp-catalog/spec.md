@@ -176,7 +176,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - The catalog repository (`rayjohnson/mcp-catalog`) is a separate public GitHub repo from the mcp-inator app repo, created before implementation begins.
 - GitHub Actions free tier (2,000 minutes/month for public repos) is sufficient for the submission pipeline and weekly jobs at expected volume.
 - The Claude API is used for AI enrichment; a GitHub Actions secret stores the API key. Cost per submission is estimated at $0.03–$0.10 depending on repo size.
-- Reddit's public API (free tier) is used for sentiment; rate limits are manageable for weekly batch processing of up to 200 entries.
+- Reddit data is fetched via Reddit's unauthenticated public JSON API (`/r/{sub}/search.json`) — no OAuth app or credentials required. Rate limits are manageable for weekly batch processing with small delays between requests. This API surface is unofficial and could be restricted by Reddit in the future, at which point US4 would be suspended until an alternative is found.
 - The enrichment pipeline supports any server identifier: repo URLs (GitHub, GitLab, Bitbucket, or other), npm package names, PyPI/uvx package names, and Docker image names. Servers with no resolvable online presence (private repos, intranet-only tools) are out of scope for the submission pipeline but may still appear via usage sharing.
 - The curator (repo owner) reviews and merges all PRs; no automated merging occurs.
 - The existing mcp-inator catalog data model is extended rather than replaced; new fields are additive and the app gracefully handles entries missing optional fields.
