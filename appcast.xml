@@ -227,5 +227,22 @@
         length="11878711"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.2.3</title>
+      <pubDate>Fri, 29 May 2026 04:22:53 +0000</pubDate>
+      <sparkle:version>19</sparkle:version>
+      <sparkle:shortVersionString>0.2.3</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.2.3</h3>
+<ul>
+<li>Import now works without needing to register agents first — Claude Desktop, Claude Code, Gemini CLI, and Codex CLI appear in the Import menu as soon as they're installed</li>
+<li>Gemini Desktop now shows as a greyed-out entry in the Import menu with an explanation, rather than being silently hidden</li>
+<li>Imported servers are added to your library without automatically being enabled for any agent</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.2.3/mcp-inator-0.2.3.dmg"
+        sparkle:edSignature="lljjCP5ExxsbwARVXIujAYHgcd5/uPqV7L9r5X7u7ilWD9vKMKAh0o+CvdJl2YUOTKAVpex6dj7zAVLEMMKmBg=="
+        length="11897986"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
