@@ -1,4 +1,5 @@
 import SwiftUI
+import Sentry
 
 struct AddEditConfigView: View {
     @EnvironmentObject private var store: ConfigStore
@@ -409,12 +410,20 @@ struct AddEditConfigView: View {
 
     // MARK: - Actions
 
+    private func breadcrumb(_ message: String, level: SentryLevel = .info) {
+        let b = Breadcrumb(level: level, category: "ui")
+        b.message = message
+        SentrySDK.addBreadcrumb(b)
+    }
+
     private func deleteServer() {
         guard let config = existing else { return }
+        breadcrumb("delete: removing server '\(config.serverKey)'")
         do {
             try store.delete(config)
             dismiss()
         } catch {
+            breadcrumb("delete: failed — \(error.localizedDescription)", level: .error)
             validationError = "Delete failed: \(error.localizedDescription)"
         }
     }
@@ -462,12 +471,21 @@ struct AddEditConfigView: View {
         let trimmedName = displayName.trimmingCharacters(in: .whitespaces)
         let trimmedKey  = serverKey.trimmingCharacters(in: .whitespaces)
 
-        guard !trimmedName.isEmpty else { validationError = "Display name is required."; return }
-        guard !trimmedKey.isEmpty  else { validationError = "Server key is required."; return }
+        guard !trimmedName.isEmpty else {
+            validationError = "Display name is required."
+            breadcrumb("save: validation failed — display name empty", level: .warning)
+            return
+        }
+        guard !trimmedKey.isEmpty else {
+            validationError = "Server key is required."
+            breadcrumb("save: validation failed — server key empty", level: .warning)
+            return
+        }
 
         do {
             let saved: MCPServerConfig
             if var config = existing {
+                breadcrumb("save: updating server '\(trimmedKey)'")
                 config.displayName    = trimmedName
                 config.serverKey      = trimmedKey
                 config.transportType  = transportType
@@ -479,6 +497,7 @@ struct AddEditConfigView: View {
                 try store.update(config)
                 saved = config
             } else {
+                breadcrumb("save: inserting new server '\(trimmedKey)'")
                 let config: MCPServerConfig
                 if isHTTP {
                     config = MCPServerConfig(
@@ -502,12 +521,15 @@ struct AddEditConfigView: View {
                     .filter { visibleIds.contains($0.id ?? -1) }
                 : []
             if !enabledVisible.isEmpty {
+                breadcrumb("save: showing propagation panel for '\(trimmedKey)'")
                 propagationConfig = saved
                 propagationAgents = enabledVisible
             } else {
+                breadcrumb("save: dismissing after save '\(trimmedKey)'")
                 dismiss()
             }
         } catch {
+            breadcrumb("save: failed — \(error.localizedDescription)", level: .error)
             validationError = "Save failed: \(error.localizedDescription)"
         }
     }

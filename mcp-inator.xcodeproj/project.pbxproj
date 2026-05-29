@@ -19,6 +19,7 @@
 		1F16905A2C802EEA4F149074 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6BDD852709F641ED9CAB7766 /* Assets.xcassets */; };
 		2C67F3E57F8B0B8BEE781321 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 4F51316E8731F74700960B78 /* Sparkle */; };
 		2CAA3A60F6990A6105BB2939 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F59E8CDCBE4E70FF72AE08 /* RegistryEntry.swift */; };
+		2E5B4594ABC6042E399DCCE6 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F68EC4EB8D4D17E1DA079D1E /* Sentry */; };
 		2F0DA0B200410D50277841A3 /* RegistryClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DD36F7DDC9A9860FE4EDEA /* RegistryClientTests.swift */; };
 		33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */; };
 		3FBF669EF46E71655E39D8F2 /* Migration005.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673672951A0D420C1E6170F5 /* Migration005.swift */; };
@@ -168,6 +169,7 @@
 				2C67F3E57F8B0B8BEE781321 /* Sparkle in Frameworks */,
 				55EDE08B968A9932A5100EF8 /* TOMLKit in Frameworks */,
 				49033C3A1B3D608A23D995CE /* MCP in Frameworks */,
+				2E5B4594ABC6042E399DCCE6 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +420,7 @@
 				4F51316E8731F74700960B78 /* Sparkle */,
 				A8A575E8E03CFB9812734877 /* TOMLKit */,
 				3FDC266E73A2012A10B19689 /* MCP */,
+				F68EC4EB8D4D17E1DA079D1E /* Sentry */,
 			);
 			productName = "mcp-inator";
 			productReference = 0804AB63951008ED49D09FF7 /* mcp-inator.app */;
@@ -450,6 +453,7 @@
 			packageReferences = (
 				D96136D20D19F96F4277DC6F /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				C7960C163C6131605A021938 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				F885DCF134347A9AC56FF78D /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				9DFA9A924161D278C55C4A94 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				52E7AD8255FE58E4B2D44641 /* XCRemoteSwiftPackageReference "TOMLKit" */,
 			);
@@ -837,6 +841,14 @@
 				minimumVersion = 7.0.0;
 			};
 		};
+		F885DCF134347A9AC56FF78D /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -859,6 +871,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52E7AD8255FE58E4B2D44641 /* XCRemoteSwiftPackageReference "TOMLKit" */;
 			productName = TOMLKit;
+		};
+		F68EC4EB8D4D17E1DA079D1E /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F885DCF134347A9AC56FF78D /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

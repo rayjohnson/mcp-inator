@@ -1,2 +1,5 @@
-- Fixed: editing a server no longer triggers "Push Changes" when nothing was modified — Save is now disabled until a field actually changes
-- Fixed: "Push Changes" now appears inline in the popover instead of as a separate sheet, preventing the popover from losing focus during the push operation
+- Fixed a crash that could occur after saving a server configuration
+- "Push Changes" now appears inline in the edit panel instead of opening a separate sheet, so the panel no longer closes unexpectedly during the push
+- Save button is now disabled until you actually change something while editing a server
+- Fixed a bug where importing a server from an agent could show a blank sheet or conflict with mcp-inator's own entry
+- Added crash reporting and diagnostics to help catch and fix issues faster
