@@ -1,5 +1,3 @@
-- Fixed a crash that could occur after saving a server configuration
-- "Push Changes" now appears inline in the edit panel instead of opening a separate sheet, so the panel no longer closes unexpectedly during the push
-- Save button is now disabled until you actually change something while editing a server
-- Fixed a bug where importing a server from an agent could show a blank sheet or conflict with mcp-inator's own entry
-- Added crash reporting and diagnostics to help catch and fix issues faster
+- Import now works without needing to register agents first — Claude Desktop, Claude Code, Gemini CLI, and Codex CLI appear in the Import menu as soon as they're installed
+- Gemini Desktop now shows as a greyed-out entry in the Import menu with an explanation, rather than being silently hidden
+- Imported servers are added to your library without automatically being enabled for any agent
