@@ -42,6 +42,7 @@ description: "Task list for AI-Curated MCP Server Catalog"
 - [ ] T007 Add CatalogViewModel struct to mcp-inator/Models/CatalogEntry.swift: joins CatalogEntry + ServerMetrics? into single display model; all ServerMetrics fields are optional and degrade to nil gracefully
 - [ ] T008 Update mcp-inator/Resources/catalog.json to schemaVersion 2: add curatorNote, isFirstParty (false), alternativeTo (null), requiredArgs ([]) to all 18 existing entries with realistic placeholder curator notes
 - [ ] T009 Update project.yml to include new Swift source files, then run `xcodegen generate` to register them in mcp-inator.xcodeproj/project.pbxproj
+- [ ] T009b Add `isPrivate` attribute (Bool, default false) to the MCPServerConfig Core Data entity in mcp-inator/Models/mcp_inator.xcdatamodeld; create a lightweight migration; update MCPServerConfig to expose the property; update ConfigStore to persist the flag
 
 **Checkpoint**: Build must succeed (`xcodebuild ... build`) before proceeding to US1 tasks.
 
@@ -106,6 +107,7 @@ description: "Task list for AI-Curated MCP Server Catalog"
 - [ ] T027 [P] [US5] Create mcp-inator/UI/SharingReviewView.swift: show each opted-in server's sanitized fields (serverKey, command, sanitizedArgs, envVarKeys); per-server toggle to exclude; "Submit" button calls UsageSharingService; "Cancel" exits without submitting
 - [ ] T028 [US5] Add sharing preference keys to UserDefaults and update mcp-inator/UI/SettingsView.swift: "Contributing Usage Data" section with current opt-in status, "Withdraw participation" button (prevents future submissions), link to privacy explanation
 - [ ] T029 [US5] Wire sharing eligibility check into mcp-inator/App/mcp_inatorApp.swift: on app foreground, evaluate eligibility (days since first launch, enabled server count, not already shown this session); present SharingConsentView as sheet when eligible
+- [ ] T029b [P] [US5] Add "Private server" toggle (isPrivate) to the server edit view (mcp-inator/UI/ServerEditView.swift or equivalent): Boolean toggle with label "Keep private — exclude from usage sharing and catalog statistics"; wired to MCPServerConfig.isPrivate via ConfigStore; UsageSharingService must filter out isPrivate servers before constructing the payload
 
 **Checkpoint**: US5 independently testable — full flow from consent prompt → review → submit → usage.json updated.
 

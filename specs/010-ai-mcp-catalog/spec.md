@@ -138,7 +138,8 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 
 - **FR-016**: The app MUST present the sharing opt-in as an explicit, reviewable prompt — never as a pre-checked preference or background upload. Sharing MUST be off by default.
 - **FR-017**: Before any data is transmitted, the user MUST be shown a review screen displaying the exact sanitized payload, with a per-server toggle to exclude individual entries.
-- **FR-018**: The sharing payload MUST exclude: all env var values, any filesystem paths not matching a known package manager pattern (replaced with `[redacted]`), any device identifiers, and any usernames or account information.
+- **FR-018**: The sharing payload MUST exclude: all env var values, any filesystem paths not matching a known package manager pattern (replaced with `[path]`), any device identifiers, and any usernames or account information.
+- **FR-024**: Users MUST be able to mark any server in their library as private. Private servers (`isPrivate: true`) are excluded from the sharing payload, are never counted in usage statistics, and do not appear in the "Servers not in catalog" flagging logic. Private servers remain fully functional — the flag affects only outbound data, not local behavior. The default value is `false` (not private).
 - **FR-019**: The sharing payload MUST include for each opted-in server: server key, command, sanitized args, transport type, enabled/disabled state, env var key names (no values), and optionally the user's own description if they choose to include it.
 - **FR-020**: Users MUST be able to withdraw from sharing at any time via Settings, which prevents future submissions.
 - **FR-021**: When a user's library contains a server not present in the catalog, that server's sanitized data MUST be included in the sharing payload and flagged as a potential new catalog entry for AI enrichment.
@@ -151,6 +152,7 @@ Over time, as more users contribute, the catalog gains a "used by N mcp-inator u
 - **EnvVarDefinition**: name, description, isRequired, isSensitive.
 - **ServerMetrics**: All computed per-server signals, published in `stats.json`. Fields: serverKey, repositoryURL, starCount, forkCount, lastCommitDate, openIssueCount, isArchived, githubFetchedAt, trendingScore (0–100), sentimentSummary, mentionCount, sentimentComputedAt, userCount, enabledCount, weeklyActiveCount, usageAggregatedAt.
 - **UsageReport**: An anonymized snapshot of one user's opted-in server library. Fields: reportedAt, servers (array of sanitized server entries). Never stored with any user identifier beyond a random session token that resets on each submission. Accumulated in the catalog repo's internal `usage.json` by the Cloudflare Worker; folded into `stats.json` by the weekly refresh job.
+- **MCPServerConfig (extended)**: Existing model extended with `isPrivate: Bool` (default `false`). Private servers are excluded from the sharing payload and from usage statistics. This field requires a Core Data migration.
 
 ---
 
