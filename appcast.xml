@@ -208,5 +208,24 @@
         length="10693725"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.2.2</title>
+      <pubDate>Fri, 29 May 2026 02:41:18 +0000</pubDate>
+      <sparkle:version>18</sparkle:version>
+      <sparkle:shortVersionString>0.2.2</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.2.2</h3>
+<ul>
+<li>Fixed a crash that could occur after saving a server configuration</li>
+<li>"Push Changes" now appears inline in the edit panel instead of opening a separate sheet, so the panel no longer closes unexpectedly during the push</li>
+<li>Save button is now disabled until you actually change something while editing a server</li>
+<li>Fixed a bug where importing a server from an agent could show a blank sheet or conflict with mcp-inator's own entry</li>
+<li>Added crash reporting and diagnostics to help catch and fix issues faster</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.2.2/mcp-inator-0.2.2.dmg"
+        sparkle:edSignature="p7XSYxSu1RC35QqqQL4rIGtL4D4lKn03eLQtWXvIROjk6GKQTJY4f5Vtv7o7ewov2/v/5jVntSiXh5nEbsdHCw=="
+        length="11878711"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
