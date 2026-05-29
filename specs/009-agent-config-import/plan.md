@@ -6,14 +6,16 @@
 
 ## Summary
 
-Replace the `store.agents`-filtered import menu with a direct adapter scan so any installed, file-backed agent (Claude Desktop, Claude Code, Gemini CLI, Codex CLI) can be imported from immediately — even before the user has registered those agents in mcp-inator. Gemini Desktop appears as a disabled entry with an explanation. The existing `ImportReviewView` and `ConfigStore.categorizeImport` are reused unchanged; only source discovery, the `ImportSource` type, and the `applyImportDecisions` signature change.
+Replace the `store.agents`-filtered import menu with a direct adapter scan so any installed, file-backed agent (Claude Desktop, Claude Code, Gemini CLI, Codex CLI) can be imported from immediately — even before the user has registered those agents in mcp-inator. Gemini Desktop appears as a disabled entry with an explanation.
+
+The key architectural decision for testability: scanning logic is extracted into a standalone `ImportSourceScanner` struct (not embedded in the view), `ImportSource` lives in its own file, and a shared `StubAdapter` test double is added to the test target. The existing `ImportReviewView` and `ConfigStore.categorizeImport` are reused; only source discovery, the two new types, and the `applyImportDecisions` signature change.
 
 ## Technical Context
 
 **Language/Version**: Swift 5.9+ / SwiftUI + AppKit  
 **Primary Dependencies**: GRDB (SQLite library), Sentry, Sparkle  
 **Storage**: SQLite via GRDB (library records); flat JSON files (agent configs, read-only for this feature)  
-**Testing**: XCTest — unit tests for `ImportSource` construction logic, integration tests using existing adapter fixture patterns  
+**Testing**: XCTest — `ImportSourceScanner` unit tests with `StubAdapter`, `ConfigStore` tests for `categorizeImport` and `applyImportDecisions`  
 **Target Platform**: macOS 14+  
 **Project Type**: macOS menubar app  
 **Performance Goals**: Import menu population is synchronous and sub-millisecond (scanning 5 adapters + checking file existence)  
@@ -34,6 +36,56 @@ Replace the `store.agents`-filtered import menu with a direct adapter scan so an
 
 **No violations. No Complexity Tracking needed.**
 
+## Testability Design
+
+### The Problem with the Naive Approach
+
+Embedding scanning logic in `private var importSources: [ImportSource]` on a SwiftUI view makes it completely untestable:
+- XCTest cannot instantiate `ConfigLibraryView` (requires `@EnvironmentObject`, `@State`, running host)
+- `private` access means nothing outside the view can call it
+- Hardcoded `FileManager.default.fileExists()` calls cannot be controlled in tests
+
+### Solution: `ImportSourceScanner`
+
+Extract all scanning logic into a plain struct with injectable dependencies:
+
+```swift
+struct ImportSourceScanner {
+    let adapters: [any AgentAdapter]
+    let fileExists: (URL) -> Bool
+
+    func scan() -> [ImportSource] { ... }
+}
+```
+
+- **`adapters`**: injected — tests pass `StubAdapter` instances; production passes the real five adapters
+- **`fileExists`**: injected closure — tests pass `{ _ in true/false }`; production passes `FileManager.default.fileExists(atPath:)`
+- **`ConfigLibraryView`** calls `ImportSourceScanner().scan()` — one line, no logic in the view
+- **`ImportSourceScanner`** is a pure value type — no UI, no state, testable anywhere
+
+### `StubAdapter` — Shared Test Double
+
+The existing `MockAdapter` in `ConfigStoreTests` is `private` and not flexible enough (hardcodes `agentType`, `isInstalled() → true`, `isAppManaged → false`). Add a `StubAdapter` to a shared test helper file that tests can configure per-scenario:
+
+```swift
+// mcp-inatorTests/TestHelpers/StubAdapter.swift
+final class StubAdapter: AgentAdapter {
+    let agentType: AgentType
+    let displayName: String
+    var installedResult = true
+    var appManagedResult = false
+    var configPathResult: URL
+    var readResult: [String: MCPServerConfig] = [:]
+    // ... protocol conformance
+}
+```
+
+This serves both `ImportSourceScannerTests` and any future tests needing a configurable adapter.
+
+### `ConfigStore` Test Coverage Gap
+
+`applyImportDecisions` and `categorizeImport` have **zero test coverage** today. Both are critical paths for this feature. Tests are added to `ConfigStoreTests.swift`.
+
 ## Project Structure
 
 ### Documentation (this feature)
@@ -52,34 +104,36 @@ specs/009-agent-config-import/
 ### Source Code Changes
 
 ```text
-mcp-inator/UI/
-├── ConfigLibraryView.swift    ← primary change: importSources, prepareImport, menu rendering
-└── ImportReviewView.swift     ← change agent: AgentRecord → source: ImportSource
+mcp-inator/
+├── Models/
+│   └── ImportSource.swift         (new) — shared type, accessible from UI and scanner
+├── Services/
+│   └── ImportSourceScanner.swift  (new) — pure scanning logic, injectable deps
+├── UI/
+│   ├── ConfigLibraryView.swift    ← remove adapters dict + importableAgents, add scanner call
+│   └── ImportReviewView.swift     ← agent: AgentRecord → source: ImportSource
+└── Store/
+    └── ConfigStore.swift          ← agentId: Int64 → Int64? in applyImportDecisions
 
-mcp-inator/Store/
-└── ConfigStore.swift          ← make agentId optional in applyImportDecisions
-
-mcp-inatorTests/UI/            (new directory)
-└── ConfigLibraryImportTests.swift   ← unit tests for ImportSource construction
+mcp-inatorTests/
+├── TestHelpers/
+│   └── StubAdapter.swift          (new) — shared configurable test double
+├── Unit/
+│   ├── ConfigStoreTests.swift     ← add categorizeImport + applyImportDecisions tests
+│   └── ImportSourceScannerTests.swift  (new) — full scanner coverage
 ```
+
+> **Note on `Models/` and `Services/` directories**: If these don't exist yet, create them. If the project uses a flat structure, place `ImportSource.swift` and `ImportSourceScanner.swift` alongside the adapters in `mcp-inator/Adapters/` or a suitable existing group. The key constraint is that both files must be in the app target (not the test target), with `internal` access so tests can import them via `@testable import mcp_inator`.
 
 ## Implementation Tasks
 
-### T1 — Make `agentId` optional in `ConfigStore.applyImportDecisions`
+### T1 — Create `ImportSource.swift`
 
-**File**: `mcp-inator/Store/ConfigStore.swift`
-
-Change signature from `agentId: Int64` to `agentId: Int64?`. Guard the `setAssignmentState` calls behind `if let agentId { ... }`. Existing callers passing a real `Int64` are unaffected.
-
----
-
-### T2 — Add `ImportSource` type
-
-**File**: `mcp-inator/UI/ConfigLibraryView.swift`
-
-Add below imports (remove `private` if `ImportReviewView` lives in a separate file):
+**File**: `mcp-inator/Models/ImportSource.swift` (new)
 
 ```swift
+import Foundation
+
 struct ImportSource {
     let displayName: String
     let agentType: AgentType
@@ -90,49 +144,171 @@ struct ImportSource {
 }
 ```
 
+Not `private` — needs to be visible to `ConfigLibraryView`, `ImportReviewView`, `ImportSourceScanner`, and tests (`@testable import`).
+
 ---
 
-### T3 — Replace `importableAgents` with `importSources`
+### T2 — Create `ImportSourceScanner.swift`
 
-**File**: `mcp-inator/UI/ConfigLibraryView.swift`
-
-Remove the `private let adapters: [AgentType: any AgentAdapter]` dictionary and `importableAgents` computed property. Replace with:
+**File**: `mcp-inator/Services/ImportSourceScanner.swift` (new)
 
 ```swift
-private var importSources: [ImportSource] {
-    let allAdapters: [any AgentAdapter] = [
-        ClaudeCodeAdapter(), ClaudeDesktopAdapter(),
-        GeminiCLIAdapter(), CodexCLIAdapter(), GeminiDesktopAdapter()
-    ]
-    return allAdapters.compactMap { adapter in
-        guard adapter.isInstalled() else { return nil }
-        if adapter.isAppManaged {
+import Foundation
+
+struct ImportSourceScanner {
+    let adapters: [any AgentAdapter]
+    let fileExists: (URL) -> Bool
+
+    init(
+        adapters: [any AgentAdapter] = [
+            ClaudeCodeAdapter(), ClaudeDesktopAdapter(),
+            GeminiCLIAdapter(), CodexCLIAdapter(), GeminiDesktopAdapter()
+        ],
+        fileExists: @escaping (URL) -> Bool = {
+            FileManager.default.fileExists(atPath: $0.path)
+        }
+    ) {
+        self.adapters = adapters
+        self.fileExists = fileExists
+    }
+
+    func scan() -> [ImportSource] {
+        adapters.compactMap { adapter in
+            guard adapter.isInstalled() else { return nil }
+            if adapter.isAppManaged {
+                return ImportSource(
+                    displayName: adapter.displayName,
+                    agentType: adapter.agentType,
+                    adapter: adapter,
+                    configPath: adapter.defaultConfigPath(),
+                    isImportable: false,
+                    unavailableReason: "MCP servers are managed inside the \(adapter.displayName) app"
+                )
+            }
+            let path = adapter.defaultConfigPath()
+            guard fileExists(path) else { return nil }
             return ImportSource(
-                displayName: adapter.displayName, agentType: adapter.agentType,
-                adapter: adapter, configPath: adapter.defaultConfigPath(),
-                isImportable: false,
-                unavailableReason: "MCP servers are managed inside the \(adapter.displayName) app"
+                displayName: adapter.displayName,
+                agentType: adapter.agentType,
+                adapter: adapter,
+                configPath: path,
+                isImportable: true,
+                unavailableReason: nil
             )
         }
-        let path = adapter.defaultConfigPath()
-        guard FileManager.default.fileExists(atPath: path.path) else { return nil }
-        return ImportSource(
-            displayName: adapter.displayName, agentType: adapter.agentType,
-            adapter: adapter, configPath: path,
-            isImportable: true, unavailableReason: nil
-        )
     }
 }
 ```
 
 ---
 
-### T4 — Update Import menu rendering
+### T3 — Create `StubAdapter` test helper
+
+**File**: `mcp-inatorTests/TestHelpers/StubAdapter.swift` (new)
+
+```swift
+import Foundation
+@testable import mcp_inator
+
+final class StubAdapter: AgentAdapter {
+    let agentType: AgentType
+    let displayName: String
+    var installedResult = true
+    var appManagedResult = false
+    var configPathResult: URL
+    var readResult: [String: MCPServerConfig] = [:]
+
+    init(agentType: AgentType = .claudeDesktop,
+         displayName: String = "Stub",
+         configPath: URL = URL(fileURLWithPath: "/dev/null")) {
+        self.agentType = agentType
+        self.displayName = displayName
+        self.configPathResult = configPath
+    }
+
+    func defaultConfigPath() -> URL { configPathResult }
+    func isInstalled() -> Bool { installedResult }
+    var isAppManaged: Bool { appManagedResult }
+    func readConfigs(from path: URL) throws -> [String: MCPServerConfig] { readResult }
+    func writeConfigs(_ configs: [String: MCPServerConfig], to path: URL,
+                      expectedExisting: [String: MCPServerConfig]?) throws -> WriteResult { .success }
+    func removeConfig(key: String, from path: URL,
+                      expectedValue: MCPServerConfig?) throws -> WriteResult { .success }
+    func validateServerKey(_ key: String) -> KeyValidationResult { .valid }
+}
+```
+
+Add this file to the test target in `project.yml`.
+
+---
+
+### T4 — Write `ImportSourceScannerTests`
+
+**File**: `mcp-inatorTests/Unit/ImportSourceScannerTests.swift` (new)
+
+Cover all construction rules from the contract:
+
+```
+testScan_notInstalled_excluded
+testScan_installedFileBacked_configMissing_excluded
+testScan_installedFileBacked_configExists_isImportable
+testScan_installedAppManaged_notImportable_withReason
+testScan_installedAppManaged_notInstalled_excluded
+testScan_mixedAdapters_returnsCorrectSubset
+testScan_allExcluded_returnsEmpty
+testScan_unavailableReason_containsDisplayName
+```
+
+Use `StubAdapter` with controlled `installedResult`, `appManagedResult`, and a `fileExists` closure that checks against a known set of paths.
+
+---
+
+### T5 — Add `ConfigStore` tests for `categorizeImport` and `applyImportDecisions`
+
+**File**: `mcp-inatorTests/Unit/ConfigStoreTests.swift` (extend existing)
+
+```
+// categorizeImport
+testCategorizeImport_newServer_classifiedAsNew
+testCategorizeImport_exactMatch_classifiedAsExactMatch
+testCategorizeImport_conflict_classifiedAsConflict
+testCategorizeImport_skipsBuiltInKey          // "mcp-inator" key is filtered out
+testCategorizeImport_emptyAdapter_returnsEmpty
+
+// applyImportDecisions — agentId nil (new import flow)
+testApplyImportDecisions_nilAgentId_insertsConfig
+testApplyImportDecisions_nilAgentId_noAssignmentCreated
+testApplyImportDecisions_nilAgentId_updatesExistingConfig
+
+// applyImportDecisions — agentId set (existing discovery flow, regression)
+testApplyImportDecisions_withAgentId_insertsConfig
+testApplyImportDecisions_withAgentId_createsAssignment
+```
+
+Use `StubAdapter` for `categorizeImport` (controls `readResult`). Use the existing in-memory `ConfigStore` fixture for `applyImportDecisions`.
+
+---
+
+### T6 — Make `agentId` optional in `ConfigStore.applyImportDecisions`
+
+**File**: `mcp-inator/Store/ConfigStore.swift`
+
+Change `agentId: Int64` → `agentId: Int64?`. Guard `setAssignmentState` calls behind `if let agentId { ... }`. Existing callers with a real `Int64` are source-compatible (Swift accepts non-optional where optional is expected).
+
+---
+
+### T7 — Update `ConfigLibraryView` to use scanner
 
 **File**: `mcp-inator/UI/ConfigLibraryView.swift`
 
-Replace the `if !importableAgents.isEmpty { Menu { ForEach(importableAgents) ... } }` block:
+- Remove `private let adapters: [AgentType: any AgentAdapter]`
+- Remove `importableAgents` computed property
+- Replace with `private var importSources: [ImportSource] { ImportSourceScanner().scan() }`
+- Rename `@State private var importAgent: AgentRecord?` → `@State private var importSource: ImportSource?`
+- Update `prepareImport(for:)` to take `ImportSource` instead of `AgentRecord`
+- Update the `navigationDestination` binding accordingly
 
+Updated Import menu block:
 ```swift
 if !importSources.isEmpty {
     Spacer()
@@ -152,57 +328,32 @@ if !importSources.isEmpty {
 
 ---
 
-### T5 — Update `prepareImport` and state variable
-
-**File**: `mcp-inator/UI/ConfigLibraryView.swift`
-
-Rename `@State private var importAgent: AgentRecord?` → `@State private var importSource: ImportSource?`
-
-Replace `prepareImport(for agent: AgentRecord)`:
-
-```swift
-private func prepareImport(for source: ImportSource) {
-    guard let categories = try? store.categorizeImport(
-        from: source.adapter, configPath: source.configPath
-    ) else { return }
-    importCategories = categories
-    importSource = source
-}
-```
-
-Update `navigationDestination` binding to use `importSource`.
-
----
-
-### T6 — Update `ImportReviewView` to use `ImportSource`
+### T8 — Update `ImportReviewView` to use `ImportSource`
 
 **File**: `mcp-inator/UI/ImportReviewView.swift`
 
-- Change `let agent: AgentRecord` → `let source: ImportSource`
+- `let agent: AgentRecord` → `let source: ImportSource`
 - `.navigationTitle("Import from \(source.displayName)")`
-- `applyDecisions()`: remove `guard let agentId = agent.id`, call `store.applyImportDecisions(toImport, agentId: nil)`
+- Remove `guard let agentId = agent.id else { return }` 
+- `store.applyImportDecisions(toImport, agentId: nil)`
 - Update call site in `ConfigLibraryView.navigationDestination`
-
----
-
-### T7 — Tests for `ImportSource` construction
-
-**File**: `mcp-inatorTests/UI/ConfigLibraryImportTests.swift` (new)
-
-Cover all 5 construction cases per the contract:
-1. Installed + config file exists → `isImportable: true`
-2. Installed + config file missing → excluded
-3. Not installed → excluded
-4. App-managed + installed → `isImportable: false`, reason set
-5. App-managed + not installed → excluded
 
 ---
 
 ## Rollout Order
 
-`T1` → `T2` → `T3` → `T4` → `T5` → `T6` → `T7`
+```
+T1 (ImportSource type)
+T2 (ImportSourceScanner)
+T3 (StubAdapter)
+T4 (Scanner tests)       ← validates T1+T2 before touching production views
+T5 (ConfigStore tests)   ← validates T6 before it lands
+T6 (ConfigStore change)
+T7 (ConfigLibraryView)
+T8 (ImportReviewView)
+```
 
-T1 must be done before T6 (signature change). T2 must be done before T3–T6 (type dependency). T3–T5 are all in `ConfigLibraryView` and should be done in a single editing pass.
+Tests are written **before** the view changes (T4, T5 before T7, T8) so regressions are caught immediately. T6 must come before T7/T8 since those call `applyImportDecisions` with `agentId: nil`.
 
 ## Out of Scope
 

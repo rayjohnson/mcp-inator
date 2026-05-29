@@ -7,7 +7,7 @@
 
 A transient, adapter-derived value representing one agent whose config can potentially be imported. Not persisted to the database.
 
-**Location**: Private to `ConfigLibraryView.swift`
+**Location**: `mcp-inator/Models/ImportSource.swift` — `internal` access, visible to both UI and tests via `@testable import mcp_inator`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -23,6 +23,35 @@ A transient, adapter-derived value representing one agent whose config can poten
 - `isImportable = false` when `adapter.isAppManaged == true`
 - `isImportable = true` only when config file exists at `configPath`
 - If not installed → not created (absent from list)
+
+## New Type: `ImportSourceScanner`
+
+A pure value-type service that produces `[ImportSource]` from a list of adapters. Keeping this logic out of the view makes it directly testable.
+
+**Location**: `mcp-inator/Services/ImportSourceScanner.swift`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `adapters` | `[any AgentAdapter]` | Adapters to scan; defaults to all five production adapters |
+| `fileExists` | `(URL) -> Bool` | File-existence check; defaults to `FileManager.default.fileExists(atPath:)` |
+
+**Method**: `func scan() -> [ImportSource]` — applies construction rules and returns the filtered list.
+
+**Testability**: inject `StubAdapter` instances and a `{ _ in true/false }` closure to exercise every construction rule without touching the filesystem or requiring a running app.
+
+## New Test Double: `StubAdapter`
+
+**Location**: `mcp-inatorTests/TestHelpers/StubAdapter.swift` (test target only)
+
+A configurable `AgentAdapter` conformer for use across all test suites. Replaces the need to copy `MockAdapter` per test file.
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `agentType` | `.claudeDesktop` | Identifies the adapter in assertions |
+| `installedResult` | `true` | Controls `isInstalled()` return value |
+| `appManagedResult` | `false` | Controls `isAppManaged` |
+| `configPathResult` | `/dev/null` | Controls `defaultConfigPath()` |
+| `readResult` | `[:]` | Controls `readConfigs(from:)` return value |
 
 ## Modified Type: `ConfigStore.applyImportDecisions`
 
