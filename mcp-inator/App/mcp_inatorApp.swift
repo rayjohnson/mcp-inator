@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import Sparkle
+import Sentry
 
 // swiftlint:disable:next type_name
 struct mcp_inatorApp: App {
@@ -12,6 +13,14 @@ struct mcp_inatorApp: App {
     private let updaterController: SPUStandardUpdaterController
 
     init() {
+        SentrySDK.start { options in
+            options.dsn = "https://6927130d1d328a2ac1b66594f5d480a2@o4511470552678400.ingest.us.sentry.io/4511470571618304"
+            #if DEBUG
+            options.environment = "debug"
+            #else
+            options.environment = "production"
+            #endif
+        }
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: sparkleDelegate,

@@ -1,4 +1,5 @@
 import SwiftUI
+import Sentry
 
 struct ConfigLibraryView: View {
     @EnvironmentObject private var store: ConfigStore
@@ -69,6 +70,9 @@ struct ConfigLibraryView: View {
         ) {
             Button("Delete", role: .destructive) {
                 if let config = confirmDelete {
+                    let b = Breadcrumb(level: .info, category: "ui")
+                    b.message = "delete: removing server '\(config.serverKey)' from library"
+                    SentrySDK.addBreadcrumb(b)
                     try? store.delete(config)
                 }
                 confirmDelete = nil

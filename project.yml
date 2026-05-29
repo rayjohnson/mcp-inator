@@ -18,6 +18,9 @@ packages:
   MCP:
     url: https://github.com/modelcontextprotocol/swift-sdk
     from: "0.12.1"
+  Sentry:
+    url: https://github.com/getsentry/sentry-cocoa
+    from: "8.0.0"
 
 configFiles:
   Debug: version.xcconfig
@@ -48,6 +51,8 @@ targets:
         product: TOMLKit
       - package: MCP
         product: MCP
+      - package: Sentry
+        product: Sentry
     info:
       path: mcp-inator/Resources/Info.plist
       properties:
