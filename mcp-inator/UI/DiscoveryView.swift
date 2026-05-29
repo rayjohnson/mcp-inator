@@ -34,10 +34,22 @@ struct DiscoveryView: View {
                 }
             }
             .sheet(isPresented: $showImportReview) {
-                if let agent = importTarget {
-                    ImportReviewView(agent: agent, categories: importCategories)
-                        .environmentObject(store)
-                        .frame(width: 440, height: 380)
+                if let agent = importTarget,
+                   let adapter = adapters[agent.agentType] {
+                    ImportReviewView(
+                        source: ImportSource(
+                            displayName: agent.displayName,
+                            agentType: agent.agentType,
+                            adapter: adapter,
+                            configPath: URL(fileURLWithPath: agent.configPath),
+                            isImportable: true,
+                            unavailableReason: nil
+                        ),
+                        categories: importCategories,
+                        agentId: agent.id
+                    )
+                    .environmentObject(store)
+                    .frame(width: 440, height: 380)
                 }
             }
         }

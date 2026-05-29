@@ -7,8 +7,9 @@ struct ImportReviewView: View {
     @EnvironmentObject private var store: ConfigStore
     @Environment(\.dismiss) private var dismiss
 
-    let agent: AgentRecord
+    let source: ImportSource
     let categories: [(key: String, category: ConfigStore.ImportCategory)]
+    var agentId: Int64?
 
     // Per-entry decisions: key → user choice
     @State private var decisions: [String: ImportDecision] = [:]
@@ -49,7 +50,7 @@ struct ImportReviewView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
         }
-        .navigationTitle("Import from \(agent.displayName)")
+        .navigationTitle("Import from \(source.displayName)")
         .navigationBarBackButtonHidden(true)
         .onAppear { seedDefaults() }
     }
@@ -67,7 +68,7 @@ struct ImportReviewView: View {
                 .foregroundColor(.secondary)
             Text("No MCP servers found")
                 .font(.title2)
-            Text("\(agent.displayName) has no MCP server entries in its config file.")
+            Text("\(source.displayName) has no MCP server entries in its config file.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -150,7 +151,6 @@ struct ImportReviewView: View {
     }
 
     private func applyDecisions() {
-        guard let agentId = agent.id else { return }
         var toImport: [(key: String, config: MCPServerConfig)] = []
 
         for (key, category) in categories {

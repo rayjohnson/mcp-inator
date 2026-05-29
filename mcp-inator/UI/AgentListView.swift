@@ -120,8 +120,19 @@ struct AgentListView: View {
             pathOverrideView
         }
         .navigationDestination(isPresented: $showImportReview) {
-            ImportReviewView(agent: agent, categories: importCategories)
-                .environmentObject(store)
+            ImportReviewView(
+                source: ImportSource(
+                    displayName: agent.displayName,
+                    agentType: agent.agentType,
+                    adapter: adapter,
+                    configPath: configPath,
+                    isImportable: true,
+                    unavailableReason: nil
+                ),
+                categories: importCategories,
+                agentId: agent.id
+            )
+            .environmentObject(store)
         }
         .onAppear {
             refreshEnabledSet()

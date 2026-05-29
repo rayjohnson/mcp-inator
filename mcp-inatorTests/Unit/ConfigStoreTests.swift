@@ -279,4 +279,109 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertTrue(forceAdapter.capturedExpectedExistingWasNil,
                       "force=true must pass nil expectedExisting to adapter")
     }
+
+    // MARK: - categorizeImport
+
+    func testCategorizeImport_newServer_classifiedAsNew() throws {
+        let adapter = StubAdapter()
+        adapter.readResult = ["my-tool": MCPServerConfig(displayName: "My Tool", command: "/bin/tool")]
+        let results = try store.categorizeImport(from: adapter, configPath: adapter.configPathResult)
+        XCTAssertEqual(results.count, 1)
+        if case .new = results[0].category { } else {
+            XCTFail("Expected .new, got \(results[0].category)")
+        }
+    }
+
+    func testCategorizeImport_exactMatch_classifiedAsExactMatch() throws {
+        let config = MCPServerConfig(displayName: "My Tool", command: "/bin/tool")
+        _ = try store.insert(config)
+
+        let adapter = StubAdapter()
+        adapter.readResult = ["my-tool": config]
+        let results = try store.categorizeImport(from: adapter, configPath: adapter.configPathResult)
+        XCTAssertEqual(results.count, 1)
+        if case .exactMatch = results[0].category { } else {
+            XCTFail("Expected .exactMatch, got \(results[0].category)")
+        }
+    }
+
+    func testCategorizeImport_conflict_classifiedAsConflict() throws {
+        _ = try store.insert(MCPServerConfig(displayName: "My Tool", command: "/bin/old"))
+
+        let adapter = StubAdapter()
+        adapter.readResult = ["my-tool": MCPServerConfig(displayName: "My Tool", command: "/bin/new")]
+        let results = try store.categorizeImport(from: adapter, configPath: adapter.configPathResult)
+        XCTAssertEqual(results.count, 1)
+        if case .conflict = results[0].category { } else {
+            XCTFail("Expected .conflict, got \(results[0].category)")
+        }
+    }
+
+    func testCategorizeImport_skipsBuiltInKey() throws {
+        let adapter = StubAdapter()
+        adapter.readResult = ["mcp-inator": MCPServerConfig(displayName: "Built-in", command: "/bin/self")]
+        let results = try store.categorizeImport(from: adapter, configPath: adapter.configPathResult)
+        XCTAssertTrue(results.isEmpty, "Built-in 'mcp-inator' key must be skipped")
+    }
+
+    func testCategorizeImport_emptyAdapter_returnsEmpty() throws {
+        let adapter = StubAdapter()
+        adapter.readResult = [:]
+        let results = try store.categorizeImport(from: adapter, configPath: adapter.configPathResult)
+        XCTAssertTrue(results.isEmpty)
+    }
+
+    // MARK: - applyImportDecisions — agentId nil (new import flow)
+
+    func testApplyImportDecisions_nilAgentId_insertsConfig() throws {
+        let config = MCPServerConfig(displayName: "New Tool", command: "/bin/tool")
+        try store.applyImportDecisions([(key: "new-tool", config: config)], agentId: nil)
+        XCTAssertEqual(store.configs.count, 1)
+        XCTAssertEqual(store.configs.first?.serverKey, "new-tool")
+    }
+
+    func testApplyImportDecisions_nilAgentId_noAssignmentCreated() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let config = MCPServerConfig(displayName: "New Tool", command: "/bin/tool")
+        try store.applyImportDecisions([(key: "new-tool", config: config)], agentId: nil)
+
+        let inserted = try XCTUnwrap(store.configs.first)
+        let assignment = try store.fetchAssignment(configUUID: inserted.uuid, agentId: agentId)
+        XCTAssertNil(assignment, "No assignment must be created when agentId is nil")
+    }
+
+    func testApplyImportDecisions_nilAgentId_updatesExistingConfig() throws {
+        let original = try store.insert(MCPServerConfig(displayName: "My Tool", command: "/bin/old"))
+        // The updated config must carry the same serverKey so applyImportDecisions finds the existing record.
+        let updated = MCPServerConfig(displayName: "My Tool", serverKey: original.serverKey,
+                                      command: "/bin/new")
+        try store.applyImportDecisions([(key: original.serverKey, config: updated)], agentId: nil)
+
+        let fetched = try XCTUnwrap(try store.fetch(uuid: original.uuid))
+        XCTAssertEqual(fetched.command, "/bin/new")
+        XCTAssertEqual(store.configs.count, 1, "Update must not create a second record")
+    }
+
+    // MARK: - applyImportDecisions — agentId set (existing discovery flow, regression)
+
+    func testApplyImportDecisions_withAgentId_insertsConfig() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let config = MCPServerConfig(displayName: "Tool", command: "/bin/tool")
+        try store.applyImportDecisions([(key: "tool", config: config)], agentId: agentId)
+        XCTAssertEqual(store.configs.count, 1)
+    }
+
+    func testApplyImportDecisions_withAgentId_createsAssignment() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let config = MCPServerConfig(displayName: "Tool", command: "/bin/tool")
+        try store.applyImportDecisions([(key: "tool", config: config)], agentId: agentId)
+
+        let inserted = try XCTUnwrap(store.configs.first)
+        let assignment = try store.fetchAssignment(configUUID: inserted.uuid, agentId: agentId)
+        XCTAssertNotNil(assignment, "Assignment must be created when agentId is provided")
+        XCTAssertEqual(assignment?.state, .enabled)
+    }
 }

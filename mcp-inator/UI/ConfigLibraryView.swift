@@ -7,20 +7,10 @@ struct ConfigLibraryView: View {
     @State private var editingConfig: MCPServerConfig?
     @State private var confirmDelete: MCPServerConfig?
     @State private var statusMatrix: [ConfigStore.StatusRow] = []
-    @State private var importAgent: AgentRecord?
+    @State private var importSource: ImportSource?
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
 
-    private let adapters: [AgentType: any AgentAdapter] = [
-        .claudeCode:    ClaudeCodeAdapter(),
-        .claudeDesktop: ClaudeDesktopAdapter(),
-        .geminiCLI:     GeminiCLIAdapter(),
-        .codexCLI:      CodexCLIAdapter(),
-        .geminiDesktop: GeminiDesktopAdapter()
-    ]
-
-    private var importableAgents: [AgentRecord] {
-        store.agents.filter { $0.isAvailable && !$0.agentType.isAppManaged }
-    }
+    private var importSources: [ImportSource] { ImportSourceScanner().scan() }
 
     var body: some View {
         Group {
@@ -40,12 +30,12 @@ struct ConfigLibraryView: View {
         }
         .navigationDestination(
             isPresented: Binding(
-                get: { importAgent != nil },
-                set: { if !$0 { importAgent = nil } }
+                get: { importSource != nil },
+                set: { if !$0 { importSource = nil } }
             )
         ) {
-            if let agent = importAgent {
-                ImportReviewView(agent: agent, categories: importCategories)
+            if let source = importSource {
+                ImportReviewView(source: source, categories: importCategories)
                     .environmentObject(store)
             }
         }
@@ -116,11 +106,13 @@ struct ConfigLibraryView: View {
                 }
                 .buttonStyle(.plain)
 
-                if !importableAgents.isEmpty {
+                if !importSources.isEmpty {
                     Spacer()
                     Menu {
-                        ForEach(importableAgents) { agent in
-                            Button(agent.displayName) { prepareImport(for: agent) }
+                        ForEach(importSources, id: \.agentType) { source in
+                            Button(source.displayName) { prepareImport(for: source) }
+                                .disabled(!source.isImportable)
+                                .help(source.unavailableReason ?? "")
                         }
                     } label: {
                         Label("Import…", systemImage: "square.and.arrow.down")
@@ -156,12 +148,10 @@ struct ConfigLibraryView: View {
         statusMatrix = (try? store.fetchStatusMatrix()) ?? []
     }
 
-    private func prepareImport(for agent: AgentRecord) {
-        guard let adapter = adapters[agent.agentType] else { return }
-        let configURL = URL(fileURLWithPath: agent.configPath)
-        guard let categories = try? store.categorizeImport(from: adapter, configPath: configURL) else { return }
+    private func prepareImport(for source: ImportSource) {
+        guard let categories = try? store.categorizeImport(from: source.adapter, configPath: source.configPath) else { return }
         importCategories = categories
-        importAgent = agent
+        importSource = source
     }
 }
 
