@@ -1,3 +1,8 @@
-- Import now works without needing to register agents first — Claude Desktop, Claude Code, Gemini CLI, and Codex CLI appear in the Import menu as soon as they're installed
-- Gemini Desktop now shows as a greyed-out entry in the Import menu with an explanation, rather than being silently hidden
-- Imported servers are added to your library without automatically being enabled for any agent
+- New curated catalog powered by AI enrichment — each server now shows a curator note, the exact env vars you'll need (with descriptions), and whether it's officially maintained by the service's own team
+- Browse servers by category (Code & Development, Productivity, Data & Analytics, and more)
+- First-party badge ("Official") on servers published by the company that owns the service
+- Star count and last-commit recency shown on each entry so you can spot actively maintained servers at a glance
+- Trending section highlights servers with recent community buzz
+- Full detail view with env var documentation, required arguments, community sentiment summary, and links to docs and source
+- When multiple servers exist for the same service, the recommended pick is shown first with alternatives listed below
+- Catalog loads from a live GitHub-hosted source with a bundled fallback for offline use

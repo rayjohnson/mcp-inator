@@ -202,17 +202,17 @@ struct CatalogEntryDetailView: View {
 
     // MARK: - Stats
 
-    private func statsSection(_ m: ServerMetrics) -> some View {
+    private func statsSection(_ metrics: ServerMetrics) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Community", systemImage: "person.3")
                 .font(.headline)
 
-            if let summary = m.sentimentSummary {
+            if let summary = metrics.sentimentSummary {
                 Text(summary)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                if let count = m.mentionCount, let days = m.periodDays {
+                if let count = metrics.mentionCount, let days = metrics.periodDays {
                     Text("\(count) mentions in the past \(days) days")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -220,12 +220,12 @@ struct CatalogEntryDetailView: View {
             }
 
             HStack(spacing: 16) {
-                if let forks = m.forkCount {
+                if let forks = metrics.forkCount {
                     Label("\(forks) forks", systemImage: "tuningfork")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                if let issues = m.openIssueCount {
+                if let issues = metrics.openIssueCount {
                     Label("\(issues) open issues", systemImage: "exclamationmark.circle")
                         .font(.caption)
                         .foregroundColor(.secondary)
