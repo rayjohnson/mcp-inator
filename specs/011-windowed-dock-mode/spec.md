@@ -36,7 +36,7 @@ A user in dock mode navigates between Servers, Agents, and Catalog using a sideb
 **Acceptance Scenarios**:
 
 1. **Given** the main window is open, **When** the user clicks a sidebar item (Servers, Agents, Catalog), **Then** the correct content view appears in the detail area.
-2. **Given** the main window is open, **When** the user presses Cmd+,, **Then** a separate Preferences window opens containing the "Show in Dock" toggle and other app settings.
+2. **Given** the main window is open, **When** the user presses Cmd+,, **Then** a separate Preferences window opens containing the "Show in Dock" toggle, the "Launch at Login" toggle, and other app settings.
 3. **Given** the main window is open, **When** the user resizes the window, **Then** content reflows appropriately and the window respects a minimum size of 800×500 points.
 4. **Given** the user has resized and repositioned the window, **When** they quit and relaunch, **Then** the window reopens at the same size and position.
 5. **Given** the main window is open, **When** the user selects "About mcp-inator" from the application menu, **Then** the About panel appears.
@@ -75,7 +75,8 @@ A user who enabled dock mode decides they prefer the lighter menu bar experience
 - **FR-004**: Toggling "Show in Dock" on MUST remove the menu bar icon and open the main window automatically.
 - **FR-005**: Toggling "Show in Dock" off MUST immediately remove the dock icon, close the main window, and restore the menu bar icon and popover behavior — without requiring a restart.
 - **FR-006**: In dock mode, closing the main window (red X) MUST quit the application.
-- **FR-007**: The app MUST provide a Preferences window accessible via Cmd+, in dock mode, containing at minimum the "Show in Dock" toggle and any other existing app settings.
+- **FR-007**: The app MUST provide a Preferences window accessible via Cmd+, in dock mode, containing at minimum the "Show in Dock" toggle, a "Launch at Login" toggle, and any other existing app settings.
+- **FR-007a**: The "Launch at Login" toggle MUST register or unregister the app as a login item immediately when toggled, persisted across launches.
 - **FR-008**: The app MUST display an About panel accessible from the application menu in dock mode.
 - **FR-009**: The main window MUST contain a sidebar with three sections: Servers, Agents, Catalog. Servers is selected by default.
 - **FR-010**: The main window MUST have a minimum size of 800×500 points.
@@ -105,5 +106,5 @@ A user who enabled dock mode decides they prefer the lighter menu bar experience
 - The same SwiftUI content views are reused in both modes; only the top-level container (popover vs. window) differs.
 - No migration prompt is shown to existing users; dock mode is strictly opt-in.
 - The Preferences window contains the existing settings content (previously in the Settings tab of the popover) plus the "Show in Dock" toggle.
-- Launch at Login is a candidate for the Preferences window but is explicitly deferred to a follow-on change.
+- Launch at Login is in scope and will be included in the Preferences window.
 - The macOS application menu in dock mode includes at minimum: About mcp-inator, Settings/Preferences (Cmd+,), and Quit (Cmd+Q).
