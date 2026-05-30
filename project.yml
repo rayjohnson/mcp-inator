@@ -53,6 +53,7 @@ targets:
         product: MCP
       - package: Sentry
         product: Sentry
+      - sdk: ServiceManagement.framework
     info:
       path: mcp-inator/Resources/Info.plist
       properties:

@@ -6,6 +6,9 @@ import Sentry
 // swiftlint:disable:next type_name
 struct mcp_inatorApp: App {
 
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var appModeManager = AppModeManager()
+    @AppStorage("showInDock") private var showInDock = false
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
     @StateObject private var catalogStore  = CatalogStore()
@@ -39,34 +42,78 @@ struct mcp_inatorApp: App {
 
     private let discoveryController = DiscoveryWindowController()
     private let aboutController = AboutWindowController()
+    private let preferencesController = PreferencesWindowController()
+    private let mainWindowController = MainWindowController()
 
     var body: some Scene {
+        // MenuBarExtra is always present; label/content are conditionally empty in dock mode.
+        // @ViewBuilder closures support if/else; only @SceneBuilder conditionals are restricted.
         MenuBarExtra {
-            if let store = storeContainer.store {
-                MenuBarView()
-                    .environmentObject(store)
-                    .environmentObject(registryStore)
-                    .environment(\.openAboutWindow, { [aboutController] in
-                        Task { @MainActor in
-                            aboutController.show(updater: self.updaterController.updater)
+            if !showInDock {
+                if let store = storeContainer.store {
+                    MenuBarView()
+                        .environmentObject(store)
+                        .environmentObject(registryStore)
+                        .environment(\.openAboutWindow, { [aboutController] in
+                            Task { @MainActor in
+                                aboutController.show(updater: self.updaterController.updater)
+                            }
+                        })
+                        .environment(\.openPreferencesWindow, { [preferencesController, appModeManager] in
+                            Task { @MainActor in
+                                preferencesController.show(appModeManager: appModeManager)
+                            }
+                        })
+                        .environmentObject(catalogStore)
+                        .onAppear {
+                            appDelegate.appModeManager = appModeManager
+                            wireWindowController()
+                            try? store.seedSelfEntry()
+                            Task { await registryStore.populateCategories() }
+                            Task { await catalogStore.fetchIfNeeded() }
+                            runAgentScan(store: store)
                         }
-                    })
-                    .environmentObject(catalogStore)
-                    .onAppear {
-                        try? store.seedSelfEntry()
-                        Task { await registryStore.populateCategories() }
-                        Task { await catalogStore.fetchIfNeeded() }
-                        runAgentScan(store: store)
+                } else {
+                    StoreRecoveryView(error: storeContainer.initError) {
+                        storeContainer.reset()
                     }
-            } else {
-                StoreRecoveryView(error: storeContainer.initError) {
-                    storeContainer.reset()
                 }
             }
         } label: {
-            Image("Inator")
+            if !showInDock {
+                Image("Inator")
+                    .onAppear {
+                        // Ensure delegate and window controller are wired even if popover not opened
+                        appDelegate.appModeManager = appModeManager
+                        wireWindowController()
+                    }
+            }
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            PreferencesView()
+                .environmentObject(appModeManager)
+        }
+    }
+
+    private func wireWindowController() {
+        guard appModeManager.openMainWindow == nil else { return }
+        mainWindowController.configure(
+            appModeManager: appModeManager,
+            storeContainer: storeContainer,
+            registryStore: registryStore,
+            catalogStore: catalogStore,
+            updater: updaterController.updater,
+            aboutController: aboutController
+        )
+        appModeManager.openMainWindow = { [mainWindowController] in mainWindowController.open() }
+        appModeManager.closeMainWindow = { [mainWindowController] in mainWindowController.close() }
+        // If launched with dock mode already set, apply policy and open window immediately
+        if showInDock {
+            NSApp.setActivationPolicy(.regular)
+            mainWindowController.open()
+        }
     }
 
     // MARK: - Agent Scan (FR-019, T031, T032)
@@ -83,6 +130,86 @@ struct mcp_inatorApp: App {
                 // Discovery errors are non-fatal
             }
         }
+    }
+}
+
+// MARK: - MainWindowController
+
+@MainActor
+final class MainWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+    private weak var appModeManager: AppModeManager?
+    private weak var storeContainer: StoreContainer?
+    private weak var registryStore: RegistryStore?
+    private weak var catalogStore: CatalogStore?
+    private var updater: SPUUpdater?
+    private weak var aboutController: AboutWindowController?
+
+    // swiftlint:disable:next function_parameter_count
+    func configure(
+        appModeManager: AppModeManager,
+        storeContainer: StoreContainer,
+        registryStore: RegistryStore,
+        catalogStore: CatalogStore,
+        updater: SPUUpdater,
+        aboutController: AboutWindowController
+    ) {
+        self.appModeManager = appModeManager
+        self.storeContainer = storeContainer
+        self.registryStore = registryStore
+        self.catalogStore = catalogStore
+        self.updater = updater
+        self.aboutController = aboutController
+    }
+
+    func open() {
+        if let existing = window {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        guard let appModeManager,
+              let storeContainer,
+              let registryStore,
+              let catalogStore,
+              let updater,
+              let aboutController else { return }
+
+        let view = MainWindowView()
+            .environmentObject(appModeManager)
+            .environmentObject(storeContainer)
+            .environmentObject(registryStore)
+            .environmentObject(catalogStore)
+            .environment(\.openAboutWindow, { [weak aboutController, weak self] in
+                Task { @MainActor in
+                    aboutController?.show(updater: updater)
+                }
+            })
+
+        let hosting = NSHostingController(rootView: view)
+        let win = NSWindow(contentViewController: hosting)
+        win.title = "mcp-inator"
+        win.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        win.setContentSize(NSSize(width: 960, height: 620))
+        win.minSize = NSSize(width: 800, height: 500)
+        win.setFrameAutosaveName("main")
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        // T021: Recover if saved position is off-screen (e.g. after monitor disconnect)
+        let onScreen = NSScreen.screens.contains { $0.visibleFrame.intersects(win.frame) }
+        if !onScreen { win.center() }
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func close() {
+        window?.close()
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+        // If still in dock mode, quitting is handled by AppDelegate
     }
 }
 
@@ -186,6 +313,19 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - OpenPreferencesWindowKey
+
+private struct OpenPreferencesWindowKey: EnvironmentKey {
+    static let defaultValue: @Sendable () -> Void = {}
+}
+
+extension EnvironmentValues {
+    var openPreferencesWindow: @Sendable () -> Void {
+        get { self[OpenPreferencesWindowKey.self] }
+        set { self[OpenPreferencesWindowKey.self] = newValue }
+    }
+}
+
 // MARK: - AboutWindowController
 
 @MainActor
@@ -205,6 +345,37 @@ final class AboutWindowController: NSObject, NSWindowDelegate {
         win.setContentSize(NSSize(width: 380, height: 260))
         win.titlebarAppearsTransparent = true
         win.titleVisibility = .hidden
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
+}
+
+// MARK: - PreferencesWindowController
+
+@MainActor
+final class PreferencesWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(appModeManager: AppModeManager) {
+        if let existing = window {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let view = PreferencesView()
+            .environmentObject(appModeManager)
+        let hosting = NSHostingController(rootView: view)
+        let win = NSWindow(contentViewController: hosting)
+        win.styleMask = [.titled, .closable]
+        win.title = "Preferences"
         win.isReleasedWhenClosed = false
         win.delegate = self
         win.center()

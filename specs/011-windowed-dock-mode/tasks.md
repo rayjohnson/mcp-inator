@@ -10,7 +10,7 @@
 
 **Purpose**: Add framework dependency needed for Launch at Login.
 
-- [ ] T001 Add `ServiceManagement` framework to mcp-inator target in `project.yml` and regenerate `mcp-inator.xcodeproj` via `xcodegen generate`
+- [X] T001 Add `ServiceManagement` framework to mcp-inator target in `project.yml` and regenerate `mcp-inator.xcodeproj` via `xcodegen generate`
 
 ---
 
@@ -18,8 +18,8 @@
 
 **Purpose**: Core infrastructure that all three user stories depend on. Must complete before any story work begins.
 
-- [ ] T002 Create `AppModeManager` and its testability protocols in `mcp-inator/App/AppModeManager.swift`: define `ActivationPolicyManaging` (one method: `setPolicy(_:)`) and `WindowOpening` (two methods: `openMainWindow()`, `closeMainWindow()`) protocols; add `NSAppPolicyManager` and `AppWindowOpener` production adapters; implement `@MainActor final class AppModeManager: ObservableObject` with `@Published private(set) var showInDock: Bool` backed by an injected `UserDefaults` (not `@AppStorage`), and injected `policyManager: ActivationPolicyManaging` and `windowOpener: WindowOpening` — all with `.standard` / production defaults so call sites need no changes; add a stub `setShowInDock(_ enabled: Bool)` method
-- [ ] T003 [P] Create `AppDelegate` in `mcp-inator/App/AppDelegate.swift` — `final class AppDelegate: NSObject, NSApplicationDelegate` with `weak var appModeManager: AppModeManager?`; implement `applicationShouldTerminateAfterLastWindowClosed(_:)` returning `appModeManager?.showInDock ?? false`
+- [X] T002 Create `AppModeManager` and its testability protocols in `mcp-inator/App/AppModeManager.swift`: define `ActivationPolicyManaging` (one method: `setPolicy(_:)`) and `WindowOpening` (two methods: `openMainWindow()`, `closeMainWindow()`) protocols; add `NSAppPolicyManager` and `AppWindowOpener` production adapters; implement `@MainActor final class AppModeManager: ObservableObject` with `@Published private(set) var showInDock: Bool` backed by an injected `UserDefaults` (not `@AppStorage`), and injected `policyManager: ActivationPolicyManaging` and `windowOpener: WindowOpening` — all with `.standard` / production defaults so call sites need no changes; add a stub `setShowInDock(_ enabled: Bool)` method
+- [X] T003 [P] Create `AppDelegate` in `mcp-inator/App/AppDelegate.swift` — `final class AppDelegate: NSObject, NSApplicationDelegate` with `weak var appModeManager: AppModeManager?`; implement `applicationShouldTerminateAfterLastWindowClosed(_:)` returning `appModeManager?.showInDock ?? false`
 
 **Checkpoint**: Foundation ready — user story implementation can begin.
 
@@ -31,15 +31,15 @@
 
 **Independent Test**: Toggle "Show in Dock" on in the popover; verify dock icon appears, menu bar icon disappears, a resizable window opens. Toggle off; verify full reversal.
 
-- [ ] T004 [US1] Wire `AppDelegate` and `AppModeManager` into `mcp_inatorApp`: add `@NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate` and `@StateObject private var appModeManager = AppModeManager()`; after init set `appDelegate.appModeManager = appModeManager`; inject `appModeManager` into the environment in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T005 [US1] Add `if appModeManager.showInDock { Window(...) } else { MenuBarExtra { ... } }` conditional scene structure to `mcp_inatorApp.body`; the Window branch shows a placeholder `Text("mcp-inator")` for now in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T006 [P] [US1] Create stub `MainWindowView` — `struct MainWindowView: View` with `Text("mcp-inator").frame(minWidth: 800, minHeight: 500)` — in `mcp-inator/UI/MainWindowView.swift`
-- [ ] T007 [US1] Implement `AppModeManager.setShowInDock(_ enabled: Bool)`: call `policyManager.setPolicy(enabled ? .regular : .accessory)`; call `windowOpener.openMainWindow()` when enabling; call `windowOpener.closeMainWindow()` when disabling; implement `AppWindowOpener.openMainWindow()` using `NSApp.windows` to find or open by scene ID, and `closeMainWindow()` using `NSApp.windows.first(where: { $0.identifier?.rawValue == "main" })?.close()` in `mcp-inator/App/AppModeManager.swift`
-- [ ] T008 [US1] Update the Window scene branch in `mcp_inatorApp.body` to use `MainWindowView()` with `.defaultSize(width: 960, height: 620)`, and apply `.onAppear { NSApp.setActivationPolicy(.regular) }` on launch when `showInDock` is already true in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T009 [P] [US1] Create `PreferencesView` — `struct PreferencesView: View` containing a `Form` with a `Toggle("Show in Dock", ...)` wired to `AppModeManager.setShowInDock(_:)` — in `mcp-inator/UI/PreferencesView.swift`
-- [ ] T010 [US1] Create `PreferencesWindowController` — `@MainActor final class PreferencesWindowController` mirroring the existing `AboutWindowController` pattern, hosting `PreferencesView` in an `NSWindow` — in `mcp-inator/App/mcp_inatorApp.swift` (below existing controllers)
-- [ ] T011 [US1] Add `Settings { PreferencesView().environmentObject(appModeManager) }` scene to the dock-mode branch of `mcp_inatorApp.body` (wires Cmd+, automatically in dock mode) in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T012 [US1] Add "Preferences…" button to `MenuBarView` popover footer (alongside the existing About/Quit buttons) that opens `PreferencesWindowController`; inject the controller via environment or pass via init in `mcp-inator/UI/MenuBarView.swift`
+- [X] T004 [US1] Wire `AppDelegate` and `AppModeManager` into `mcp_inatorApp`: add `@NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate` and `@StateObject private var appModeManager = AppModeManager()`; after init set `appDelegate.appModeManager = appModeManager`; inject `appModeManager` into the environment in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T005 [US1] Add `if appModeManager.showInDock { Window(...) } else { MenuBarExtra { ... } }` conditional scene structure to `mcp_inatorApp.body`; the Window branch shows a placeholder `Text("mcp-inator")` for now in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T006 [P] [US1] Create stub `MainWindowView` — `struct MainWindowView: View` with `Text("mcp-inator").frame(minWidth: 800, minHeight: 500)` — in `mcp-inator/UI/MainWindowView.swift`
+- [X] T007 [US1] Implement `AppModeManager.setShowInDock(_ enabled: Bool)`: call `policyManager.setPolicy(enabled ? .regular : .accessory)`; call `windowOpener.openMainWindow()` when enabling; call `windowOpener.closeMainWindow()` when disabling; implement `AppWindowOpener.openMainWindow()` using `NSApp.windows` to find or open by scene ID, and `closeMainWindow()` using `NSApp.windows.first(where: { $0.identifier?.rawValue == "main" })?.close()` in `mcp-inator/App/AppModeManager.swift`
+- [X] T008 [US1] Update the Window scene branch in `mcp_inatorApp.body` to use `MainWindowView()` with `.defaultSize(width: 960, height: 620)`, and apply `.onAppear { NSApp.setActivationPolicy(.regular) }` on launch when `showInDock` is already true in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T009 [P] [US1] Create `PreferencesView` — `struct PreferencesView: View` containing a `Form` with a `Toggle("Show in Dock", ...)` wired to `AppModeManager.setShowInDock(_:)` — in `mcp-inator/UI/PreferencesView.swift`
+- [X] T010 [US1] Create `PreferencesWindowController` — `@MainActor final class PreferencesWindowController` mirroring the existing `AboutWindowController` pattern, hosting `PreferencesView` in an `NSWindow` — in `mcp-inator/App/mcp_inatorApp.swift` (below existing controllers)
+- [X] T011 [US1] Add `Settings { PreferencesView().environmentObject(appModeManager) }` scene to the dock-mode branch of `mcp_inatorApp.body` (wires Cmd+, automatically in dock mode) in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T012 [US1] Add "Preferences…" button to `MenuBarView` popover footer (alongside the existing About/Quit buttons) that opens `PreferencesWindowController`; inject the controller via environment or pass via init in `mcp-inator/UI/MenuBarView.swift`
 
 **Checkpoint**: US1 complete — dock mode toggle works end-to-end. Menu bar and dock modes fully reversible.
 
@@ -51,12 +51,12 @@
 
 **Independent Test**: In dock mode, navigate all three sidebar sections, open Preferences via Cmd+,, resize the window, quit and relaunch — window reopens at the same size and position.
 
-- [ ] T013 [US2] Extract `AgentsTabView` from its `private` scope inside `MenuBarView` into a new `internal struct AgentsView: View` in `mcp-inator/UI/AgentsView.swift`; update `MenuBarView` to reference `AgentsView()` in `mcp-inator/UI/MenuBarView.swift`
-- [ ] T014 [US2] Implement full `MainWindowView` with `NavigationSplitView`: sidebar `List` with `Label("Servers", ...)`, `Label("Agents", ...)`, `Label("Catalog", ...)` rows; detail area switches on `selectedSection` enum showing `ConfigLibraryView()`, `AgentsView()`, or `CatalogView()` respectively; default selection is Servers in `mcp-inator/UI/MainWindowView.swift`
-- [ ] T015 [P] [US2] Add contextual window toolbar to `MainWindowView`: show an "Add Server" `ToolbarItem` when the Servers section is selected (triggers the same add-server sheet that `ConfigLibraryView` uses) in `mcp-inator/UI/MainWindowView.swift`
-- [ ] T016 [US2] Apply window constraints to the Window scene in `mcp_inatorApp.body`: `.defaultSize(width: 960, height: 620)`, `.windowResizability(.contentMinSize)`, and set `frame(minWidth: 800, minHeight: 500)` on `MainWindowView` to enforce the minimum size in `mcp-inator/App/mcp_inatorApp.swift`
-- [ ] T017 [P] [US2] Add `LaunchAtLoginManaging` protocol and `SMAppServiceAdapter` production implementation to `mcp-inator/UI/PreferencesView.swift`: protocol has `var isEnabled: Bool` and `func setEnabled(_ enabled: Bool) throws`; adapter wraps `SMAppService.mainApp`; update `PreferencesView` to accept a `launchAtLogin: any LaunchAtLoginManaging` parameter (defaulting to `SMAppServiceAdapter()`) and add `Toggle("Launch at Login", ...)` wired to it
-- [ ] T018 [US2] Add About application-menu command for dock mode: `CommandGroup(replacing: .appInfo) { Button("About mcp-inator") { aboutController.show(...) } }` in the dock-mode scene's `.commands { }` modifier in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T013 [US2] Extract `AgentsTabView` from its `private` scope inside `MenuBarView` into a new `internal struct AgentsView: View` in `mcp-inator/UI/AgentsView.swift`; update `MenuBarView` to reference `AgentsView()` in `mcp-inator/UI/MenuBarView.swift`
+- [X] T014 [US2] Implement full `MainWindowView` with `NavigationSplitView`: sidebar `List` with `Label("Servers", ...)`, `Label("Agents", ...)`, `Label("Catalog", ...)` rows; detail area switches on `selectedSection` enum showing `ConfigLibraryView()`, `AgentsView()`, or `CatalogView()` respectively; default selection is Servers in `mcp-inator/UI/MainWindowView.swift`
+- [X] T015 [P] [US2] Add contextual window toolbar to `MainWindowView`: show an "Add Server" `ToolbarItem` when the Servers section is selected (triggers the same add-server sheet that `ConfigLibraryView` uses) in `mcp-inator/UI/MainWindowView.swift`
+- [X] T016 [US2] Apply window constraints to the Window scene in `mcp_inatorApp.body`: `.defaultSize(width: 960, height: 620)`, `.windowResizability(.contentMinSize)`, and set `frame(minWidth: 800, minHeight: 500)` on `MainWindowView` to enforce the minimum size in `mcp-inator/App/mcp_inatorApp.swift`
+- [X] T017 [P] [US2] Add `LaunchAtLoginManaging` protocol and `SMAppServiceAdapter` production implementation to `mcp-inator/UI/PreferencesView.swift`: protocol has `var isEnabled: Bool` and `func setEnabled(_ enabled: Bool) throws`; adapter wraps `SMAppService.mainApp`; update `PreferencesView` to accept a `launchAtLogin: any LaunchAtLoginManaging` parameter (defaulting to `SMAppServiceAdapter()`) and add `Toggle("Launch at Login", ...)` wired to it
+- [X] T018 [US2] Add About application-menu command for dock mode: `CommandGroup(replacing: .appInfo) { Button("About mcp-inator") { aboutController.show(...) } }` in the dock-mode scene's `.commands { }` modifier in `mcp-inator/App/mcp_inatorApp.swift`
 
 **Checkpoint**: US2 complete — full windowed layout working, Preferences accessible, Launch at Login functional.
 
@@ -68,8 +68,8 @@
 
 **Independent Test**: With dock mode active, toggle it off five times in rapid succession; confirm no duplicate windows/icons, no crashes, and the popover opens correctly after each reversion.
 
-- [ ] T019 [US3] Harden `AppModeManager.setShowInDock(false)`: ensure `windowOpener.closeMainWindow()` is called before `policyManager.setPolicy(.accessory)` so the dock icon disappears cleanly; verify `AppWindowOpener.closeMainWindow()` handles the nil-window case gracefully (no crash if window is already closed) in `mcp-inator/App/AppModeManager.swift`
-- [ ] T020 [US3] Guard against toggling during an active sheet: if `PreferencesView` is presented from within a sheet that is itself presented over active content, post an `AppModeManager.isTransitioning` flag that disables the toggle while a mode switch is in progress in `mcp-inator/App/AppModeManager.swift` and `mcp-inator/UI/PreferencesView.swift`
+- [X] T019 [US3] Harden `AppModeManager.setShowInDock(false)`: ensure `windowOpener.closeMainWindow()` is called before `policyManager.setPolicy(.accessory)` so the dock icon disappears cleanly; verify `AppWindowOpener.closeMainWindow()` handles the nil-window case gracefully (no crash if window is already closed) in `mcp-inator/App/AppModeManager.swift`
+- [X] T020 [US3] Guard against toggling during an active sheet: if `PreferencesView` is presented from within a sheet that is itself presented over active content, post an `AppModeManager.isTransitioning` flag that disables the toggle while a mode switch is in progress in `mcp-inator/App/AppModeManager.swift` and `mcp-inator/UI/PreferencesView.swift`
 
 **Checkpoint**: US3 complete — toggle is fully reversible and stable under adversarial conditions.
 
@@ -77,9 +77,9 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T021 [P] Implement off-screen window recovery: after restoring window position, check if the window frame intersects any `NSScreen.screens` visible frame; if not, call `window.center()` on the primary screen in `mcp-inator/App/AppModeManager.swift` or within the `Window` scene's `onAppear`
-- [ ] T022 [P] Add `AppModeManagerTests` in `mcp-inatorTests/Unit/AppModeManagerTests.swift`: define `MockPolicyManager` (records last policy set), `MockWindowOpener` (records open/close calls), and test with `UserDefaults(suiteName: UUID().uuidString)!` for isolation; test cases: (1) `setShowInDock(true)` sets `showInDock = true`, calls `setPolicy(.regular)`, calls `openMainWindow()`; (2) `setShowInDock(false)` sets `showInDock = false`, calls `setPolicy(.accessory)`, calls `closeMainWindow()`; (3) `showInDock` value survives `AppModeManager` re-init from the same `UserDefaults` suite; (4) rapid `setShowInDock` calls leave `showInDock` matching the final call
-- [ ] T023 Run `make test` (must pass all 230+ tests) and `make lint` (no new violations); fix any issues
+- [X] T021 [P] Implement off-screen window recovery: after restoring window position, check if the window frame intersects any `NSScreen.screens` visible frame; if not, call `window.center()` on the primary screen in `mcp-inator/App/AppModeManager.swift` or within the `Window` scene's `onAppear`
+- [X] T022 [P] Add `AppModeManagerTests` in `mcp-inatorTests/Unit/AppModeManagerTests.swift`: define `MockPolicyManager` (records last policy set), `MockWindowOpener` (records open/close calls), and test with `UserDefaults(suiteName: UUID().uuidString)!` for isolation; test cases: (1) `setShowInDock(true)` sets `showInDock = true`, calls `setPolicy(.regular)`, calls `openMainWindow()`; (2) `setShowInDock(false)` sets `showInDock = false`, calls `setPolicy(.accessory)`, calls `closeMainWindow()`; (3) `showInDock` value survives `AppModeManager` re-init from the same `UserDefaults` suite; (4) rapid `setShowInDock` calls leave `showInDock` matching the final call
+- [X] T023 Run `make test` (must pass all 230+ tests) and `make lint` (no new violations); fix any issues
 
 ---
 
