@@ -26,6 +26,7 @@
 		33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */; };
 		3FBF669EF46E71655E39D8F2 /* Migration005.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673672951A0D420C1E6170F5 /* Migration005.swift */; };
 		400927860892CA6B0842C128 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */; };
+		453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */; };
 		478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */; };
 		48E52DCFCDB5F632E463C938 /* MCPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2896F28845955D9DDAF825 /* MCPServerTests.swift */; };
 		49033C3A1B3D608A23D995CE /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 3FDC266E73A2012A10B19689 /* MCP */; };
@@ -188,6 +189,7 @@
 		E7CB9545A4BAAA3E5D7B3892 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration003.swift; sourceTree = "<group>"; };
 		ED397AFDE2BF588B83C1AAEC /* CatalogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogEntry.swift; sourceTree = "<group>"; };
+		F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionTesterTests.swift; sourceTree = "<group>"; };
 		F1A4408041C07C9921071598 /* Migration002.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration002.swift; sourceTree = "<group>"; };
 		F542D4F9A2B2A38EA0CF27C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */ = {isa = PBXFileReference; path = codex_config.toml; sourceTree = "<group>"; };
@@ -381,6 +383,7 @@
 				58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */,
 				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
+				F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
 				28A99FC7DF6D6744F5A22A16 /* ImportSourceScannerTests.swift */,
 				062B29929666B95C6887ECAE /* MCPServerConfigEquatableTests.swift */,
@@ -637,6 +640,7 @@
 				D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */,
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,
 				739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */,
+				453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
 				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,
 				8CDC219ECE6787F6C010819C /* ImportSourceScannerTests.swift in Sources */,
