@@ -1,8 +1,6 @@
-- New curated catalog powered by AI enrichment — each server now shows a curator note, the exact env vars you'll need (with descriptions), and whether it's officially maintained by the service's own team
-- Browse servers by category (Code & Development, Productivity, Data & Analytics, and more)
-- First-party badge ("Official") on servers published by the company that owns the service
-- Star count and last-commit recency shown on each entry so you can spot actively maintained servers at a glance
-- Trending section highlights servers with recent community buzz
-- Full detail view with env var documentation, required arguments, community sentiment summary, and links to docs and source
-- When multiple servers exist for the same service, the recommended pick is shown first with alternatives listed below
-- Catalog loads from a live GitHub-hosted source with a bundled fallback for offline use
+- Switch between Menu Bar and Dock modes instantly from Preferences — no restart required
+- In Dock mode, mcp-inator gets a full resizable window with a Servers / Agents / Catalog sidebar
+- Preferences window accessible from the menu bar popover footer or via Cmd+, in Dock mode
+- Launch at Login setting in Preferences
+- App quits when the main window is closed in Dock mode (standard Mac behavior)
+- New app icon — bold colorful ray gun, readable at small sizes
