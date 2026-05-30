@@ -88,10 +88,25 @@ struct mcp_inatorApp: App {
                 }
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            PreferencesView()
-                .environmentObject(appModeManager)
+        .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About mcp-inator") {
+                    Task { @MainActor in
+                        aboutController.show(updater: updaterController.updater)
+                    }
+                }
+                Button("Check for Updates...") {
+                    updaterController.updater.checkForUpdates()
+                }
+            }
+            CommandGroup(replacing: .appSettings) {
+                Button("Preferences...") {
+                    Task { @MainActor in
+                        preferencesController.show(appModeManager: appModeManager)
+                    }
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
         }
     }
 
