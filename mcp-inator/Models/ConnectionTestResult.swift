@@ -19,14 +19,14 @@ enum ConnectionTestResult {
 
     var shortLabel: String {
         switch self {
-        case .success(let t, let n):
-            let toolStr = n == 1 ? "1 tool" : "\(n) tools"
-            return String(format: "Connected in %.1fs · %@", t, toolStr)
+        case .success(let elapsed, let toolCount):
+            let toolStr = toolCount == 1 ? "1 tool" : "\(toolCount) tools"
+            return String(format: "Connected in %.1fs · %@", elapsed, toolStr)
         case .authRequired:
             return "Server reached · auth required (OAuth not testable)"
-        case .launchError(let d):    return "Could not start: \(d)"
-        case .protocolError(let d):  return "No MCP response: \(d)"
-        case .timeout:               return "No response after 15 s"
+        case .launchError(let detail):    return "Could not start: \(detail)"
+        case .protocolError(let detail):  return "No MCP response: \(detail)"
+        case .timeout:                    return "No response after 15 s"
         }
     }
 }

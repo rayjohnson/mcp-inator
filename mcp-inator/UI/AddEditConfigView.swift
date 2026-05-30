@@ -388,15 +388,15 @@ struct AddEditConfigView: View {
     }
 
     private var isDirty: Bool {
-        guard let e = existing else { return true }
-        return displayName.trimmingCharacters(in: .whitespaces) != e.displayName
-            || serverKey.trimmingCharacters(in: .whitespaces) != e.serverKey
-            || transportType != e.transportType
-            || command.trimmingCharacters(in: .whitespaces) != e.command
-            || args != e.args
-            || url.trimmingCharacters(in: .whitespaces) != e.url
-            || envVars != e.envVars
-            || notes != e.notes
+        guard let existing = existing else { return true }
+        return displayName.trimmingCharacters(in: .whitespaces) != existing.displayName
+            || serverKey.trimmingCharacters(in: .whitespaces) != existing.serverKey
+            || transportType != existing.transportType
+            || command.trimmingCharacters(in: .whitespaces) != existing.command
+            || args != existing.args
+            || url.trimmingCharacters(in: .whitespaces) != existing.url
+            || envVars != existing.envVars
+            || notes != existing.notes
     }
 
     private var isSaveDisabled: Bool {
@@ -411,9 +411,9 @@ struct AddEditConfigView: View {
     // MARK: - Actions
 
     private func breadcrumb(_ message: String, level: SentryLevel = .info) {
-        let b = Breadcrumb(level: level, category: "ui")
-        b.message = message
-        SentrySDK.addBreadcrumb(b)
+        let crumb = Breadcrumb(level: level, category: "ui")
+        crumb.message = message
+        SentrySDK.addBreadcrumb(crumb)
     }
 
     private func deleteServer() {
@@ -568,8 +568,8 @@ private struct ConnectionTestResultView: View {
     }
 
     private var iconName: String {
-        if result.isSuccess   { return "checkmark.circle.fill" }
-        if result.isWarning   { return "lock.circle.fill" }
+        if result.isSuccess { return "checkmark.circle.fill" }
+        if result.isWarning { return "lock.circle.fill" }
         return "xmark.circle.fill"
     }
 
@@ -636,6 +636,7 @@ private struct EnvVarRow: View {
 #Preview {
     NavigationStack {
         AddEditConfigView()
+            // swiftlint:disable:next force_try
             .environmentObject(try! ConfigStore())
     }
 }

@@ -58,24 +58,28 @@ actor ConnectionTester {
         let transport = StdioTransport(input: stdoutFD, output: stdinFD)
         let client = Client(name: "mcp-inator-tester", version: "1")
 
-        let result = await race(timeout: 15, onTimeout: { if process.isRunning { process.terminate() } }) {
-            do {
-                try await client.connect(transport: transport)
-                let elapsed = Date().timeIntervalSince(start)
-                let toolCount = (try? await client.listTools().tools.count) ?? 0
-                return .success(elapsedSeconds: elapsed, toolCount: toolCount)
-            } catch {
-                if process.isRunning {
-                    return .protocolError(detail: error.localizedDescription)
+        let result = await race(
+            timeout: 15,
+            onTimeout: { if process.isRunning { process.terminate() } },
+            work: {
+                do {
+                    try await client.connect(transport: transport)
+                    let elapsed = Date().timeIntervalSince(start)
+                    let toolCount = (try? await client.listTools().tools.count) ?? 0
+                    return .success(elapsedSeconds: elapsed, toolCount: toolCount)
+                } catch {
+                    if process.isRunning {
+                        return .protocolError(detail: error.localizedDescription)
+                    }
+                    let stderr = self.readStderr(stderrPipe: stderrPipe)
+                    let code = process.terminationStatus
+                    let detail = stderr.isEmpty
+                        ? "Exited with code \(code)"
+                        : "Exited with code \(code): \(stderr)"
+                    return .launchError(detail: detail)
                 }
-                let stderr = self.readStderr(stderrPipe: stderrPipe)
-                let code = process.terminationStatus
-                let detail = stderr.isEmpty
-                    ? "Exited with code \(code)"
-                    : "Exited with code \(code): \(stderr)"
-                return .launchError(detail: detail)
             }
-        }
+        )
 
         await client.disconnect()
         if process.isRunning { process.terminate() }

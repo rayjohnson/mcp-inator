@@ -31,8 +31,8 @@ final class MCPToolHandlerTests: XCTestCase {
 
     private func text(from result: CallTool.Result) -> String {
         guard let first = result.content.first,
-              case .text(let t, _, _) = first else { return "" }
-        return t
+              case .text(let textValue, _, _) = first else { return "" }
+        return textValue
     }
 
     private func isError(_ result: CallTool.Result) -> Bool {

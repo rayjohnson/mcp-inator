@@ -11,10 +11,10 @@ struct DiscoveryView: View {
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
 
     private let adapters: [AgentType: any AgentAdapter] = [
-        .claudeCode:    ClaudeCodeAdapter(),
+        .claudeCode: ClaudeCodeAdapter(),
         .claudeDesktop: ClaudeDesktopAdapter(),
-        .geminiCLI:     GeminiCLIAdapter(),
-        .codexCLI:      CodexCLIAdapter(),
+        .geminiCLI: GeminiCLIAdapter(),
+        .codexCLI: CodexCLIAdapter(),
         .geminiDesktop: GeminiDesktopAdapter()
     ]
 

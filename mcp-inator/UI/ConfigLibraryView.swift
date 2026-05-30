@@ -60,9 +60,9 @@ struct ConfigLibraryView: View {
         ) {
             Button("Delete", role: .destructive) {
                 if let config = confirmDelete {
-                    let b = Breadcrumb(level: .info, category: "ui")
-                    b.message = "delete: removing server '\(config.serverKey)' from library"
-                    SentrySDK.addBreadcrumb(b)
+                    let crumb = Breadcrumb(level: .info, category: "ui")
+                    crumb.message = "delete: removing server '\(config.serverKey)' from library"
+                    SentrySDK.addBreadcrumb(crumb)
                     try? store.delete(config)
                 }
                 confirmDelete = nil
@@ -248,7 +248,7 @@ private struct AgentStateBadge: View {
         switch state {
         case .enabled:            return "\(agent.displayName): enabled"
         case .disabled:           return "\(agent.displayName): disabled"
-        case .unavailable(let r): return "\(agent.displayName): unavailable — \(r)"
+        case .unavailable(let reason): return "\(agent.displayName): unavailable — \(reason)"
         }
     }
 
@@ -276,7 +276,8 @@ private struct AgentStateBadge: View {
 #Preview {
     NavigationStack {
         ConfigLibraryView()
-            .environmentObject(try! ConfigStore())
+            // swiftlint:disable:next force_try
+        .environmentObject(try! ConfigStore())
     }
     .frame(width: 400, height: 500)
 }

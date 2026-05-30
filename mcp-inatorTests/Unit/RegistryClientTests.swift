@@ -120,9 +120,11 @@ final class RegistryClientTests: XCTestCase {
         let client = URLSessionRegistryClient(session: session)
 
         MockURLProtocol.requestHandler = { _ in
+            // swiftlint:disable force_unwrapping
             let response = HTTPURLResponse(
                 url: URL(string: "https://registry.modelcontextprotocol.io")!,
                 statusCode: 200, httpVersion: nil, headerFields: nil)!
+            // swiftlint:enable force_unwrapping
             return (response, data)
         }
 

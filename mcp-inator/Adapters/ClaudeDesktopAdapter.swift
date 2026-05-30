@@ -6,9 +6,9 @@ struct ClaudeDesktopAdapter: AgentAdapter {
     let displayName: String = "Claude Desktop"
 
     func defaultConfigPath() -> URL {
-        FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            .appendingPathComponent("Claude/claude_desktop_config.json")
+        // swiftlint:disable:next force_unwrapping
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("Claude/claude_desktop_config.json")
     }
 
     func isInstalled() -> Bool {

@@ -103,6 +103,7 @@ struct URLSessionRegistryClient: RegistryClient {
     }
 
     func search(query: String, pageSize: Int = 100) async throws -> [RegistryEntry] {
+        // swiftlint:disable:next force_unwrapping
         var components = URLComponents(string: "https://registry.modelcontextprotocol.io/v0/servers")!
         components.queryItems = [
             URLQueryItem(name: "search", value: query),

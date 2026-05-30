@@ -39,7 +39,7 @@ struct AgentListView: View {
         // Access enabledUUIDs unconditionally so SwiftUI registers it as a body dependency.
         // Without this, it's only accessed inside List/ForEach (lazy), which doesn't reliably
         // trigger re-renders when the state is set from onAppear.
-        let _ = enabledUUIDs
+        _ = enabledUUIDs
         return VStack(alignment: .leading, spacing: 0) {
             agentHeader
             Divider()

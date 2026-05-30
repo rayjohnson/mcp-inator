@@ -19,10 +19,10 @@ final class ImportSourceScannerTests: XCTestCase {
         appManaged: Bool = false,
         configPath: URL = URL(fileURLWithPath: "/config/stub.json")
     ) -> StubAdapter {
-        let s = StubAdapter(agentType: type, displayName: displayName, configPath: configPath)
-        s.installedResult = installed
-        s.appManagedResult = appManaged
-        return s
+        let adapter = StubAdapter(agentType: type, displayName: displayName, configPath: configPath)
+        adapter.installedResult = installed
+        adapter.appManagedResult = appManaged
+        return adapter
     }
 
     // MARK: - Construction rules
@@ -64,10 +64,14 @@ final class ImportSourceScannerTests: XCTestCase {
 
     func testScan_mixedAdapters_returnsCorrectSubset() {
         let configPath = "/config/valid.json"
-        let importable = stub(type: .claudeDesktop, displayName: "Claude Desktop", installed: true, appManaged: false, configPath: URL(fileURLWithPath: configPath))
+        let importable = stub(
+            type: .claudeDesktop, displayName: "Claude Desktop",
+            installed: true, appManaged: false, configPath: URL(fileURLWithPath: configPath))
         let managed = stub(type: .geminiDesktop, displayName: "Gemini Desktop", installed: true, appManaged: true)
         let notInstalled = stub(type: .claudeCode, displayName: "Claude Code", installed: false)
-        let missingConfig = stub(type: .geminiCLI, displayName: "Gemini CLI", installed: true, appManaged: false, configPath: URL(fileURLWithPath: "/no/config.json"))
+        let missingConfig = stub(
+            type: .geminiCLI, displayName: "Gemini CLI",
+            installed: true, appManaged: false, configPath: URL(fileURLWithPath: "/no/config.json"))
 
         let results = makeScanner(adapters: [importable, managed, notInstalled, missingConfig], existingPaths: [configPath]).scan()
 

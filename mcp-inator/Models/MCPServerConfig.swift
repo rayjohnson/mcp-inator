@@ -4,9 +4,9 @@ import GRDB
 // MARK: - TransportType
 
 enum TransportType: String, Codable, CaseIterable {
-    case stdio = "stdio"
-    case http  = "http"
-    case sse   = "sse"
+    case stdio
+    case http
+    case sse
 }
 
 struct MCPServerConfig: Identifiable {
@@ -89,8 +89,8 @@ extension MCPServerConfig {
             let derived = entry.packageType.map {
                 RegistryEntry.deriveCommand(packageType: $0, identifier: entry.packageIdentifier ?? "")
             }
-            let envVars = entry.envVars.map { v -> EnvVar in
-                var ev = EnvVar(key: v.name, value: "", isSensitive: v.isSecret)
+            let envVars = entry.envVars.map { envVarDef -> EnvVar in
+                var ev = EnvVar(key: envVarDef.name, value: "", isSensitive: envVarDef.isSecret)
                 ev.isHint = true
                 return ev
             }
@@ -101,8 +101,8 @@ extension MCPServerConfig {
                 envVars: envVars
             )
         } else {
-            let headers = entry.remoteHeaders.map { h -> EnvVar in
-                var ev = EnvVar(key: h.name, value: h.valueTemplate ?? "", isSensitive: h.isSecret)
+            let headers = entry.remoteHeaders.map { header -> EnvVar in
+                var ev = EnvVar(key: header.name, value: header.valueTemplate ?? "", isSensitive: header.isSecret)
                 ev.isHint = true
                 return ev
             }
@@ -122,10 +122,10 @@ extension MCPServerConfig {
     static func generateKey(from displayName: String) -> String {
         let lowercased = displayName.lowercased()
         let hyphenated = lowercased.replacingOccurrences(of: " ", with: "-")
-        let filtered = hyphenated.unicodeScalars.filter { s in
-            (s.value >= 97 && s.value <= 122) ||
-            (s.value >= 48 && s.value <= 57) ||
-            s.value == 45
+        let filtered = hyphenated.unicodeScalars.filter { scalar in
+            (scalar.value >= 97 && scalar.value <= 122) ||
+            (scalar.value >= 48 && scalar.value <= 57) ||
+            scalar.value == 45
         }
         return String(String.UnicodeScalarView(filtered))
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
@@ -239,9 +239,9 @@ struct EnvVar: Codable, Equatable, Identifiable {
 
     enum CodingKeys: String, CodingKey { case key, value, isSensitive }
     init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        key = try c.decode(String.self, forKey: .key)
-        value = try c.decode(String.self, forKey: .value)
-        isSensitive = try c.decode(Bool.self, forKey: .isSensitive)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        key = try container.decode(String.self, forKey: .key)
+        value = try container.decode(String.self, forKey: .value)
+        isSensitive = try container.decode(Bool.self, forKey: .isSensitive)
     }
 }

@@ -18,9 +18,11 @@ final class ConfigStore: ObservableObject {
     // MARK: - Init
 
     init() throws {
+        // swiftlint:disable force_unwrapping
         let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask
         ).first!
+        // swiftlint:enable force_unwrapping
         let dbDir = appSupport.appendingPathComponent("mcp-inator")
         try FileManager.default.createDirectory(at: dbDir, withIntermediateDirectories: true)
         let dbURL = dbDir.appendingPathComponent("mcp-inator.db")
@@ -223,15 +225,15 @@ final class ConfigStore: ObservableObject {
         // Built-in servers store command="" in the DB; the real path must be resolved at runtime.
         var configMap: [String: MCPServerConfig] = Dictionary(
             uniqueKeysWithValues: enabledConfigs.map { cfg in
-                var c = cfg
-                if c.isBuiltIn, let path = execPath { c.command = path }
-                return (c.serverKey, c)
+                var config = cfg
+                if config.isBuiltIn, let path = execPath { config.command = path }
+                return (config.serverKey, config)
             }
         )
         configMap[config.serverKey] = config
 
         // Build expectedExisting from lastWrittenSnapshots of enabled assignments
-        var expectedExisting: [String: MCPServerConfig]? = nil
+        var expectedExisting: [String: MCPServerConfig]?
         if !force {
             var snapshots: [String: MCPServerConfig] = [:]
             for cfg in enabledConfigs {
