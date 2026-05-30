@@ -376,6 +376,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         let win = NSWindow(contentViewController: hosting)
         win.styleMask = [.titled, .closable]
         win.title = "Preferences"
+        win.setContentSize(NSSize(width: 400, height: 150))
         win.isReleasedWhenClosed = false
         win.delegate = self
         win.center()

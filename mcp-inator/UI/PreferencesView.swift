@@ -39,10 +39,14 @@ struct PreferencesView: View {
     var body: some View {
         Form {
             Section("General") {
-                Toggle("Show in Dock", isOn: Binding(
+                Picker("App Mode", selection: Binding(
                     get: { appModeManager.showInDock },
                     set: { appModeManager.setShowInDock($0) }
-                ))
+                )) {
+                    Text("Menu Bar").tag(false)
+                    Text("Dock").tag(true)
+                }
+                .pickerStyle(.segmented)
                 .disabled(appModeManager.isTransitioning)
 
                 Toggle("Launch at Login", isOn: launchAtLoginBinding)
