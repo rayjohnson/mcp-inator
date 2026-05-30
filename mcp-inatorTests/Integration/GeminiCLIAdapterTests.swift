@@ -23,6 +23,7 @@ final class GeminiCLIAdapterTests: XCTestCase {
     }
 
     func testRead_validFixture() throws {
+        // swiftlint:disable:next force_unwrapping
         let fixture = Bundle(for: type(of: self)).url(forResource: "gemini_config", withExtension: "json")!
         let configs = try adapter.readConfigs(from: fixture)
         XCTAssertEqual(configs.count, 2)
@@ -30,10 +31,12 @@ final class GeminiCLIAdapterTests: XCTestCase {
     }
 
     func testRead_preservesUnknownKeys() throws {
+        // swiftlint:disable:next force_unwrapping
         let fixture = Bundle(for: type(of: self)).url(forResource: "gemini_config", withExtension: "json")!
         try (try Data(contentsOf: fixture)).write(to: configURL)
         let config = MCPServerConfig(displayName: "New", serverKey: "new", command: "/bin/new")
         _ = try adapter.writeConfigs(["new": config], to: configURL, expectedExisting: nil)
+        // swiftlint:disable:next force_cast
         let json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
         XCTAssertNotNil(json["theme"])
     }
@@ -63,7 +66,9 @@ final class GeminiCLIAdapterTests: XCTestCase {
     func testWrite_driftDetected() throws {
         let original = MCPServerConfig(displayName: "D", serverKey: "d", command: "/bin/d")
         _ = try adapter.writeConfigs(["d": original], to: configURL, expectedExisting: nil)
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["d"] = ["command": "/bin/changed"]
         json["mcpServers"] = servers
@@ -73,14 +78,16 @@ final class GeminiCLIAdapterTests: XCTestCase {
     }
 
     func testWrite_driftDetected_managedKeyOnly() throws {
-        let m = MCPServerConfig(displayName: "M", serverKey: "m", command: "/bin/m")
-        _ = try adapter.writeConfigs(["m": m], to: configURL, expectedExisting: nil)
+        let managed = MCPServerConfig(displayName: "M", serverKey: "m", command: "/bin/m")
+        _ = try adapter.writeConfigs(["m": managed], to: configURL, expectedExisting: nil)
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["unmanaged"] = ["command": "/bin/ext"]
         json["mcpServers"] = servers
         try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted]).write(to: configURL)
-        XCTAssertEqual(try adapter.writeConfigs(["m": m], to: configURL, expectedExisting: ["m": m]), .success)
+        XCTAssertEqual(try adapter.writeConfigs(["m": managed], to: configURL, expectedExisting: ["m": managed]), .success)
     }
 
     func testWrite_atomicOnCrash() throws {
@@ -96,7 +103,9 @@ final class GeminiCLIAdapterTests: XCTestCase {
     func testWrite_removeConfig_driftDetected() throws {
         let config = MCPServerConfig(displayName: "Z", serverKey: "z", command: "/bin/z")
         _ = try adapter.writeConfigs(["z": config], to: configURL, expectedExisting: nil)
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["z"] = ["command": "/bin/changed"]
         json["mcpServers"] = servers

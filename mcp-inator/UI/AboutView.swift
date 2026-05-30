@@ -31,8 +31,10 @@ struct AboutView: View {
                     .foregroundStyle(.secondary)
 
                 HStack(spacing: 20) {
+                    // swiftlint:disable force_unwrapping
                     Link("GitHub", destination: URL(string: "https://github.com/rayjohnson/mcp-inator")!)
                     Link("Report Issue", destination: URL(string: "https://github.com/rayjohnson/mcp-inator/issues")!)
+                    // swiftlint:enable force_unwrapping
                 }
                 .font(.caption)
 

@@ -26,9 +26,8 @@ final class ClaudeCodeAdapterTests: XCTestCase {
     }
 
     func testRead_validFixture() throws {
-        let fixture = Bundle(for: type(of: self)).url(
-            forResource: "claude_code_config", withExtension: "json"
-        )!
+        // swiftlint:disable:next force_unwrapping
+        let fixture = Bundle(for: type(of: self)).url(forResource: "claude_code_config", withExtension: "json")!
         let configs = try adapter.readConfigs(from: fixture)
         XCTAssertEqual(configs.count, 2)
         let github = try XCTUnwrap(configs["github-mcp"])
@@ -38,9 +37,8 @@ final class ClaudeCodeAdapterTests: XCTestCase {
     }
 
     func testRead_preservesUnknownKeys() throws {
-        let fixture = Bundle(for: type(of: self)).url(
-            forResource: "claude_code_config", withExtension: "json"
-        )!
+        // swiftlint:disable:next force_unwrapping
+        let fixture = Bundle(for: type(of: self)).url(forResource: "claude_code_config", withExtension: "json")!
         // Write fixture to temp, modify mcpServers, verify other keys survive
         let data = try Data(contentsOf: fixture)
         try data.write(to: configURL)
@@ -48,6 +46,7 @@ final class ClaudeCodeAdapterTests: XCTestCase {
         let config = MCPServerConfig(displayName: "New", serverKey: "new-server", command: "/bin/new")
         _ = try adapter.writeConfigs(["new-server": config], to: configURL, expectedExisting: nil)
 
+        // swiftlint:disable:next force_cast
         let json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
         XCTAssertNotNil(json["otherClaudeCodeSetting"], "Non-mcpServers keys must be preserved")
     }
@@ -89,7 +88,9 @@ final class ClaudeCodeAdapterTests: XCTestCase {
         _ = try adapter.writeConfigs(["x": original], to: configURL, expectedExisting: nil)
 
         // Simulate external edit by writing different value directly
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["x"] = ["command": "/bin/externally-changed"]
         json["mcpServers"] = servers
@@ -110,7 +111,9 @@ final class ClaudeCodeAdapterTests: XCTestCase {
         _ = try adapter.writeConfigs(["m": managed], to: configURL, expectedExisting: nil)
 
         // Add an unmanaged key externally
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["external-tool"] = ["command": "/bin/external"]
         json["mcpServers"] = servers
@@ -138,7 +141,9 @@ final class ClaudeCodeAdapterTests: XCTestCase {
         _ = try adapter.writeConfigs(["y": config], to: configURL, expectedExisting: nil)
 
         // Externally modify the entry
+        // swiftlint:disable:next force_cast
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: configURL)) as! [String: Any]
+        // swiftlint:disable:next force_cast
         var servers = json["mcpServers"] as! [String: Any]
         servers["y"] = ["command": "/bin/changed"]
         json["mcpServers"] = servers

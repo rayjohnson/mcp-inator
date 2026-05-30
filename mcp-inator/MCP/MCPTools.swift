@@ -29,10 +29,10 @@ struct MCPToolHandler: @unchecked Sendable {
                 inputSchema: .object([
                     "type": "object",
                     "properties": .object([
-                        "name":    .object(["type": "string", "description": "Display name (e.g. 'Playwright')"]),
+                        "name": .object(["type": "string", "description": "Display name (e.g. 'Playwright')"]),
                         "command": .object(["type": "string", "description": "Executable path or name (e.g. 'npx')"]),
-                        "args":    .object(["type": "array", "items": .object(["type": "string"]), "description": "CLI arguments"]),
-                        "env":     .object(["type": "object", "additionalProperties": .object(["type": "string"]), "description": "Environment variables"])
+                        "args": .object(["type": "array", "items": .object(["type": "string"]), "description": "CLI arguments"]),
+                        "env": .object(["type": "object", "additionalProperties": .object(["type": "string"]), "description": "Environment variables"])
                     ]),
                     "required": .array(["name", "command"])
                 ])
@@ -55,7 +55,10 @@ struct MCPToolHandler: @unchecked Sendable {
                     "type": "object",
                     "properties": .object([
                         "server_name": .object(["type": "string", "description": "serverKey of the server"]),
-                        "agent":       .object(["type": "string", "description": "Agent identifier: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop"])
+                        "agent": .object([
+                            "type": "string",
+                            "description": "Agent identifier: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop"
+                        ])
                     ]),
                     "required": .array(["server_name", "agent"])
                 ])
@@ -67,7 +70,10 @@ struct MCPToolHandler: @unchecked Sendable {
                     "type": "object",
                     "properties": .object([
                         "server_name": .object(["type": "string", "description": "serverKey of the server"]),
-                        "agent":       .object(["type": "string", "description": "Agent identifier: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop"])
+                        "agent": .object([
+                            "type": "string",
+                            "description": "Agent identifier: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop"
+                        ])
                     ]),
                     "required": .array(["server_name", "agent"])
                 ])
@@ -115,14 +121,14 @@ struct MCPToolHandler: @unchecked Sendable {
             let transportType: String
             let url: String
         }
-        let summaries = store.configs.map { c in
+        let summaries = store.configs.map { config in
             ServerSummary(
-                serverKey: c.serverKey,
-                displayName: c.displayName,
-                command: c.command,
-                args: c.args,
-                transportType: c.transportType.rawValue,
-                url: c.url
+                serverKey: config.serverKey,
+                displayName: config.displayName,
+                command: config.command,
+                args: config.args,
+                transportType: config.transportType.rawValue,
+                url: config.url
             )
         }
         guard let data = try? JSONEncoder().encode(summaries),
@@ -306,12 +312,12 @@ struct MCPToolHandler: @unchecked Sendable {
             let configPath: String
             let isAvailable: Bool
         }
-        let summaries = store.agents.map { a in
+        let summaries = store.agents.map { agent in
             AgentSummary(
-                agentType: a.agentType.rawValue,
-                displayName: a.displayName,
-                configPath: a.configPath,
-                isAvailable: a.isAvailable
+                agentType: agent.agentType.rawValue,
+                displayName: agent.displayName,
+                configPath: agent.configPath,
+                isAvailable: agent.isAvailable
             )
         }
         guard let data = try? JSONEncoder().encode(summaries),
@@ -355,9 +361,9 @@ struct MCPToolHandler: @unchecked Sendable {
                 transportType: entry.transportType.rawValue,
                 command: derived?.command ?? "",
                 args: derived?.args ?? [],
-                envVars: entry.envVars.map { v in
-                    EnvVarSummary(name: v.name, description: v.description,
-                                  isRequired: v.isRequired, isSecret: v.isSecret)
+                envVars: entry.envVars.map { envVar in
+                    EnvVarSummary(name: envVar.name, description: envVar.description,
+                                  isRequired: envVar.isRequired, isSecret: envVar.isSecret)
                 }
             )
         }

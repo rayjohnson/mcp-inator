@@ -112,8 +112,8 @@ extension AgentRecord: FetchableRecord, MutablePersistableRecord {
 // MARK: - AssignmentState
 
 enum AssignmentState: String, Codable {
-    case enabled  = "enabled"
-    case disabled = "disabled"
+    case enabled
+    case disabled
 }
 
 // MARK: - EffectiveState (computed, not stored)

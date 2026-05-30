@@ -23,6 +23,7 @@ final class CodexCLIAdapterTests: XCTestCase {
     }
 
     func testRead_validFixture() throws {
+        // swiftlint:disable:next force_unwrapping
         let fixture = Bundle(for: type(of: self)).url(forResource: "codex_config", withExtension: "toml")!
         let configs = try adapter.readConfigs(from: fixture)
         XCTAssertEqual(configs.count, 2)
@@ -33,6 +34,7 @@ final class CodexCLIAdapterTests: XCTestCase {
     }
 
     func testRead_preservesUnknownKeys() throws {
+        // swiftlint:disable:next force_unwrapping
         let fixture = Bundle(for: type(of: self)).url(forResource: "codex_config", withExtension: "toml")!
         try (try String(contentsOf: fixture)).write(to: configURL, atomically: true, encoding: .utf8)
         let config = MCPServerConfig(displayName: "New", serverKey: "new-server", command: "/bin/new")
@@ -79,11 +81,11 @@ final class CodexCLIAdapterTests: XCTestCase {
     }
 
     func testWrite_driftDetected_managedKeyOnly() throws {
-        let m = MCPServerConfig(displayName: "M", serverKey: "m", command: "/bin/m")
-        _ = try adapter.writeConfigs(["m": m], to: configURL, expectedExisting: nil)
+        let managed = MCPServerConfig(displayName: "M", serverKey: "m", command: "/bin/m")
+        _ = try adapter.writeConfigs(["m": managed], to: configURL, expectedExisting: nil)
         let extraTOML = try String(contentsOf: configURL) + "\n[mcp_servers.unmanaged]\ncommand = \"/bin/ext\"\n"
         try extraTOML.write(to: configURL, atomically: true, encoding: .utf8)
-        XCTAssertEqual(try adapter.writeConfigs(["m": m], to: configURL, expectedExisting: ["m": m]), .success)
+        XCTAssertEqual(try adapter.writeConfigs(["m": managed], to: configURL, expectedExisting: ["m": managed]), .success)
     }
 
     func testWrite_atomicOnCrash() throws {

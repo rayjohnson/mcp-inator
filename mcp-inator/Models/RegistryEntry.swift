@@ -77,12 +77,14 @@ struct RegistryEntry: Identifiable, Equatable, Codable, Sendable {
 
         var name = component
         let suffixes = ["-mcp-servers", "-mcp-server", "-mcp"]
+        // swiftlint:disable for_where
         for suffix in suffixes {
             if name.hasSuffix(suffix) {
                 name = String(name.dropLast(suffix.count))
                 break
             }
         }
+        // swiftlint:enable for_where
 
         name = name.replacingOccurrences(of: "-", with: " ")
         name = name.replacingOccurrences(of: "_", with: " ")

@@ -38,7 +38,7 @@ final class MCPServerTests: XCTestCase {
 
         for msg in messages {
             let data = try JSONSerialization.data(withJSONObject: msg)
-            stdin.fileHandleForWriting.write(data + "\n".data(using: .utf8)!)
+            stdin.fileHandleForWriting.write(data + Data("\n".utf8))
         }
         stdin.fileHandleForWriting.closeFile()
 
@@ -137,9 +137,8 @@ final class MCPServerTests: XCTestCase {
         let listAll = try runServer(messages: listMsgs)
         let listResult = try XCTUnwrap((try response(id: 2, from: listAll))["result"] as? [String: Any])
         let listText = try XCTUnwrap((listResult["content"] as? [[String: Any]])?.first?["text"] as? String)
-        let servers = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: listText.data(using: .utf8)!) as? [[String: Any]]
-        )
+        // swiftlint:disable:next force_unwrapping
+        let servers = try XCTUnwrap(JSONSerialization.jsonObject(with: listText.data(using: .utf8)!) as? [[String: Any]])
         let keys = servers.compactMap { $0["serverKey"] as? String }
         XCTAssertTrue(keys.contains("test-server"), "Expected test-server in \(keys)")
 

@@ -44,6 +44,7 @@ final class RegistryStore: ObservableObject {
     private let cacheURL: URL
 
     static var defaultCacheURL: URL {
+        // swiftlint:disable:next force_unwrapping
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let dir = appSupport.appendingPathComponent("mcp-inator")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -66,12 +67,12 @@ final class RegistryStore: ObservableObject {
 
     static let categoryKeywords: [CatalogCategory: String] = [
         .codeAndDevelopment: "github",
-        .productivity:       "notion",
-        .dataAndAnalytics:   "postgres",
-        .communication:      "slack",
-        .infrastructure:     "docker",
-        .aiAndLLMs:          "openai",
-        .webAndBrowser:      "browser"
+        .productivity: "notion",
+        .dataAndAnalytics: "postgres",
+        .communication: "slack",
+        .infrastructure: "docker",
+        .aiAndLLMs: "openai",
+        .webAndBrowser: "browser"
     ]
 
     // MARK: - Accessors

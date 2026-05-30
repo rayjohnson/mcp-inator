@@ -147,6 +147,7 @@ private struct AgentRow: View {
 
 #Preview {
     MenuBarView()
+        // swiftlint:disable:next force_try
         .environmentObject(try! ConfigStore())
         .environmentObject(RegistryStore())
 }

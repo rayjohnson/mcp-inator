@@ -4,9 +4,9 @@ import GRDB
 // MARK: - TransportType
 
 enum TransportType: String, Codable, CaseIterable {
-    case stdio = "stdio"
-    case http  = "http"
-    case sse   = "sse"
+    case stdio
+    case http
+    case sse
 }
 
 struct MCPServerConfig: Identifiable {
@@ -20,6 +20,7 @@ struct MCPServerConfig: Identifiable {
     var url: String           // http/sse only
     var envVars: [EnvVar]     // stdio: env vars; http/sse: request headers
     var notes: String
+    var isPrivate: Bool       // excludes server from usage sharing and catalog stats
     var createdAt: Date
     var updatedAt: Date
 
@@ -30,7 +31,8 @@ struct MCPServerConfig: Identifiable {
         command: String,
         args: [String] = [],
         envVars: [EnvVar] = [],
-        notes: String = ""
+        notes: String = "",
+        isPrivate: Bool = false
     ) {
         self.id = nil
         self.uuid = UUID()
@@ -42,6 +44,7 @@ struct MCPServerConfig: Identifiable {
         self.url = ""
         self.envVars = envVars
         self.notes = notes
+        self.isPrivate = isPrivate
         let now = Date()
         self.createdAt = now
         self.updatedAt = now
@@ -54,7 +57,8 @@ struct MCPServerConfig: Identifiable {
         transportType: TransportType,
         url: String,
         headers: [EnvVar] = [],
-        notes: String = ""
+        notes: String = "",
+        isPrivate: Bool = false
     ) {
         self.id = nil
         self.uuid = UUID()
@@ -66,6 +70,7 @@ struct MCPServerConfig: Identifiable {
         self.url = url
         self.envVars = headers
         self.notes = notes
+        self.isPrivate = isPrivate
         let now = Date()
         self.createdAt = now
         self.updatedAt = now
@@ -84,8 +89,8 @@ extension MCPServerConfig {
             let derived = entry.packageType.map {
                 RegistryEntry.deriveCommand(packageType: $0, identifier: entry.packageIdentifier ?? "")
             }
-            let envVars = entry.envVars.map { v -> EnvVar in
-                var ev = EnvVar(key: v.name, value: "", isSensitive: v.isSecret)
+            let envVars = entry.envVars.map { envVarDef -> EnvVar in
+                var ev = EnvVar(key: envVarDef.name, value: "", isSensitive: envVarDef.isSecret)
                 ev.isHint = true
                 return ev
             }
@@ -96,8 +101,8 @@ extension MCPServerConfig {
                 envVars: envVars
             )
         } else {
-            let headers = entry.remoteHeaders.map { h -> EnvVar in
-                var ev = EnvVar(key: h.name, value: h.valueTemplate ?? "", isSensitive: h.isSecret)
+            let headers = entry.remoteHeaders.map { header -> EnvVar in
+                var ev = EnvVar(key: header.name, value: header.valueTemplate ?? "", isSensitive: header.isSecret)
                 ev.isHint = true
                 return ev
             }
@@ -117,10 +122,10 @@ extension MCPServerConfig {
     static func generateKey(from displayName: String) -> String {
         let lowercased = displayName.lowercased()
         let hyphenated = lowercased.replacingOccurrences(of: " ", with: "-")
-        let filtered = hyphenated.unicodeScalars.filter { s in
-            (s.value >= 97 && s.value <= 122) ||
-            (s.value >= 48 && s.value <= 57) ||
-            s.value == 45
+        let filtered = hyphenated.unicodeScalars.filter { scalar in
+            (scalar.value >= 97 && scalar.value <= 122) ||
+            (scalar.value >= 48 && scalar.value <= 57) ||
+            scalar.value == 45
         }
         return String(String.UnicodeScalarView(filtered))
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
@@ -168,6 +173,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         envVars = (try? JSONDecoder().decode([EnvVar].self, from: Data(envJSON.utf8))) ?? []
 
         notes = row["notes"] ?? ""
+        isPrivate = (row["isPrivate"] as? Bool) ?? false
 
         let created: Double = row["createdAt"]
         createdAt = Date(timeIntervalSince1970: created)
@@ -186,6 +192,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
         container["args"] = String(data: try JSONEncoder().encode(args), encoding: .utf8) ?? "[]"
         container["envVars"] = String(data: try JSONEncoder().encode(envVars), encoding: .utf8) ?? "[]"
         container["notes"] = notes
+        container["isPrivate"] = isPrivate
         container["createdAt"] = createdAt.timeIntervalSince1970
         container["updatedAt"] = updatedAt.timeIntervalSince1970
     }
@@ -199,7 +206,7 @@ extension MCPServerConfig: FetchableRecord, MutablePersistableRecord {
 
 extension MCPServerConfig: Codable {
     enum CodingKeys: String, CodingKey {
-        case uuid, displayName, serverKey, transportType, command, args, url, envVars, notes, createdAt, updatedAt
+        case uuid, displayName, serverKey, transportType, command, args, url, envVars, notes, isPrivate, createdAt, updatedAt
     }
 }
 
@@ -232,9 +239,9 @@ struct EnvVar: Codable, Equatable, Identifiable {
 
     enum CodingKeys: String, CodingKey { case key, value, isSensitive }
     init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        key = try c.decode(String.self, forKey: .key)
-        value = try c.decode(String.self, forKey: .value)
-        isSensitive = try c.decode(Bool.self, forKey: .isSensitive)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        key = try container.decode(String.self, forKey: .key)
+        value = try container.decode(String.self, forKey: .value)
+        isSensitive = try container.decode(Bool.self, forKey: .isSensitive)
     }
 }

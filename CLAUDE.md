@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/009-agent-config-import/plan.md`.
+`specs/010-ai-mcp-catalog/plan.md`.
 <!-- SPECKIT END -->
 
 ## Build & Run

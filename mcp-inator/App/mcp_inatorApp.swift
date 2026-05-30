@@ -8,6 +8,7 @@ struct mcp_inatorApp: App {
 
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
+    @StateObject private var catalogStore  = CatalogStore()
 
     private let sparkleDelegate = SparkleDelegate()
     private let updaterController: SPUStandardUpdaterController
@@ -50,9 +51,11 @@ struct mcp_inatorApp: App {
                             aboutController.show(updater: self.updaterController.updater)
                         }
                     })
+                    .environmentObject(catalogStore)
                     .onAppear {
                         try? store.seedSelfEntry()
                         Task { await registryStore.populateCategories() }
+                        Task { await catalogStore.fetchIfNeeded() }
                         runAgentScan(store: store)
                     }
             } else {
@@ -97,16 +100,16 @@ final class DiscoveryWindowController: NSObject, NSWindowDelegate {
         }).environmentObject(store)
 
         let hosting = NSHostingController(rootView: view)
-        let w = NSWindow(contentViewController: hosting)
-        w.title = "New Agents Found"
-        w.setContentSize(NSSize(width: 440, height: 380))
-        w.styleMask = [.titled, .closable]
-        w.center()
-        w.isReleasedWhenClosed = false
-        w.delegate = self
-        w.makeKeyAndOrderFront(nil)
+        let discoveryWindow = NSWindow(contentViewController: hosting)
+        discoveryWindow.title = "New Agents Found"
+        discoveryWindow.setContentSize(NSSize(width: 440, height: 380))
+        discoveryWindow.styleMask = [.titled, .closable]
+        discoveryWindow.center()
+        discoveryWindow.isReleasedWhenClosed = false
+        discoveryWindow.delegate = self
+        discoveryWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        self.window = w
+        self.window = discoveryWindow
     }
 
     func windowWillClose(_ notification: Notification) {
