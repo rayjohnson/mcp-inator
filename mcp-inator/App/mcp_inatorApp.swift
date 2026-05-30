@@ -80,14 +80,12 @@ struct mcp_inatorApp: App {
                 }
             }
         } label: {
-            if !showInDock {
-                Image("Inator")
-                    .onAppear {
-                        // Ensure delegate and window controller are wired even if popover not opened
-                        appDelegate.appModeManager = appModeManager
-                        wireWindowController()
-                    }
-            }
+            Image("Inator")
+                .opacity(showInDock ? 0 : 1)
+                .onAppear {
+                    appDelegate.appModeManager = appModeManager
+                    wireWindowController()
+                }
         }
         .menuBarExtraStyle(.window)
 
@@ -107,7 +105,9 @@ struct mcp_inatorApp: App {
             updater: updaterController.updater,
             aboutController: aboutController
         )
-        appModeManager.openMainWindow = { [mainWindowController] in mainWindowController.open() }
+        appModeManager.openMainWindow = { [mainWindowController] in
+            mainWindowController.open()
+        }
         appModeManager.closeMainWindow = { [mainWindowController] in mainWindowController.close() }
         // If launched with dock mode already set, apply policy and open window immediately
         if showInDock {
@@ -180,7 +180,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             .environmentObject(storeContainer)
             .environmentObject(registryStore)
             .environmentObject(catalogStore)
-            .environment(\.openAboutWindow, { [weak aboutController, weak self] in
+            .environment(\.openAboutWindow, { [weak aboutController] in
                 Task { @MainActor in
                     aboutController?.show(updater: updater)
                 }
