@@ -244,5 +244,27 @@
         length="11897986"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.3.0</title>
+      <pubDate>Sat, 30 May 2026 07:23:59 +0000</pubDate>
+      <sparkle:version>20</sparkle:version>
+      <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.3.0</h3>
+<ul>
+<li>New curated catalog powered by AI enrichment — each server now shows a curator note, the exact env vars you'll need (with descriptions), and whether it's officially maintained by the service's own team</li>
+<li>Browse servers by category (Code & Development, Productivity, Data & Analytics, and more)</li>
+<li>First-party badge ("Official") on servers published by the company that owns the service</li>
+<li>Star count and last-commit recency shown on each entry so you can spot actively maintained servers at a glance</li>
+<li>Trending section highlights servers with recent community buzz</li>
+<li>Full detail view with env var documentation, required arguments, community sentiment summary, and links to docs and source</li>
+<li>When multiple servers exist for the same service, the recommended pick is shown first with alternatives listed below</li>
+<li>Catalog loads from a live GitHub-hosted source with a bundled fallback for offline use</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.3.0/mcp-inator-0.3.0.dmg"
+        sparkle:edSignature="eUeolwVWGFAjozSXpHJgKbMt850/9o+4VzuYK9+nRdvmMe/ZoZODvRcqG1WzzqCKANxBKdSgZpJf+UG8rRkADw=="
+        length="11954522"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
