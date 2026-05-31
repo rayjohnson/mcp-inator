@@ -355,5 +355,32 @@
         length="11320050"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.4.7</title>
+      <pubDate>Sun, 31 May 2026 17:39:13 +0000</pubDate>
+      <sparkle:version>25</sparkle:version>
+      <sparkle:shortVersionString>0.4.7</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.4.7</h3>
+<ul>
+<li>Added Cursor IDE / Cursor CLI as a supported agent — mcp-inator discovers, reads, writes, and imports MCP server configs from `~/.cursor/mcp.json`</li>
+<li>Refactored adapter layer: agent support is now fully configuration-driven via `AgentDefinition` structs and a generic `FileBasedAdapter` — adding a new agent requires only a definition entry, no new code</li>
+<li>Dock mode window is now a native three-column split view (sidebar | list | detail) matching macOS HIG — no more push navigation or back buttons in the main window</li>
+<li>Fixed: catalog not loading on cold launch in Dock mode</li>
+<li>Fixed: toolbar height no longer shifts when switching between Servers, Agents, and Catalog tabs in Dock mode; Catalog now uses a native macOS search field in the toolbar</li>
+<li>Fixed: menu bar icon no longer remains visible after switching to Dock mode</li>
+<li>In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)</li>
+<li>Switch between Menu Bar and Dock modes instantly from Preferences — no restart required</li>
+<li>In Dock mode, mcp-inator gets a full resizable window with a Servers / Agents / Catalog sidebar</li>
+<li>Preferences window accessible from the menu bar popover footer or via Cmd+, in Dock mode</li>
+<li>Launch at Login setting in Preferences</li>
+<li>App quits when the main window is closed in Dock mode (standard Mac behavior)</li>
+<li>New app icon — bold colorful ray gun, readable at small sizes</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.4.7/mcp-inator-0.4.7.dmg"
+        sparkle:edSignature="2kLiIOFeY6suCDb6Lrc1bmj9ZuE+esBY7e0JKWW7/DNE1Af6sQjEZYI9xjhcb5Cmt95v+WNuJGfnFarXAR2GDQ=="
+        length="11322891"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
