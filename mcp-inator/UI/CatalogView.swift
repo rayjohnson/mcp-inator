@@ -7,19 +7,12 @@ struct CatalogView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: CatalogCategory?
 
-    private var isSearchActive: Bool {
-        !searchText.trimmingCharacters(in: .whitespaces).isEmpty
-    }
-
     var body: some View {
         VStack(spacing: 0) {
-            searchBar
-            Divider()
-
             if catalogStore.isLoading && catalogStore.viewModels.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if isSearchActive {
+            } else if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
                 searchResultsView
             } else {
                 categoryFilterBar
@@ -28,29 +21,7 @@ struct CatalogView: View {
             }
         }
         .navigationTitle("Catalog")
-    }
-
-    // MARK: - Search Bar
-
-    private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-            TextField("Search catalog…", text: $searchText)
-                .textFieldStyle(.plain)
-            if !searchText.isEmpty {
-                Button {
-                    searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.borderless)
-            }
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .searchable(text: $searchText, prompt: "Search catalog…")
     }
 
     // MARK: - Category Filter
