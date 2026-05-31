@@ -1,6 +1,7 @@
 import SwiftUI
 import Sentry
 
+// swiftlint:disable:next type_body_length
 struct AddEditConfigView: View {
     @EnvironmentObject private var store: ConfigStore
     @Environment(\.dismiss) private var dismiss
@@ -466,6 +467,22 @@ struct AddEditConfigView: View {
         )
     }
 
+    private func makeNewConfig(name: String, key: String) -> MCPServerConfig {
+        if isHTTP {
+            return MCPServerConfig(
+                displayName: name, serverKey: key,
+                transportType: transportType,
+                url: url.trimmingCharacters(in: .whitespaces),
+                headers: envVars, notes: notes
+            )
+        }
+        return MCPServerConfig(
+            displayName: name, serverKey: key,
+            command: command.trimmingCharacters(in: .whitespaces),
+            args: args, envVars: envVars, notes: notes
+        )
+    }
+
     private func save() {
         validationError = nil
         let trimmedName = displayName.trimmingCharacters(in: .whitespaces)
@@ -498,22 +515,7 @@ struct AddEditConfigView: View {
                 saved = config
             } else {
                 breadcrumb("save: inserting new server '\(trimmedKey)'")
-                let config: MCPServerConfig
-                if isHTTP {
-                    config = MCPServerConfig(
-                        displayName: trimmedName, serverKey: trimmedKey,
-                        transportType: transportType,
-                        url: url.trimmingCharacters(in: .whitespaces),
-                        headers: envVars, notes: notes
-                    )
-                } else {
-                    config = MCPServerConfig(
-                        displayName: trimmedName, serverKey: trimmedKey,
-                        command: command.trimmingCharacters(in: .whitespaces),
-                        args: args, envVars: envVars, notes: notes
-                    )
-                }
-                saved = try store.insert(config)
+                saved = try store.insert(makeNewConfig(name: trimmedName, key: trimmedKey))
             }
             let visibleIds = Set(store.visibleAgents.compactMap(\.id))
             let enabledVisible = isEditMode
