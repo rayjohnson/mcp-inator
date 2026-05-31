@@ -4,6 +4,9 @@ struct CatalogView: View {
     @EnvironmentObject private var catalogStore: CatalogStore
     @EnvironmentObject private var store: ConfigStore
 
+    @Binding var selectedEntry: CatalogViewModel?
+    let isCompact: Bool
+
     @State private var searchText: String = ""
     @State private var selectedCategory: CatalogCategory?
 
@@ -90,10 +93,20 @@ struct CatalogView: View {
     private func entryRow(_ vm: CatalogViewModel, showCategory: Bool) -> some View {
         let alts = catalogStore.alternatives(for: vm.entry.id)
         if alts.isEmpty {
-            NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+            if isCompact {
+                NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                    CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary(vm))
+                }
+                .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+            } else {
                 CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary(vm))
+                    .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedEntry = vm }
+                    .listRowBackground(
+                        selectedEntry?.id == vm.id ? Color.accentColor.opacity(0.15) : Color.clear
+                    )
             }
-            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
         } else {
             AlternativesRow(
                 vm: vm,
@@ -101,9 +114,16 @@ struct CatalogView: View {
                 showCategory: showCategory,
                 isInLibrary: isInLibrary(vm),
                 altIsInLibrary: { isInLibrary($0) },
-                store: store
+                store: store,
+                isCompact: isCompact,
+                onSelect: { selectedEntry = $0 }
             )
             .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+            .listRowBackground(
+                !isCompact && (selectedEntry?.id == vm.id || alts.contains(where: { selectedEntry?.id == $0.id }))
+                    ? Color.accentColor.opacity(0.15)
+                    : Color.clear
+            )
         }
     }
 
@@ -122,10 +142,20 @@ struct CatalogView: View {
             emptySearchState
         } else {
             List(results) { vm in
-                NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                if isCompact {
+                    NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                        CatalogRow(vm: vm, showCategory: true, isInLibrary: isInLibrary(vm))
+                    }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                } else {
                     CatalogRow(vm: vm, showCategory: true, isInLibrary: isInLibrary(vm))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                        .contentShape(Rectangle())
+                        .onTapGesture { selectedEntry = vm }
+                        .listRowBackground(
+                            selectedEntry?.id == vm.id ? Color.accentColor.opacity(0.15) : Color.clear
+                        )
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
             }
             .listStyle(.plain)
         }
@@ -239,13 +269,21 @@ private struct AlternativesRow: View {
     let isInLibrary: Bool
     let altIsInLibrary: (CatalogViewModel) -> Bool
     let store: ConfigStore
+    let isCompact: Bool
+    let onSelect: (CatalogViewModel) -> Void
 
     @State private var expanded = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+            if isCompact {
+                NavigationLink(destination: CatalogEntryDetailView(vm: vm).environmentObject(store)) {
+                    CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary)
+                }
+            } else {
                 CatalogRow(vm: vm, showCategory: showCategory, isInLibrary: isInLibrary)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onSelect(vm) }
             }
 
             Button {
@@ -265,11 +303,19 @@ private struct AlternativesRow: View {
 
             if expanded {
                 ForEach(alternatives) { alt in
-                    NavigationLink(destination: CatalogEntryDetailView(vm: alt).environmentObject(store)) {
+                    if isCompact {
+                        NavigationLink(destination: CatalogEntryDetailView(vm: alt).environmentObject(store)) {
+                            CatalogRow(vm: alt, showCategory: false, isInLibrary: altIsInLibrary(alt))
+                                .padding(.leading, 16)
+                        }
+                        .padding(.top, 4)
+                    } else {
                         CatalogRow(vm: alt, showCategory: false, isInLibrary: altIsInLibrary(alt))
                             .padding(.leading, 16)
+                            .padding(.top, 4)
+                            .contentShape(Rectangle())
+                            .onTapGesture { onSelect(alt) }
                     }
-                    .padding(.top, 4)
                 }
             }
         }

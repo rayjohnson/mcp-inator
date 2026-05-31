@@ -358,6 +358,22 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - NavigationIsCompactKey
+// True in the 420px menu bar popover (push navigation); false in the dock-mode
+// split window (tap-to-select). Detail views read this to decide whether to
+// render an explicit back button.
+
+private struct NavigationIsCompactKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var navigationIsCompact: Bool {
+        get { self[NavigationIsCompactKey.self] }
+        set { self[NavigationIsCompactKey.self] = newValue }
+    }
+}
+
 // MARK: - AboutWindowController
 
 @MainActor

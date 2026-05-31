@@ -2,6 +2,8 @@ import SwiftUI
 
 struct CatalogEntryDetailView: View {
     @EnvironmentObject private var store: ConfigStore
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.navigationIsCompact) private var navigationIsCompact
 
     let vm: CatalogViewModel
 
@@ -43,6 +45,16 @@ struct CatalogEntryDetailView: View {
             actionBar
         }
         .navigationTitle(entry.displayName)
+        .toolbar {
+            if navigationIsCompact {
+                ToolbarItem(placement: .navigation) {
+                    Button(
+                        action: { dismiss() },
+                        label: { Label("Back", systemImage: "chevron.left") }
+                    )
+                }
+            }
+        }
     }
 
     // MARK: - Header

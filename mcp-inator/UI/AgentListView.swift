@@ -5,6 +5,8 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 struct AgentListView: View {
     @EnvironmentObject private var store: ConfigStore
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.navigationIsCompact) private var navigationIsCompact
     let agent: AgentRecord
 
     @State private var enabledUUIDs: Set<UUID> = []
@@ -241,6 +243,14 @@ struct AgentListView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        if navigationIsCompact {
+            ToolbarItem(placement: .navigation) {
+                Button(
+                    action: { dismiss() },
+                    label: { Label("Back", systemImage: "chevron.left") }
+                )
+            }
+        }
         if !agent.agentType.isAppManaged {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

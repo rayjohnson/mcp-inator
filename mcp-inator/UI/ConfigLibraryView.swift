@@ -3,6 +3,8 @@ import Sentry
 
 struct ConfigLibraryView: View {
     @EnvironmentObject private var store: ConfigStore
+    @Binding var selectedConfig: MCPServerConfig?
+    let isCompact: Bool
     @State private var showAddConfig = false
     @State private var editingConfig: MCPServerConfig?
     @State private var confirmDelete: MCPServerConfig?
@@ -24,7 +26,7 @@ struct ConfigLibraryView: View {
         .onChange(of: store.configs.count) { _ in loadMatrix() }
         .onChange(of: store.configs.map(\.updatedAt)) { _ in loadMatrix() }
         .navigationTitle("MCP Servers")
-        .navigationDestination(isPresented: $showAddConfig) {
+        .sheet(isPresented: $showAddConfig) {
             AddEditConfigView()
                 .environmentObject(store)
         }
@@ -41,7 +43,7 @@ struct ConfigLibraryView: View {
         }
         .navigationDestination(
             isPresented: Binding(
-                get: { editingConfig != nil },
+                get: { isCompact && editingConfig != nil },
                 set: { if !$0 { editingConfig = nil } }
             )
         ) {
@@ -128,8 +130,18 @@ struct ConfigLibraryView: View {
                 ConfigRow(config: config, agentStates: row?.agentStates ?? [])
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if !config.isBuiltIn { editingConfig = config }
+                        guard !config.isBuiltIn else { return }
+                        if isCompact {
+                            editingConfig = config
+                        } else {
+                            selectedConfig = config
+                        }
                     }
+                    .listRowBackground(
+                        !isCompact && selectedConfig?.uuid == config.uuid
+                            ? Color.accentColor.opacity(0.15)
+                            : Color.clear
+                    )
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if !config.isBuiltIn {
                             Button(role: .destructive) {
@@ -275,9 +287,9 @@ private struct AgentStateBadge: View {
 
 #Preview {
     NavigationStack {
-        ConfigLibraryView()
+        ConfigLibraryView(selectedConfig: .constant(nil), isCompact: true)
             // swiftlint:disable:next force_try
-        .environmentObject(try! ConfigStore())
+            .environmentObject(try! ConfigStore())
     }
     .frame(width: 400, height: 500)
 }
