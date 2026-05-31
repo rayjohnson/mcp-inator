@@ -79,7 +79,11 @@ struct mcp_inatorApp: App {
             }
         } label: {
             Image("Inator")
-                .onAppear { wireWindowController() }
+                .onAppear {
+                    wireWindowController()
+                    Task { await registryStore.populateCategories() }
+                    Task { await catalogStore.fetchIfNeeded() }
+                }
                 // Fires at cold launch (including when isInserted = false) so dock-mode
                 // launch gets wireWindowController() called via the scene's view graph.
                 .onReceive(NotificationCenter.default.publisher(
