@@ -34,13 +34,6 @@ struct AddEditConfigView: View {
     @State private var testResult: ConnectionTestResult?
     @State private var isTesting = false
     private let tester = ConnectionTester()
-    private let adapters: [AgentType: any AgentAdapter] = [
-        .claudeCode: ClaudeCodeAdapter(),
-        .claudeDesktop: ClaudeDesktopAdapter(),
-        .geminiCLI: GeminiCLIAdapter(),
-        .codexCLI: CodexCLIAdapter(),
-        .geminiDesktop: GeminiDesktopAdapter()
-    ]
 
     init(existing: MCPServerConfig? = nil) {
         self.existing = existing
@@ -540,7 +533,7 @@ struct AddEditConfigView: View {
         guard let cfg = propagationConfig else { return }
         for agent in propagationAgents {
             guard let agentId = agent.id,
-                  let adapter = adapters[agent.agentType] else { continue }
+                  let adapter = AdapterRegistry.adapter(for: agent.agentType) else { continue }
             let path = URL(fileURLWithPath: agent.configPath)
             do {
                 _ = try store.enableConfig(uuid: cfg.uuid, agentId: agentId,

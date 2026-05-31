@@ -10,14 +10,6 @@ struct DiscoveryView: View {
     @State private var showImportReview = false
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
 
-    private let adapters: [AgentType: any AgentAdapter] = [
-        .claudeCode: ClaudeCodeAdapter(),
-        .claudeDesktop: ClaudeDesktopAdapter(),
-        .geminiCLI: GeminiCLIAdapter(),
-        .codexCLI: CodexCLIAdapter(),
-        .geminiDesktop: GeminiDesktopAdapter()
-    ]
-
     var body: some View {
         NavigationStack {
             Group {
@@ -35,7 +27,7 @@ struct DiscoveryView: View {
             }
             .sheet(isPresented: $showImportReview) {
                 if let agent = importTarget,
-                   let adapter = adapters[agent.agentType] {
+                   let adapter = AdapterRegistry.adapter(for: agent.agentType) {
                     ImportReviewView(
                         source: ImportSource(
                             displayName: agent.displayName,
@@ -128,7 +120,7 @@ struct DiscoveryView: View {
     // MARK: - Import Preparation
 
     private func prepareImport(for agent: AgentRecord) {
-        guard let adapter = adapters[agent.agentType] else { return }
+        guard let adapter = AdapterRegistry.adapter(for: agent.agentType) else { return }
         let configURL = URL(fileURLWithPath: agent.configPath)
         do {
             importCategories = try store.categorizeImport(from: adapter, configPath: configURL)

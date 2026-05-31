@@ -209,8 +209,9 @@ struct MCPToolHandler: @unchecked Sendable {
         guard let agentStr = args["agent"]?.stringValue, !agentStr.isEmpty else {
             return toolError("Missing required argument: 'agent'")
         }
-        guard let agentType = AgentType(rawValue: agentStr) else {
-            return toolError("Unknown agent '\(agentStr)'. Valid values: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop")
+        let agentType = AgentType(rawValue: agentStr)
+        guard AdapterRegistry.adapter(for: agentType) != nil else {
+            return toolError("Unknown agent '\(agentStr)'. Valid values: \(AdapterRegistry.all.map(\.agentType.rawValue).joined(separator: ", "))")
         }
         if agentType.isAppManaged {
             return toolError("agent '\(agentStr)' is app-managed and cannot be configured via mcp-inator")
@@ -263,8 +264,9 @@ struct MCPToolHandler: @unchecked Sendable {
         guard let agentStr = args["agent"]?.stringValue, !agentStr.isEmpty else {
             return toolError("Missing required argument: 'agent'")
         }
-        guard let agentType = AgentType(rawValue: agentStr) else {
-            return toolError("Unknown agent '\(agentStr)'. Valid values: claude_code, claude_desktop, gemini_cli, codex_cli, gemini_desktop")
+        let agentType = AgentType(rawValue: agentStr)
+        guard AdapterRegistry.adapter(for: agentType) != nil else {
+            return toolError("Unknown agent '\(agentStr)'. Valid values: \(AdapterRegistry.all.map(\.agentType.rawValue).joined(separator: ", "))")
         }
         if agentType.isAppManaged {
             return toolError("agent '\(agentStr)' is app-managed and cannot be configured via mcp-inator")
@@ -384,12 +386,6 @@ struct MCPToolHandler: @unchecked Sendable {
     }
 
     private static func defaultAdapter(_ agentType: AgentType) -> any AgentAdapter {
-        switch agentType {
-        case .claudeCode:    return ClaudeCodeAdapter()
-        case .claudeDesktop: return ClaudeDesktopAdapter()
-        case .geminiCLI:     return GeminiCLIAdapter()
-        case .codexCLI:      return CodexCLIAdapter()
-        case .geminiDesktop: return GeminiDesktopAdapter()
-        }
+        AdapterRegistry.adapter(for: agentType) ?? ClaudeCodeAdapter()
     }
 }

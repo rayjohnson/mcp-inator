@@ -1,29 +1,24 @@
 import SwiftUI
 import AppKit
 
-// Displays a recognizable icon for each agent type.
-// Anthropic agents: loads Claude.app icon from NSWorkspace.
-// CLI-only agents (Gemini, Codex): renders a styled letter badge.
+// Data-driven agent icon. Icon config comes from AdapterRegistry — adding a new
+// agent with a custom icon requires only updating its AgentDefinition.
 struct AgentIcon: View {
     let agentType: AgentType
 
     var body: some View {
-        switch agentType {
-        case .claudeCode, .claudeDesktop:
-            ClaudeAppIcon()
-        case .geminiCLI:
-            LetterBadge(letter: "G", background: Color(red: 0.26, green: 0.52, blue: 0.96))
-        case .codexCLI:
-            LetterBadge(letter: "X", background: Color(red: 0.07, green: 0.07, blue: 0.07))
-        case .geminiDesktop:
-            GeminiDesktopAppIcon()
+        if let config = AdapterRegistry.definition(for: agentType)?.icon {
+            AppIconView(config: config)
+        } else {
+            LetterBadge(letter: "?", background: .secondary)
         }
     }
 }
 
-// MARK: - ClaudeAppIcon
+// MARK: - AppIconView
 
-private struct ClaudeAppIcon: View {
+private struct AppIconView: View {
+    let config: AgentIconConfig
     @State private var appIcon: NSImage?
 
     var body: some View {
@@ -33,7 +28,14 @@ private struct ClaudeAppIcon: View {
                     .resizable()
                     .interpolation(.high)
             } else {
-                LetterBadge(letter: "A", background: Color(red: 0.85, green: 0.45, blue: 0.25))
+                LetterBadge(
+                    letter: config.fallback.letter,
+                    background: Color(
+                        red: config.fallback.red,
+                        green: config.fallback.green,
+                        blue: config.fallback.blue
+                    )
+                )
             }
         }
         .onAppear { loadIcon() }
@@ -41,43 +43,15 @@ private struct ClaudeAppIcon: View {
 
     private func loadIcon() {
         guard appIcon == nil else { return }
-        let bundleIDs = ["com.anthropic.claudefordesktop", "com.anthropic.claude"]
-        for bid in bundleIDs {
+        for bid in config.bundleIds {
             if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
                 appIcon = NSWorkspace.shared.icon(forFile: url.path)
                 return
             }
         }
-    }
-}
-
-// MARK: - GeminiDesktopAppIcon
-
-private struct GeminiDesktopAppIcon: View {
-    @State private var appIcon: NSImage?
-
-    var body: some View {
-        Group {
-            if let icon = appIcon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .interpolation(.high)
-            } else {
-                LetterBadge(letter: "G", background: Color(red: 0.11, green: 0.53, blue: 0.96))
-            }
-        }
-        .onAppear { loadIcon() }
-    }
-
-    private func loadIcon() {
-        guard appIcon == nil else { return }
-        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.google.GeminiMacOS") {
-            appIcon = NSWorkspace.shared.icon(forFile: url.path)
+        for path in config.appPaths where FileManager.default.fileExists(atPath: path) {
+            appIcon = NSWorkspace.shared.icon(forFile: path)
             return
-        }
-        let appPath = "/Applications/Gemini.app"
-        if FileManager.default.fileExists(atPath: appPath) {
-            appIcon = NSWorkspace.shared.icon(forFile: appPath)
         }
     }
 }
@@ -100,8 +74,8 @@ private struct LetterBadge: View {
 
 #Preview {
     HStack(spacing: 8) {
-        ForEach(AgentType.allCases, id: \.self) { type in
-            AgentIcon(agentType: type)
+        ForEach(AdapterRegistry.all, id: \.agentType.rawValue) { adapter in
+            AgentIcon(agentType: adapter.agentType)
                 .frame(width: 24, height: 24)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
         }

@@ -3,44 +3,45 @@ import GRDB
 
 // MARK: - AgentType
 
-enum AgentType: String, Codable, CaseIterable {
-    case claudeCode    = "claude_code"
-    case claudeDesktop = "claude_desktop"
-    case geminiCLI     = "gemini_cli"
-    case codexCLI      = "codex_cli"
-    case geminiDesktop = "gemini_desktop"
+// Value-type agent identifier. Static constants are provided for known agents,
+// but any rawValue string is valid — no exhaustive switch required.
+struct AgentType: RawRepresentable, Hashable, Sendable {
+    let rawValue: String
+
+    init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    static let claudeCode    = AgentType(rawValue: "claude_code")
+    static let claudeDesktop = AgentType(rawValue: "claude_desktop")
+    static let geminiCLI     = AgentType(rawValue: "gemini_cli")
+    static let codexCLI      = AgentType(rawValue: "codex_cli")
+    static let geminiDesktop = AgentType(rawValue: "gemini_desktop")
+    static let cursor        = AgentType(rawValue: "cursor")
 
     var displayName: String {
-        switch self {
-        case .claudeCode:    return "Claude Code"
-        case .claudeDesktop: return "Claude Desktop"
-        case .geminiCLI:     return "Gemini CLI"
-        case .codexCLI:      return "Codex CLI"
-        case .geminiDesktop: return "Gemini Desktop"
-        }
+        AdapterRegistry.adapter(for: self)?.displayName ?? rawValue
     }
 
     var isAppManaged: Bool {
-        switch self {
-        case .geminiDesktop: return true
-        default: return false
-        }
+        AdapterRegistry.adapter(for: self)?.isAppManaged ?? false
     }
 
     var defaultConfigPath: String {
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        switch self {
-        case .claudeCode:
-            return "\(home)/.claude.json"
-        case .claudeDesktop:
-            return "\(home)/Library/Application Support/Claude/claude_desktop_config.json"
-        case .geminiCLI:
-            return "\(home)/.gemini/settings.json"
-        case .codexCLI:
-            return "\(home)/.codex/config.toml"
-        case .geminiDesktop:
-            return "\(home)/Library/Application Support/Google/Gemini/mcp_servers.json"
-        }
+        AdapterRegistry.adapter(for: self)?.defaultConfigPath().path
+            ?? FileManager.default.homeDirectoryForCurrentUser.path
+    }
+}
+
+extension AgentType: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        rawValue = try container.decode(String.self)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
     }
 }
 
@@ -79,7 +80,7 @@ extension AgentRecord: FetchableRecord, MutablePersistableRecord {
     init(row: Row) throws {
         id = row["id"]
         let typeRaw: String = row["agentType"]
-        agentType = AgentType(rawValue: typeRaw) ?? .claudeCode
+        agentType = AgentType(rawValue: typeRaw)
         displayName = row["displayName"]
         configPath = row["configPath"]
         isCustomPath = (row["isCustomPath"] as Int) != 0
