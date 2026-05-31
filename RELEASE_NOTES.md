@@ -1,3 +1,4 @@
+- Fixed: toolbar height no longer shifts when switching between Servers, Agents, and Catalog tabs in Dock mode; Catalog now uses a native macOS search field in the toolbar
 - Fixed: menu bar icon no longer remains visible after switching to Dock mode
 - In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)
 - Switch between Menu Bar and Dock modes instantly from Preferences — no restart required

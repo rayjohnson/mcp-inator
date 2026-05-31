@@ -7,6 +7,7 @@ struct MenuBarView: View {
     @EnvironmentObject var registryStore: RegistryStore
     @Environment(\.openAboutWindow) private var openAboutWindow: @Sendable () -> Void
     @Environment(\.openPreferencesWindow) private var openPreferencesWindow: @Sendable () -> Void
+    @State private var showManageAgents = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,7 +20,7 @@ struct MenuBarView: View {
                 }
 
                 NavigationStack {
-                    AgentsView()
+                    AgentsView(showManageAgents: $showManageAgents)
                 }
                 .tabItem {
                     Label("Agents", systemImage: "cpu")

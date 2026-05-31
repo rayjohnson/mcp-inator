@@ -11,6 +11,7 @@ struct MainWindowView: View {
     @EnvironmentObject private var catalogStore: CatalogStore
     @State private var selectedSection: SidebarSection = .servers
     @State private var showAddServer = false
+    @State private var showManageAgents = false
 
     var body: some View {
         if let store = storeContainer.store {
@@ -34,7 +35,7 @@ struct MainWindowView: View {
                     }
                 case .agents:
                     NavigationStack {
-                        AgentsView()
+                        AgentsView(showManageAgents: $showManageAgents)
                             .environmentObject(store)
                     }
                 case .catalog:
@@ -53,6 +54,11 @@ struct MainWindowView: View {
                             action: { showAddServer = true },
                             label: { Label("Add Server", systemImage: "plus") }
                         )
+                    }
+                }
+                if selectedSection == .agents {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Manage") { showManageAgents = true }
                     }
                 }
             }

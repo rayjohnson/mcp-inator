@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AgentsView: View {
     @EnvironmentObject private var store: ConfigStore
-    @State private var showManageAgents = false
+    @Binding var showManageAgents: Bool
 
     var body: some View {
         List(store.visibleAgents) { agent in
@@ -12,11 +12,6 @@ struct AgentsView: View {
         }
         .listStyle(.inset)
         .navigationTitle("Agents")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Manage") { showManageAgents = true }
-            }
-        }
         .navigationDestination(isPresented: $showManageAgents) {
             ManageAgentsView()
                 .environmentObject(store)
