@@ -28,6 +28,7 @@ final class AppModeManager: ObservableObject {
 
     var openMainWindow: (() -> Void)?
     var closeMainWindow: (() -> Void)?
+    var setMenuBarVisible: ((Bool) -> Void)?
 
     init(
         defaults: UserDefaults = .standard,
@@ -45,10 +46,12 @@ final class AppModeManager: ObservableObject {
         defaults.set(enabled, forKey: "showInDock")
         if enabled {
             policyManager.setPolicy(.regular)
+            setMenuBarVisible?(false)
             openMainWindow?()
         } else {
             closeMainWindow?()
             policyManager.setPolicy(.accessory)
+            setMenuBarVisible?(true)
         }
         isTransitioning = false
     }

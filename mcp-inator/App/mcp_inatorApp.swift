@@ -46,45 +46,52 @@ struct mcp_inatorApp: App {
     private let mainWindowController = MainWindowController()
 
     var body: some Scene {
-        // MenuBarExtra is always present; label/content are conditionally empty in dock mode.
-        // @ViewBuilder closures support if/else; only @SceneBuilder conditionals are restricted.
-        MenuBarExtra {
-            if !showInDock {
-                if let store = storeContainer.store {
-                    MenuBarView()
-                        .environmentObject(store)
-                        .environmentObject(registryStore)
-                        .environment(\.openAboutWindow, { [aboutController] in
-                            Task { @MainActor in
-                                aboutController.show(updater: self.updaterController.updater)
-                            }
-                        })
-                        .environment(\.openPreferencesWindow, { [preferencesController, appModeManager] in
-                            Task { @MainActor in
-                                preferencesController.show(appModeManager: appModeManager)
-                            }
-                        })
-                        .environmentObject(catalogStore)
-                        .onAppear {
-                            appDelegate.appModeManager = appModeManager
-                            wireWindowController()
-                            try? store.seedSelfEntry()
-                            Task { await registryStore.populateCategories() }
-                            Task { await catalogStore.fetchIfNeeded() }
-                            runAgentScan(store: store)
+        // isInserted drives status-item presence reactively: false in dock mode removes the
+        // NSStatusItem from the menu bar without conditional scene building (which @SceneBuilder
+        // does not support in this Xcode version).
+        MenuBarExtra(isInserted: Binding(get: { !showInDock }, set: { _ in })) {
+            if let store = storeContainer.store {
+                MenuBarView()
+                    .environmentObject(store)
+                    .environmentObject(registryStore)
+                    .environment(\.openAboutWindow, { [aboutController] in
+                        Task { @MainActor in
+                            aboutController.show(updater: self.updaterController.updater)
                         }
-                } else {
-                    StoreRecoveryView(error: storeContainer.initError) {
-                        storeContainer.reset()
+                    })
+                    .environment(\.openPreferencesWindow, { [preferencesController, appModeManager] in
+                        Task { @MainActor in
+                            preferencesController.show(appModeManager: appModeManager)
+                        }
+                    })
+                    .environmentObject(catalogStore)
+                    .onAppear {
+                        wireWindowController()
+                        try? store.seedSelfEntry()
+                        Task { await registryStore.populateCategories() }
+                        Task { await catalogStore.fetchIfNeeded() }
+                        runAgentScan(store: store)
                     }
+            } else {
+                StoreRecoveryView(error: storeContainer.initError) {
+                    storeContainer.reset()
                 }
             }
         } label: {
             Image("Inator")
-                .opacity(showInDock ? 0 : 1)
-                .onAppear {
-                    appDelegate.appModeManager = appModeManager
+                .onAppear { wireWindowController() }
+                // Fires at cold launch (including when isInserted = false) so dock-mode
+                // launch gets wireWindowController() called via the scene's view graph.
+                .onReceive(NotificationCenter.default.publisher(
+                    for: NSApplication.didFinishLaunchingNotification
+                )) { _ in
                     wireWindowController()
+                }
+                // Reacts when the user toggles dock mode mid-session.
+                .onChange(of: showInDock) { newValue in
+                    if newValue {
+                        appDelegate.insertDockModeMenuItems()
+                    }
                 }
         }
         .menuBarExtraStyle(.window)
@@ -111,6 +118,12 @@ struct mcp_inatorApp: App {
     }
 
     private func wireWindowController() {
+        // Always refresh AppDelegate references — idempotent and needed before any delegate call.
+        appDelegate.appModeManager = appModeManager
+        appDelegate.aboutController = aboutController
+        appDelegate.preferencesController = preferencesController
+        appDelegate.updater = updaterController.updater
+
         guard appModeManager.openMainWindow == nil else { return }
         mainWindowController.configure(
             appModeManager: appModeManager,
@@ -124,9 +137,9 @@ struct mcp_inatorApp: App {
             mainWindowController.open()
         }
         appModeManager.closeMainWindow = { [mainWindowController] in mainWindowController.close() }
-        // If launched with dock mode already set, apply policy and open window immediately
+        // If launched with dock mode already set, open the main window.
+        // Activation policy and dock-mode menu items are handled by AppDelegate.applicationDidFinishLaunching.
         if showInDock {
-            NSApp.setActivationPolicy(.regular)
             mainWindowController.open()
         }
     }
