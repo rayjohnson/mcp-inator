@@ -6,7 +6,10 @@ APP_BUNDLE := $(shell find ~/Library/Developer/Xcode/DerivedData -name "mcp-inat
 CATALOG_SRC := catalog/catalog.json
 CATALOG_DST := mcp-inator/Resources/catalog.json
 
-.PHONY: build test lint run clean sync-catalog generate-version
+COVERAGE_RESULT := /tmp/mcp-inator-coverage.xcresult
+COVERAGE_THRESHOLD := 22
+
+.PHONY: build test cover lint run clean sync-catalog generate-version
 
 ## Write version.xcconfig from VERSION (used by Xcode build settings)
 generate-version:
@@ -20,6 +23,23 @@ build: sync-catalog generate-version
 ## Run all tests
 test: generate-version
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) test
+
+## Run tests with code coverage; fail if below COVERAGE_THRESHOLD
+cover: generate-version
+	rm -rf $(COVERAGE_RESULT)
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration $(CONFIG) \
+		-enableCodeCoverage YES \
+		-resultBundlePath $(COVERAGE_RESULT) \
+		test
+	@COVERAGE=$$(xcrun xccov view --report --json $(COVERAGE_RESULT) 2>/dev/null | \
+		python3 -c " \
+import sys, json; \
+data = json.load(sys.stdin); \
+targets = [t for t in data.get('targets', []) if 'mcp-inator' in t['name'] and 'Tests' not in t['name']]; \
+print(round(targets[0]['lineCoverage'] * 100, 1)) if targets else print(0)"); \
+	echo "Coverage: $${COVERAGE}% (threshold: $(COVERAGE_THRESHOLD)%)"; \
+	python3 -c "import sys; sys.exit(0 if float('$${COVERAGE}') >= $(COVERAGE_THRESHOLD) else 1)" || \
+		(echo "ERROR: Coverage $${COVERAGE}% is below threshold $(COVERAGE_THRESHOLD)%"; exit 1)
 
 ## Run SwiftLint
 lint:

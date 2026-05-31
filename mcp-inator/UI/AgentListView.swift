@@ -2,6 +2,7 @@ import SwiftUI
 
 // Shows all library configs for a specific agent with enable/disable toggles.
 // Handles drift detection, conflict detection, restart notifications, and path overrides.
+// swiftlint:disable:next type_body_length
 struct AgentListView: View {
     @EnvironmentObject private var store: ConfigStore
     let agent: AgentRecord

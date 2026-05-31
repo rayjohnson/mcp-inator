@@ -42,13 +42,5 @@ jobs:
           make generate-version
           xcodegen generate
 
-      - name: Build & test
-        run: |
-          set -o pipefail
-          xcodebuild test \
-            -project mcp-inator.xcodeproj \
-            -scheme mcp-inator \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            -enableCodeCoverage YES \
-            | xcpretty --color
+      - name: Build & test with coverage
+        run: make cover

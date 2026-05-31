@@ -1,3 +1,4 @@
+- In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)
 - Switch between Menu Bar and Dock modes instantly from Preferences — no restart required
 - In Dock mode, mcp-inator gets a full resizable window with a Servers / Agents / Catalog sidebar
 - Preferences window accessible from the menu bar popover footer or via Cmd+, in Dock mode
