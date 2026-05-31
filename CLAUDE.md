@@ -4,6 +4,15 @@ shell commands, and other important information, read the current plan at
 `specs/011-windowed-dock-mode/plan.md`.
 <!-- SPECKIT END -->
 
+## Before Every PR (required)
+
+1. `make lint` — fix all SwiftLint warnings before proceeding
+2. `make cover` — tests must pass and coverage must meet threshold
+3. Bump the patch version in `VERSION` (e.g. `0.4.0` → `0.4.1`). Just edit the file directly — no need to look at git tags.
+4. Update `RELEASE_NOTES.md` with what changed
+
+Do all four before creating or updating a PR. No exceptions.
+
 ## Build & Run
 
 Build:
