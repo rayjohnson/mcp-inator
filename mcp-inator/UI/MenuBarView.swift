@@ -13,24 +13,31 @@ struct MenuBarView: View {
         VStack(spacing: 0) {
             TabView {
                 NavigationStack {
-                    ConfigLibraryView()
+                    ConfigLibraryView(selectedConfig: .constant(nil), isCompact: true)
                 }
+                .environment(\.navigationIsCompact, true)
                 .tabItem {
                     Label("Servers", systemImage: "server.rack")
                 }
 
                 NavigationStack {
-                    AgentsView(showManageAgents: $showManageAgents)
+                    AgentsView(
+                        showManageAgents: $showManageAgents,
+                        selectedAgent: .constant(nil),
+                        isCompact: true
+                    )
                 }
+                .environment(\.navigationIsCompact, true)
                 .tabItem {
                     Label("Agents", systemImage: "cpu")
                 }
 
                 NavigationStack {
-                    CatalogView()
+                    CatalogView(selectedEntry: .constant(nil), isCompact: true)
                 }
                 .environmentObject(registryStore)
                 .environmentObject(store)
+                .environment(\.navigationIsCompact, true)
                 .tabItem {
                     Label("Catalog", systemImage: "square.grid.2x2")
                 }

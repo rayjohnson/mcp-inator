@@ -3,11 +3,24 @@ import SwiftUI
 struct AgentsView: View {
     @EnvironmentObject private var store: ConfigStore
     @Binding var showManageAgents: Bool
+    @Binding var selectedAgent: AgentRecord?
+    let isCompact: Bool
 
     var body: some View {
         List(store.visibleAgents) { agent in
-            NavigationLink(destination: AgentListView(agent: agent).environmentObject(store)) {
+            if isCompact {
+                NavigationLink(destination: AgentListView(agent: agent).environmentObject(store)) {
+                    AgentRow(agent: agent)
+                }
+            } else {
                 AgentRow(agent: agent)
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedAgent = agent }
+                    .listRowBackground(
+                        selectedAgent?.id == agent.id
+                            ? Color.accentColor.opacity(0.15)
+                            : Color.clear
+                    )
             }
         }
         .listStyle(.inset)
