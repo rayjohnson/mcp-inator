@@ -384,4 +384,95 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertNotNil(assignment, "Assignment must be created when agentId is provided")
         XCTAssertEqual(assignment?.state, .enabled)
     }
+
+    // MARK: - updateAgentAvailability
+
+    func testUpdateAgentAvailability_reflectedInPublishedAgents() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+
+        try store.updateAgentAvailability(agentId: agentId, isAvailable: true)
+        XCTAssertTrue(store.agents.first(where: { $0.id == agentId })?.isAvailable ?? false)
+
+        try store.updateAgentAvailability(agentId: agentId, isAvailable: false)
+        XCTAssertFalse(store.agents.first(where: { $0.id == agentId })?.isAvailable ?? true)
+    }
+
+    // MARK: - updateAgentConfigPath
+
+    func testUpdateAgentConfigPath_reflectedInPublishedAgents() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let newPath = "/tmp/custom-claude.json"
+
+        try store.updateAgentConfigPath(agentId: agentId, path: newPath)
+        XCTAssertEqual(store.agents.first(where: { $0.id == agentId })?.configPath, newPath)
+    }
+
+    // MARK: - findEnabledAgents
+
+    func testFindEnabledAgents_returnsAgentsWithEnabledAssignment() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let config = try store.insert(MCPServerConfig(displayName: "Tool", command: "npx"))
+
+        try store.setAssignmentState(configUUID: config.uuid, agentId: agentId, state: .enabled)
+
+        let found = try store.findEnabledAgents(for: config.uuid)
+        XCTAssertEqual(found.count, 1)
+        XCTAssertEqual(found.first?.agentType, .claudeCode)
+    }
+
+    func testFindEnabledAgents_emptyWhenNoAssignment() throws {
+        let config = try store.insert(MCPServerConfig(displayName: "Tool", command: "npx"))
+        let found = try store.findEnabledAgents(for: config.uuid)
+        XCTAssertTrue(found.isEmpty)
+    }
+
+    func testFindEnabledAgents_ignoresDisabledAssignment() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let config = try store.insert(MCPServerConfig(displayName: "Tool", command: "npx"))
+
+        try store.setAssignmentState(configUUID: config.uuid, agentId: agentId, state: .disabled)
+
+        let found = try store.findEnabledAgents(for: config.uuid)
+        XCTAssertTrue(found.isEmpty)
+    }
+
+    // MARK: - bulkEnableConfigs
+
+    func testBulkEnableConfigs_allSucceed() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let configPath = tempDir.appendingPathComponent("claude_code.json")
+
+        let c1 = try store.insert(MCPServerConfig(displayName: "Tool A", command: "npx"))
+        let c2 = try store.insert(MCPServerConfig(displayName: "Tool B", command: "uvx"))
+
+        let result = try store.bulkEnableConfigs(
+            uuids: [c1.uuid, c2.uuid],
+            agentId: agentId,
+            adapter: MockAdapter(),
+            configPath: configPath
+        )
+        XCTAssertEqual(result.succeeded.count, 2)
+        XCTAssertTrue(result.failed.isEmpty)
+        XCTAssertTrue(result.driftDetected.isEmpty)
+    }
+
+    func testBulkEnableConfigs_unknownUUIDGoesToFailed() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+        let configPath = tempDir.appendingPathComponent("claude_code.json")
+
+        let result = try store.bulkEnableConfigs(
+            uuids: [UUID()],
+            agentId: agentId,
+            adapter: MockAdapter(),
+            configPath: configPath
+        )
+        XCTAssertTrue(result.succeeded.isEmpty)
+        XCTAssertEqual(result.failed.count, 1)
+    }
 }

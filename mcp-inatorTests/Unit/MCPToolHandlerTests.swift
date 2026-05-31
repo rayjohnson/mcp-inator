@@ -2,6 +2,14 @@ import XCTest
 import MCP
 @testable import mcp_inator
 
+// MARK: - MockRegistryClient
+
+private final class MockRegistryClient: RegistryClient, @unchecked Sendable {
+    let stubbedEntries: [RegistryEntry]
+    init(entries: [RegistryEntry] = []) { self.stubbedEntries = entries }
+    func search(query: String, pageSize: Int) async throws -> [RegistryEntry] { stubbedEntries }
+}
+
 @MainActor
 final class MCPToolHandlerTests: XCTestCase {
 
@@ -230,6 +238,30 @@ final class MCPToolHandlerTests: XCTestCase {
         XCTAssertTrue(text(from: result).contains("app-managed"))
     }
 
+    func testDisableServer_unknownAgent() async throws {
+        _ = try store.insert(MCPServerConfig(displayName: "My Tool", command: "npx"))
+        let result = await call("disable_server", ["server_name": "my-tool", "agent": "hal_9000"])
+        XCTAssertTrue(isError(result))
+        XCTAssertTrue(text(from: result).contains("Unknown agent"))
+    }
+
+    func testDisableServer_agentNotInStore() async throws {
+        _ = try store.insert(MCPServerConfig(displayName: "My Tool", command: "npx"))
+        let result = await call("disable_server", ["server_name": "my-tool", "agent": "claude_code"])
+        XCTAssertTrue(isError(result))
+        XCTAssertTrue(text(from: result).contains("not found"))
+    }
+
+    func testDisableServer_missingArgs() async throws {
+        let noServer = await call("disable_server", ["agent": "claude_code"])
+        XCTAssertTrue(isError(noServer))
+        XCTAssertTrue(text(from: noServer).contains("'server_name'"))
+
+        let noAgent = await call("disable_server", ["server_name": "foo"])
+        XCTAssertTrue(isError(noAgent))
+        XCTAssertTrue(text(from: noAgent).contains("'agent'"))
+    }
+
     // MARK: - list_agents
 
     func testListAgents_empty() async throws {
@@ -255,6 +287,53 @@ final class MCPToolHandlerTests: XCTestCase {
         let types = arr.compactMap { $0["agentType"] as? String }
         XCTAssertTrue(types.contains("claude_code"))
         XCTAssertTrue(types.contains("gemini_cli"))
+    }
+
+    // MARK: - list_catalog
+
+    func testListCatalog_emptyRegistry_returnsEmptyArray() async throws {
+        let regStore = RegistryStore(client: MockRegistryClient(),
+                                     cacheURL: tempDir.appendingPathComponent("empty-cache.json"))
+        handler = MCPToolHandler(store: store, registryStore: regStore)
+        let result = await call("list_catalog")
+        XCTAssertFalse(isError(result))
+        let arr = try jsonArray(from: result)
+        XCTAssertTrue(arr.isEmpty)
+    }
+
+    func testListCatalog_withEntries_returnsShape() async throws {
+        let entry = RegistryEntry(
+            id: "com.test/my-server",
+            displayName: "My Server",
+            description: "A test MCP server",
+            packageType: .npm,
+            packageIdentifier: "@test/my-server",
+            remoteURL: nil,
+            remoteType: nil,
+            remoteHeaders: [],
+            envVars: [RegistryEnvVar(name: "API_KEY", description: "The key",
+                                     isRequired: true, isSecret: true, valueTemplate: nil)],
+            repositoryURL: nil,
+            version: "1.0.0"
+        )
+        let mockClient = MockRegistryClient(entries: [entry])
+        let cacheURL = tempDir.appendingPathComponent("registry-cache.json")
+        let regStore = RegistryStore(client: mockClient, cacheURL: cacheURL)
+        await regStore.populateCategories()
+        handler = MCPToolHandler(store: store, registryStore: regStore)
+
+        let result = await call("list_catalog")
+        XCTAssertFalse(isError(result), text(from: result))
+        let arr = try jsonArray(from: result)
+        XCTAssertFalse(arr.isEmpty)
+        let first = try XCTUnwrap(arr.first)
+        XCTAssertEqual(first["id"] as? String, "com.test/my-server")
+        XCTAssertEqual(first["displayName"] as? String, "My Server")
+        XCTAssertEqual(first["command"] as? String, "npx")
+        let envVars = try XCTUnwrap(first["envVars"] as? [[String: Any]])
+        XCTAssertEqual(envVars.first?["name"] as? String, "API_KEY")
+        XCTAssertEqual(envVars.first?["isRequired"] as? Bool, true)
+        XCTAssertEqual(envVars.first?["isSecret"] as? Bool, true)
     }
 
     // MARK: - Unknown tool
