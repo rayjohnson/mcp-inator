@@ -82,7 +82,7 @@ struct MenuBarView: View {
     }
 
     private var allAdapters: [any AgentAdapter] {
-        [ClaudeCodeAdapter(), ClaudeDesktopAdapter(), GeminiCLIAdapter(), CodexCLIAdapter(), GeminiDesktopAdapter()]
+        AdapterRegistry.all
     }
 }
 

@@ -17,6 +17,8 @@ struct AgentIcon: View {
             LetterBadge(letter: "X", background: Color(red: 0.07, green: 0.07, blue: 0.07))
         case .geminiDesktop:
             GeminiDesktopAppIcon()
+        case .cursor:
+            CursorAppIcon()
         }
     }
 }
@@ -76,6 +78,37 @@ private struct GeminiDesktopAppIcon: View {
             return
         }
         let appPath = "/Applications/Gemini.app"
+        if FileManager.default.fileExists(atPath: appPath) {
+            appIcon = NSWorkspace.shared.icon(forFile: appPath)
+        }
+    }
+}
+
+// MARK: - CursorAppIcon
+
+private struct CursorAppIcon: View {
+    @State private var appIcon: NSImage?
+
+    var body: some View {
+        Group {
+            if let icon = appIcon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .interpolation(.high)
+            } else {
+                LetterBadge(letter: "C", background: Color(red: 0.07, green: 0.07, blue: 0.07))
+            }
+        }
+        .onAppear { loadIcon() }
+    }
+
+    private func loadIcon() {
+        guard appIcon == nil else { return }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.todesktop.230313mzl4w4u92") {
+            appIcon = NSWorkspace.shared.icon(forFile: url.path)
+            return
+        }
+        let appPath = "/Applications/Cursor.app"
         if FileManager.default.fileExists(atPath: appPath) {
             appIcon = NSWorkspace.shared.icon(forFile: appPath)
         }

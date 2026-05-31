@@ -5,10 +5,7 @@ struct ImportSourceScanner {
     let fileExists: (URL) -> Bool
 
     init(
-        adapters: [any AgentAdapter] = [
-            ClaudeCodeAdapter(), ClaudeDesktopAdapter(),
-            GeminiCLIAdapter(), CodexCLIAdapter(), GeminiDesktopAdapter()
-        ],
+        adapters: [any AgentAdapter] = AdapterRegistry.all,
         fileExists: @escaping (URL) -> Bool = {
             FileManager.default.fileExists(atPath: $0.path)
         }

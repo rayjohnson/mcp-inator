@@ -384,12 +384,6 @@ struct MCPToolHandler: @unchecked Sendable {
     }
 
     private static func defaultAdapter(_ agentType: AgentType) -> any AgentAdapter {
-        switch agentType {
-        case .claudeCode:    return ClaudeCodeAdapter()
-        case .claudeDesktop: return ClaudeDesktopAdapter()
-        case .geminiCLI:     return GeminiCLIAdapter()
-        case .codexCLI:      return CodexCLIAdapter()
-        case .geminiDesktop: return GeminiDesktopAdapter()
-        }
+        AdapterRegistry.adapter(for: agentType) ?? ClaudeCodeAdapter()
     }
 }

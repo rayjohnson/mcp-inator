@@ -27,13 +27,7 @@ struct AgentListView: View {
     }
 
     private var adapter: any AgentAdapter {
-        switch agent.agentType {
-        case .claudeCode:    return ClaudeCodeAdapter()
-        case .claudeDesktop: return ClaudeDesktopAdapter()
-        case .geminiCLI:     return GeminiCLIAdapter()
-        case .codexCLI:      return CodexCLIAdapter()
-        case .geminiDesktop: return GeminiDesktopAdapter()
-        }
+        AdapterRegistry.adapter(for: agent.agentType) ?? ClaudeCodeAdapter()
     }
 
     private var configPath: URL { URL(fileURLWithPath: agent.configPath) }

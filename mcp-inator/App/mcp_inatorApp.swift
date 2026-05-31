@@ -32,13 +32,7 @@ struct mcp_inatorApp: App {
         )
     }
 
-    private let adapters: [any AgentAdapter] = [
-        ClaudeCodeAdapter(),
-        ClaudeDesktopAdapter(),
-        GeminiCLIAdapter(),
-        CodexCLIAdapter(),
-        GeminiDesktopAdapter()
-    ]
+    private let adapters: [any AgentAdapter] = AdapterRegistry.all
 
     private let discoveryController = DiscoveryWindowController()
     private let aboutController = AboutWindowController()
@@ -83,6 +77,7 @@ struct mcp_inatorApp: App {
                     wireWindowController()
                     Task { await registryStore.populateCategories() }
                     Task { await catalogStore.fetchIfNeeded() }
+                    if let store = storeContainer.store { runAgentScan(store: store) }
                 }
                 // Fires at cold launch (including when isInserted = false) so dock-mode
                 // launch gets wireWindowController() called via the scene's view graph.

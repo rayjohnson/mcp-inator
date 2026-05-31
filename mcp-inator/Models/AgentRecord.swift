@@ -9,6 +9,7 @@ enum AgentType: String, Codable, CaseIterable {
     case geminiCLI     = "gemini_cli"
     case codexCLI      = "codex_cli"
     case geminiDesktop = "gemini_desktop"
+    case cursor        = "cursor"
 
     var displayName: String {
         switch self {
@@ -17,6 +18,7 @@ enum AgentType: String, Codable, CaseIterable {
         case .geminiCLI:     return "Gemini CLI"
         case .codexCLI:      return "Codex CLI"
         case .geminiDesktop: return "Gemini Desktop"
+        case .cursor:        return "Cursor"
         }
     }
 
@@ -40,6 +42,8 @@ enum AgentType: String, Codable, CaseIterable {
             return "\(home)/.codex/config.toml"
         case .geminiDesktop:
             return "\(home)/Library/Application Support/Google/Gemini/mcp_servers.json"
+        case .cursor:
+            return "\(home)/.cursor/mcp.json"
         }
     }
 }

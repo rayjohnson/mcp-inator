@@ -95,6 +95,10 @@
 		F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */; };
 		F6490975E5CF4F307449A2DE /* AgentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBEC9A550BE522BB8BC985E /* AgentsView.swift */; };
 		FD7AB207DB5CDC0018E0984A /* ConnectionTestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A21BA688C4663ABB5AFA2 /* ConnectionTestResult.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* cursor_mcp.json in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* cursor_mcp.json */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* CursorAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* CursorAdapterTests.swift */; };
+		E5F6A7B8C9D0E1F2A3B4C5D6 /* CursorAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* CursorAdapter.swift */; };
+		A7B8C9D0E1F2A3B4C5D6E7F8 /* AdapterRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F8A9 /* AdapterRegistry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +120,10 @@
 		0804AB63951008ED49D09FF7 /* mcp-inator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mcp-inator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A161C992F00212393F1172D /* mcp-inatorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mcp-inatorTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		103464A0B60E21763BEBA7DB /* registry-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "registry-response.json"; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* cursor_mcp.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cursor_mcp.json; sourceTree = "<group>"; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* CursorAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorAdapterTests.swift; sourceTree = "<group>"; };
+		F6A7B8C9D0E1F2A3B4C5D6E7 /* CursorAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorAdapter.swift; sourceTree = "<group>"; };
+		B8C9D0E1F2A3B4C5D6E7F8A9 /* AdapterRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdapterRegistry.swift; sourceTree = "<group>"; };
 		103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexCLIAdapterTests.swift; sourceTree = "<group>"; };
 		1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mcp_inatorApp.swift; sourceTree = "<group>"; };
 		14925175871D556D6556A060 /* RegistryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryStore.swift; sourceTree = "<group>"; };
@@ -232,6 +240,8 @@
 				928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */,
 				82F50A06B1ACB6E5D4F3F38A /* GeminiCLIAdapter.swift */,
 				1B9E57B55F82CBE15642F44F /* GeminiDesktopAdapter.swift */,
+				F6A7B8C9D0E1F2A3B4C5D6E7 /* CursorAdapter.swift */,
+				B8C9D0E1F2A3B4C5D6E7F8A9 /* AdapterRegistry.swift */,
 				61ED827B1D7FD25CF69346F2 /* StringExtensions.swift */,
 			);
 			path = Adapters;
@@ -347,6 +357,7 @@
 				F55BF0872E2C6CB9E6A612D9 /* codex_config.toml */,
 				9109E1A5469B7D25B926FD1E /* gemini_config.json */,
 				103464A0B60E21763BEBA7DB /* registry-response.json */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* cursor_mcp.json */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -358,6 +369,7 @@
 				90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */,
 				103EB42A882CCD7940A698AB /* CodexCLIAdapterTests.swift */,
 				1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */,
+				D4E5F6A7B8C9D0E1F2A3B4C5 /* CursorAdapterTests.swift */,
 				8D2896F28845955D9DDAF825 /* MCPServerTests.swift */,
 				8A9D979366B76DF914865EBF /* Fixtures */,
 			);
@@ -552,6 +564,7 @@
 				8AF8C42E3205FA32A0917A2E /* codex_config.toml in Resources */,
 				92676DE4508191620304B216 /* gemini_config.json in Resources */,
 				4F4CF6DCE4EFAD4C97111496 /* registry-response.json in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* cursor_mcp.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -593,6 +606,8 @@
 				85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */,
 				BC362B5B9FB7F4C39AB37295 /* ClaudeDesktopAdapter.swift in Sources */,
 				71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */,
+				E5F6A7B8C9D0E1F2A3B4C5D6 /* CursorAdapter.swift in Sources */,
+				A7B8C9D0E1F2A3B4C5D6E7F8 /* AdapterRegistry.swift in Sources */,
 				0DF006CA7250138FF808747A /* ConfigAgentAssignment.swift in Sources */,
 				478BA8EAD26AD9DA49B10181 /* ConfigLibraryView.swift in Sources */,
 				D22C26DC90B06519C84045D6 /* ConfigStore.swift in Sources */,
@@ -643,6 +658,7 @@
 				453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
 				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* CursorAdapterTests.swift in Sources */,
 				8CDC219ECE6787F6C010819C /* ImportSourceScannerTests.swift in Sources */,
 				9680CAFED3EC68BA8DEBD628 /* MCPServerConfigEquatableTests.swift in Sources */,
 				48E52DCFCDB5F632E463C938 /* MCPServerTests.swift in Sources */,
