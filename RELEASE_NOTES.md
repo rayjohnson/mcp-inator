@@ -1,3 +1,5 @@
+- Dock mode window is now a native three-column split view (sidebar | list | detail) matching macOS HIG — no more push navigation or back buttons in the main window
+- Fixed: catalog not loading on cold launch in Dock mode
 - Fixed: toolbar height no longer shifts when switching between Servers, Agents, and Catalog tabs in Dock mode; Catalog now uses a native macOS search field in the toolbar
 - Fixed: menu bar icon no longer remains visible after switching to Dock mode
 - In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)
