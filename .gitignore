@@ -62,3 +62,6 @@ version.xcconfig
 # Claude Code (local machine-specific settings)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Grok (local AI tooling)
+.grok/
