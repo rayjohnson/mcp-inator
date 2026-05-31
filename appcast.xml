@@ -286,5 +286,26 @@
         length="11248094"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.4.1</title>
+      <pubDate>Sun, 31 May 2026 00:56:24 +0000</pubDate>
+      <sparkle:version>22</sparkle:version>
+      <sparkle:shortVersionString>0.4.1</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.4.1</h3>
+<ul>
+<li>In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)</li>
+<li>Switch between Menu Bar and Dock modes instantly from Preferences — no restart required</li>
+<li>In Dock mode, mcp-inator gets a full resizable window with a Servers / Agents / Catalog sidebar</li>
+<li>Preferences window accessible from the menu bar popover footer or via Cmd+, in Dock mode</li>
+<li>Launch at Login setting in Preferences</li>
+<li>App quits when the main window is closed in Dock mode (standard Mac behavior)</li>
+<li>New app icon — bold colorful ray gun, readable at small sizes</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.4.1/mcp-inator-0.4.1.dmg"
+        sparkle:edSignature="dW+4nd7xAl/fI7rnafwLmWM78VcTocP4bPf+rUPwQCGZXoGWgbv9r7gd2OrhKn8ouLUO3Sny+oENTSMT0igCCQ=="
+        length="11254491"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
