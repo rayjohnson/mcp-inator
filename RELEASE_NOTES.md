@@ -1,3 +1,4 @@
+- Refactored adapter layer: agent support is now fully configuration-driven via `AgentDefinition` structs and a generic `FileBasedAdapter` — adding a new agent requires only a definition entry, no new code
 - Added Cursor IDE / Cursor CLI as a supported agent — mcp-inator discovers, reads, writes, and imports MCP server configs from `~/.cursor/mcp.json`
 - Dock mode window is now a native three-column split view (sidebar | list | detail) matching macOS HIG — no more push navigation or back buttons in the main window
 - Fixed: catalog not loading on cold launch in Dock mode
