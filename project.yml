@@ -98,6 +98,8 @@ schemes:
       config: Debug
       targets:
         - mcp-inatorTests
+      environmentVariables:
+        IS_RUNNING_TESTS: "YES"
     run:
       config: Debug
     archive:

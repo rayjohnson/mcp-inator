@@ -6,6 +6,11 @@ import Sentry
 // swiftlint:disable:next type_name
 struct mcp_inatorApp: App {
 
+    // Set IS_RUNNING_TESTS=YES in the test scheme's environment variables (project.yml).
+    // This prevents startup side-effects (agent discovery, window opening) from
+    // varying between environments and making coverage non-deterministic.
+    static let isRunningTests: Bool = ProcessInfo.processInfo.environment["IS_RUNNING_TESTS"] == "YES"
+
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appModeManager = AppModeManager()
     @AppStorage("showInDock") private var showInDock = false
@@ -43,7 +48,9 @@ struct mcp_inatorApp: App {
         // isInserted drives status-item presence reactively: false in dock mode removes the
         // NSStatusItem from the menu bar without conditional scene building (which @SceneBuilder
         // does not support in this Xcode version).
-        MenuBarExtra(isInserted: Binding(get: { !showInDock }, set: { _ in })) {
+        // In test runs, force menu-bar mode (isInserted=true) so the same scene path executes
+        // regardless of the developer's showInDock preference.
+        MenuBarExtra(isInserted: Binding(get: { !showInDock || mcp_inatorApp.isRunningTests }, set: { _ in })) {
             if let store = storeContainer.store {
                 MenuBarView()
                     .environmentObject(store)
@@ -138,7 +145,9 @@ struct mcp_inatorApp: App {
         appModeManager.closeMainWindow = { [mainWindowController] in mainWindowController.close() }
         // If launched with dock mode already set, open the main window.
         // Activation policy and dock-mode menu items are handled by AppDelegate.applicationDidFinishLaunching.
-        if showInDock {
+        // Skip in test runs: IS_RUNNING_TESTS=YES forces menu-bar mode via -showInDock NO launch arg,
+        // but guard here too so window state never varies across test environments.
+        if showInDock && !mcp_inatorApp.isRunningTests {
             mainWindowController.open()
         }
     }
@@ -146,6 +155,7 @@ struct mcp_inatorApp: App {
     // MARK: - Agent Scan (FR-019, T031, T032)
 
     private func runAgentScan(store: ConfigStore) {
+        guard !mcp_inatorApp.isRunningTests else { return }
         Task { @MainActor in
             do {
                 let results = try store.discoverAgents(adapters: adapters)

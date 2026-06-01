@@ -175,6 +175,39 @@ final class ClaudeCodeAdapterTests: XCTestCase {
             XCTFail("Expected invalid for key starting with underscore")
         }
     }
+
+    // MARK: - isInstalled
+
+    func testIsInstalled_emptyTempDir_returnsFalse() throws {
+        let adapter = ClaudeCodeAdapter(homeDirectory: tempDir)
+        XCTAssertFalse(adapter.isInstalled())
+    }
+
+    func testIsInstalled_configFileExists_returnsTrue() throws {
+        try "{}".write(to: tempDir.appendingPathComponent(".claude.json"), atomically: true, encoding: .utf8)
+        let adapter = ClaudeCodeAdapter(homeDirectory: tempDir)
+        XCTAssertTrue(adapter.isInstalled())
+    }
+
+    func testIsInstalled_claudeDirExists_returnsTrue() throws {
+        try FileManager.default.createDirectory(
+            at: tempDir.appendingPathComponent(".claude"),
+            withIntermediateDirectories: true
+        )
+        let adapter = ClaudeCodeAdapter(homeDirectory: tempDir)
+        XCTAssertTrue(adapter.isInstalled())
+    }
+
+    func testIsInstalled_unrelatedFilesOnly_returnsFalse() throws {
+        try "{}".write(to: tempDir.appendingPathComponent("other.json"), atomically: true, encoding: .utf8)
+        let adapter = ClaudeCodeAdapter(homeDirectory: tempDir)
+        XCTAssertFalse(adapter.isInstalled())
+    }
+
+    func testDefaultConfigPath_usesInjectedHomeDirectory() throws {
+        let adapter = ClaudeCodeAdapter(homeDirectory: tempDir)
+        XCTAssertEqual(adapter.defaultConfigPath(), tempDir.appendingPathComponent(".claude.json"))
+    }
 }
 
 extension WriteResult: @retroactive Equatable {

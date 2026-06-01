@@ -475,4 +475,5 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertTrue(result.succeeded.isEmpty)
         XCTAssertEqual(result.failed.count, 1)
     }
+
 }
