@@ -11,13 +11,20 @@ struct ConfigLibraryView: View {
     @State private var statusMatrix: [ConfigStore.StatusRow] = []
     @State private var importSource: ImportSource?
     @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
+    @State private var searchText = ""
 
     private var importSources: [ImportSource] { ImportSourceScanner().scan() }
+
+    private var filteredConfigs: [MCPServerConfig] {
+        filterConfigs(store.configs, query: searchText)
+    }
 
     var body: some View {
         Group {
             if store.configs.isEmpty {
                 emptyState
+            } else if !searchText.isEmpty && filteredConfigs.isEmpty {
+                searchEmptyState
             } else {
                 configList
             }
@@ -25,7 +32,9 @@ struct ConfigLibraryView: View {
         .onAppear { loadMatrix() }
         .onChange(of: store.configs.count) { _ in loadMatrix() }
         .onChange(of: store.configs.map(\.updatedAt)) { _ in loadMatrix() }
+        .onDisappear { searchText = "" }
         .navigationTitle("MCP Servers")
+        .searchable(text: $searchText, prompt: "Search servers…")
         .sheet(isPresented: $showAddConfig) {
             AddEditConfigView()
                 .environmentObject(store)
@@ -77,6 +86,21 @@ struct ConfigLibraryView: View {
 
     // MARK: - Subviews
 
+    private var searchEmptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 36))
+                .foregroundColor(.secondary)
+            Text("No servers match \"\(searchText)\"")
+                .font(.title3)
+                .fontWeight(.medium)
+            Text("Try a different name or command.")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "server.rack")
@@ -125,7 +149,7 @@ struct ConfigLibraryView: View {
             }
             .listRowBackground(Color.clear)
 
-            ForEach(store.configs) { config in
+            ForEach(filteredConfigs) { config in
                 let row = statusMatrix.first { $0.config.uuid == config.uuid }
                 ConfigRow(config: config, agentStates: row?.agentStates ?? [])
                     .contentShape(Rectangle())
@@ -164,6 +188,17 @@ struct ConfigLibraryView: View {
         guard let categories = try? store.categorizeImport(from: source.adapter, configPath: source.configPath) else { return }
         importCategories = categories
         importSource = source
+    }
+}
+
+// MARK: - Filter logic
+
+internal func filterConfigs(_ configs: [MCPServerConfig], query: String) -> [MCPServerConfig] {
+    guard !query.isEmpty else { return configs }
+    return configs.filter {
+        $0.displayName.localizedCaseInsensitiveContains(query) ||
+        $0.displayCommand.localizedCaseInsensitiveContains(query) ||
+        ($0.isHTTP && $0.url.localizedCaseInsensitiveContains(query))
     }
 }
 

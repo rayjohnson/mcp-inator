@@ -28,7 +28,7 @@ No separate foundation phase — no new models, services, or shared infrastructu
 
 ### Implementation for User Story 1
 
-- [ ] T001 [US1] Add `@State private var searchText = ""` and `filteredConfigs` computed property (matching on `displayName` only) to `ConfigLibraryView` in `mcp-inator/UI/ConfigLibraryView.swift`
+- [ ] T001 [US1] Add `@State private var searchText = ""`, extract an `internal` free function `filterConfigs(_ configs: [MCPServerConfig], query: String) -> [MCPServerConfig]` (matching on `displayName` only), and add `filteredConfigs` computed property that delegates to it — all in `mcp-inator/UI/ConfigLibraryView.swift`
 - [ ] T002 [US1] Replace `ForEach(store.configs)` with `ForEach(filteredConfigs)` and add `.searchable(text: $searchText, prompt: "Search servers…")` modifier at the same level as `.navigationTitle` in `mcp-inator/UI/ConfigLibraryView.swift`
 - [ ] T003 [P] [US1] Add search-results-empty branch to `body`: when `store.configs` is non-empty but `filteredConfigs` is empty, show a "No servers match «\(searchText)»" VStack (macOS 13-compatible fallback, not `ContentUnavailableView`) in `mcp-inator/UI/ConfigLibraryView.swift`
 - [ ] T004 [P] [US1] Add `.onDisappear { searchText = "" }` to `ConfigLibraryView.body` to reset search when user switches tabs in `mcp-inator/UI/ConfigLibraryView.swift`
@@ -55,7 +55,7 @@ No separate foundation phase — no new models, services, or shared infrastructu
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T006 Add unit tests covering: name match, command match, HTTP URL match, case-insensitive match, empty query returns all, no-match returns empty — in `mcp-inatorTests/Unit/ConfigLibraryViewTests.swift` (new file)
+- [ ] T006 Add unit tests covering: name match, command match, HTTP URL match, case-insensitive match, empty query returns all, no-match returns empty, tap-to-edit unaffected by active filter, swipe-to-delete reachable on filtered result — in `mcp-inatorTests/Unit/ConfigLibraryViewTests.swift` (new file)
 - [ ] T007 Run `make lint` and fix any violations in `mcp-inator/UI/ConfigLibraryView.swift`
 - [ ] T008 Bump `VERSION` from `0.4.8` → `0.4.9` in `VERSION`
 - [ ] T009 Add entry to `RELEASE_NOTES.md`: "Search bar in Servers tab — type to filter by name or command"
