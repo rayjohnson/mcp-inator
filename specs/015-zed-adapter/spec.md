@@ -74,7 +74,7 @@ A user who does not have Zed installed does not see Zed in the agent list. If Ze
 - **FR-006**: The system MUST create the `context_servers` key when it is absent from settings.json on first write.
 - **FR-007**: The system MUST surface a clear error if settings.json exists but cannot be parsed as valid JSON.
 - **FR-008**: The system MUST NOT show Zed in the agents list when it is not installed.
-- **FR-009**: Server key validation for Zed MUST accept any non-empty string (Zed imposes no special character restrictions on context server names).
+- **FR-009**: Server key validation for Zed MUST enforce the pattern `^[a-z0-9][a-z0-9-]*$` (start with alphanumeric, contain only lowercase letters, digits, and hyphens) for consistency with other supported agents. Zed imposes no stricter documented restrictions, but this pattern prevents whitespace and special characters that could produce invalid or ambiguous config entries.
 
 ### Key Entities
 
