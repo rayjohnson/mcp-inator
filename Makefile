@@ -31,7 +31,14 @@ cover: generate-version
 		-enableCodeCoverage YES \
 		-resultBundlePath $(COVERAGE_RESULT) \
 		test
-	@COVERAGE=$$(xcrun xccov view --report --json $(COVERAGE_RESULT) 2>/dev/null | \
+	@xcrun xccov view --report --json $(COVERAGE_RESULT) 2>/dev/null | \
+		python3 -c " \
+import sys, json; \
+data = json.load(sys.stdin); \
+print('Coverage breakdown:'); \
+[print(f'  {t[\"name\"]}: {t.get(\"coveredLines\",0)}/{t.get(\"executableLines\",0)} lines ({round(t.get(\"lineCoverage\",0)*100,1)}%)') for t in data.get('targets', [])]; \
+"; \
+	COVERAGE=$$(xcrun xccov view --report --json $(COVERAGE_RESULT) 2>/dev/null | \
 		python3 -c " \
 import sys, json; \
 data = json.load(sys.stdin); \
