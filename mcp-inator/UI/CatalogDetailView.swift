@@ -205,7 +205,7 @@ struct CategoryBadge: View {
     let category: CatalogCategory
 
     var body: some View {
-        Text(category.rawValue)
+        Text(category.label)
             .font(.caption2)
             .fontWeight(.medium)
             .padding(.horizontal, 6).padding(.vertical, 2)
@@ -216,13 +216,13 @@ struct CategoryBadge: View {
 
     private var color: Color {
         switch category {
-        case .codeAndDevelopment: return .blue
-        case .productivity:       return .purple
-        case .dataAndAnalytics:   return .green
-        case .communication:      return .orange
-        case .infrastructure:     return .gray
-        case .aiAndLLMs:          return .pink
-        case .webAndBrowser:      return .teal
+        case .developerTools: return .blue
+        case .searchWeb:      return .teal
+        case .databases:      return .green
+        case .productivity:   return .purple
+        case .aiMemory:       return .pink
+        case .infrastructure: return .gray
+        case .finance:        return .orange
         }
     }
 }

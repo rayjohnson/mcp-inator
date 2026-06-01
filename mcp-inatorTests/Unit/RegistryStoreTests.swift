@@ -188,8 +188,8 @@ final class RegistryStoreTests: XCTestCase {
 
         // Pre-populate two categories
         try writeCacheFile(categories: [
-            .dataAndAnalytics: [matchEntry],
-            .communication: [noMatchEntry]
+            .databases: [matchEntry],
+            .productivity: [noMatchEntry]
         ])
 
         let stub = StubRegistryClient(result: .failure(URLError(.notConnectedToInternet)))
@@ -210,7 +210,7 @@ final class RegistryStoreTests: XCTestCase {
     func testPartialOffline_cachedRemainLoadedUncachedRemainUncached() async throws {
         // Pre-populate only 3 of 7 categories
         let cachedCategories: [CatalogCategory] = [
-            .dataAndAnalytics, .communication, .infrastructure
+            .databases, .productivity, .infrastructure
         ]
         try writeCacheFile(categories: Dictionary(
             uniqueKeysWithValues: cachedCategories.map { ($0, [makeEntry()]) }

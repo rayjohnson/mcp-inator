@@ -66,13 +66,13 @@ final class RegistryStore: ObservableObject {
     // MARK: - Category Keywords
 
     static let categoryKeywords: [CatalogCategory: String] = [
-        .codeAndDevelopment: "github",
+        .developerTools: "github",
+        .searchWeb: "browser",
+        .databases: "postgres",
         .productivity: "notion",
-        .dataAndAnalytics: "postgres",
-        .communication: "slack",
+        .aiMemory: "openai",
         .infrastructure: "docker",
-        .aiAndLLMs: "openai",
-        .webAndBrowser: "browser"
+        .finance: "stripe"
     ]
 
     // MARK: - Accessors

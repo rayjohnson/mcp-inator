@@ -63,8 +63,8 @@ struct CatalogEntryDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 CategoryBadge(category: entry.category)
-                if entry.isFirstParty {
-                    FirstPartyBadge()
+                if entry.isOfficial {
+                    OfficialBadge()
                 }
                 if vm.isTrending {
                     TrendingBadge(score: vm.trendingScore)
