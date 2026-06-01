@@ -10,6 +10,7 @@
 		03112027C047E7EAF9BA153E /* Migration004.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE8B8FA13F587123365E245 /* Migration004.swift */; };
 		04D154E8633D90EC5206EB0E /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 9F02EB3D916681BA267ADB14 /* GRDB */; };
 		09F27190B4168272965387B2 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE0A94708E98E71A4BE095 /* AgentIcon.swift */; };
+		09FE20E425753C635A60287B /* ConfigStoreDiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42CEFD639A136CF0EEF87CF2 /* ConfigStoreDiscoveryTests.swift */; };
 		0BD239306BC3EE9CE6A79874 /* mcp_inatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1175E5F5782F11D0F99E25A1 /* mcp_inatorApp.swift */; };
 		0DF006CA7250138FF808747A /* ConfigAgentAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C423205898D6A2E2BEB32B8 /* ConfigAgentAssignment.swift */; };
 		111DB46129B2AC3E7C8313CD /* claude_code_config.json in Resources */ = {isa = PBXBuildFile; fileRef = F97CA2C41585DD4CD516D00B /* claude_code_config.json */; };
@@ -147,6 +148,7 @@
 		3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAdapter.swift; sourceTree = "<group>"; };
 		3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAgentsView.swift; sourceTree = "<group>"; };
+		42CEFD639A136CF0EEF87CF2 /* ConfigStoreDiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStoreDiscoveryTests.swift; sourceTree = "<group>"; };
 		5136483F029BD505D48D581C /* CatalogClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogClientTests.swift; sourceTree = "<group>"; };
 		55B09DE2D809C77FE508549F /* DiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryView.swift; sourceTree = "<group>"; };
 		56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
@@ -400,6 +402,7 @@
 				58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */,
 				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				C0C10158F3A2F3E0F6DA0278 /* ConfigLibraryViewTests.swift */,
+				42CEFD639A136CF0EEF87CF2 /* ConfigStoreDiscoveryTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
 				F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
@@ -661,6 +664,7 @@
 				D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */,
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,
 				68E308275C07ACDECEF5B645 /* ConfigLibraryViewTests.swift in Sources */,
+				09FE20E425753C635A60287B /* ConfigStoreDiscoveryTests.swift in Sources */,
 				739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */,
 				453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */,
 				49B8FD978A79B949E30B0B0F /* CursorAdapterTests.swift in Sources */,

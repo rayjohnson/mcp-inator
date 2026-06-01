@@ -4,14 +4,19 @@ struct ClaudeCodeAdapter: AgentAdapter {
 
     let agentType: AgentType = .claudeCode
     let displayName: String = "Claude Code"
+    let homeDirectory: URL
+
+    init(homeDirectory: URL = URL(fileURLWithPath: NSHomeDirectory())) {
+        self.homeDirectory = homeDirectory
+    }
 
     func defaultConfigPath() -> URL {
-        URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".claude.json")
+        homeDirectory.appendingPathComponent(".claude.json")
     }
 
     func isInstalled() -> Bool {
-        let configFile = defaultConfigPath()                                                // ~/.claude.json
-        let claudeDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".claude")  // ~/.claude/
+        let configFile = defaultConfigPath()                              // <home>/.claude.json
+        let claudeDir = homeDirectory.appendingPathComponent(".claude")  // <home>/.claude/
         return FileManager.default.fileExists(atPath: configFile.path) ||
                FileManager.default.fileExists(atPath: claudeDir.path)
     }
@@ -61,9 +66,7 @@ struct ClaudeCodeAdapter: AgentAdapter {
     }
 
     func cloudMCPs() -> [CloudManagedMCP] {
-        let cacheURL = FileManager.default
-            .homeDirectoryForCurrentUser
-            .appendingPathComponent(".claude/mcp-needs-auth-cache.json")
+        let cacheURL = homeDirectory.appendingPathComponent(".claude/mcp-needs-auth-cache.json")
         guard let data = try? Data(contentsOf: cacheURL),
               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return []
