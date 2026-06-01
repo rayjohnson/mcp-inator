@@ -7,7 +7,7 @@ CATALOG_SRC := catalog/catalog.json
 CATALOG_DST := mcp-inator/Resources/catalog.json
 
 COVERAGE_RESULT := /tmp/mcp-inator-coverage.xcresult
-COVERAGE_THRESHOLD := 25
+COVERAGE_THRESHOLD := 27
 
 .PHONY: build test cover lint run clean sync-catalog generate-version
 
@@ -37,6 +37,8 @@ import sys, json; \
 data = json.load(sys.stdin); \
 print('Coverage breakdown:'); \
 [print(f'  {t[\"name\"]}: {t.get(\"coveredLines\",0)}/{t.get(\"executableLines\",0)} lines ({round(t.get(\"lineCoverage\",0)*100,1)}%)') for t in data.get('targets', [])]; \
+app = next((t for t in data.get('targets',[]) if 'mcp-inator' in t['name'] and 'Tests' not in t['name']), None); \
+[print(f'    {round(f.get(\"lineCoverage\",0)*100,1):5.1f}%  {f.get(\"coveredLines\",0):4}/{f.get(\"executableLines\",0):4}  {f[\"name\"]}') for f in sorted(app.get('files',[]), key=lambda x: x['name'])] if app else None; \
 "; \
 	COVERAGE=$$(xcrun xccov view --report --json $(COVERAGE_RESULT) 2>/dev/null | \
 		python3 -c " \
