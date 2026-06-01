@@ -1,3 +1,8 @@
+- Catalog now shows popularity and quality signals: GitHub stars, weekly install counts, official badge, and stale warning for unmaintained servers
+- Catalog entries are scored and sorted by quality (baseScore + installed-app boost); editorially-ranked entries surface at top
+- Added Discover section: surfaces up to 5 top-scored servers not already in your library
+- Added moov-docs as an official entry (finance / compliance documentation)
+- Backward-compatible: existing registry cache and catalog data continues to load correctly
 - Added Cursor IDE / Cursor CLI as a supported agent — mcp-inator discovers, reads, writes, and imports MCP server configs from `~/.cursor/mcp.json`
 - Refactored adapter layer: agent support is now fully configuration-driven via `AgentDefinition` structs and a generic `FileBasedAdapter` — adding a new agent requires only a definition entry, no new code
 - Dock mode window is now a native three-column split view (sidebar | list | detail) matching macOS HIG — no more push navigation or back buttons in the main window

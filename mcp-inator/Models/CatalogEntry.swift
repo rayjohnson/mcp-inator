@@ -3,15 +3,51 @@ import Foundation
 // MARK: - CatalogCategory
 
 enum CatalogCategory: String, Codable, CaseIterable, Identifiable {
-    case codeAndDevelopment = "Code & Development"
-    case productivity       = "Productivity"
-    case dataAndAnalytics   = "Data & Analytics"
-    case communication      = "Communication"
-    case infrastructure     = "Infrastructure"
-    case aiAndLLMs          = "AI & LLMs"
-    case webAndBrowser      = "Web & Browser"
+    case developerTools = "developer-tools"
+    case searchWeb      = "search-web"
+    case databases      = "databases"
+    case productivity   = "productivity"
+    case aiMemory       = "ai-memory"
+    case infrastructure = "infrastructure"
+    case finance        = "finance"
 
     var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .developerTools: return "Developer Tools"
+        case .searchWeb:      return "Search & Web"
+        case .databases:      return "Databases"
+        case .productivity:   return "Productivity"
+        case .aiMemory:       return "AI & Memory"
+        case .infrastructure: return "Infrastructure"
+        case .finance:        return "Finance"
+        }
+    }
+
+    // Backward-compat: accept old display-string values from cached entries.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        if let match = CatalogCategory(rawValue: raw) {
+            self = match
+            return
+        }
+        switch raw {
+        case "Code & Development":        self = .developerTools
+        case "Web & Browser":             self = .searchWeb
+        case "Data & Analytics":          self = .databases
+        case "Communication",
+             "Productivity, Communication": self = .productivity
+        case "AI & LLMs":                 self = .aiMemory
+        case "Productivity":              self = .productivity
+        case "Infrastructure":            self = .infrastructure
+        default:
+            throw DecodingError.dataCorruptedError(
+                in: try decoder.singleValueContainer(),
+                debugDescription: "Unknown CatalogCategory: \(raw)"
+            )
+        }
+    }
 }
 
 // MARK: - CatalogFile (servers.json top-level)
@@ -43,15 +79,18 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
     var requiredArgs: [RequiredArgDefinition]?
     var documentationURL: String?
     var repositoryURL: String?
-    var isVerified: Bool
-    var isFirstParty: Bool
+    var isOfficial: Bool
+    var relatedApp: String?
+    var editorialRank: Int?
     var alternativeTo: String?
     var serverKey: String
 
     enum CodingKeys: String, CodingKey {
         case id, displayName, category, shortDescription, curatorNote
         case transportType, command, args, url, envVars, requiredArgs
-        case documentationURL, repositoryURL, isVerified, isFirstParty
+        case documentationURL, repositoryURL
+        case isOfficial, isFirstParty          // isFirstParty kept for backward-compat decode
+        case relatedApp, editorialRank
         case alternativeTo, serverKey
     }
 
@@ -70,10 +109,36 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
         requiredArgs = try container.decodeIfPresent([RequiredArgDefinition].self, forKey: .requiredArgs)
         documentationURL = try container.decodeIfPresent(String.self, forKey: .documentationURL)
         repositoryURL = try container.decodeIfPresent(String.self, forKey: .repositoryURL)
-        isVerified = (try? container.decodeIfPresent(Bool.self, forKey: .isVerified)) ?? false
-        isFirstParty = (try? container.decodeIfPresent(Bool.self, forKey: .isFirstParty)) ?? false
+        // isOfficial: prefer new key, fall back to legacy isFirstParty
+        isOfficial = (try? container.decodeIfPresent(Bool.self, forKey: .isOfficial))
+                  ?? (try? container.decodeIfPresent(Bool.self, forKey: .isFirstParty))
+                  ?? false
+        relatedApp = try container.decodeIfPresent(String.self, forKey: .relatedApp)
+        editorialRank = try container.decodeIfPresent(Int.self, forKey: .editorialRank)
         alternativeTo = try container.decodeIfPresent(String.self, forKey: .alternativeTo)
         serverKey = try container.decode(String.self, forKey: .serverKey)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(displayName, forKey: .displayName)
+        try container.encode(category, forKey: .category)
+        try container.encode(shortDescription, forKey: .shortDescription)
+        try container.encodeIfPresent(curatorNote, forKey: .curatorNote)
+        try container.encode(transportType, forKey: .transportType)
+        try container.encode(command, forKey: .command)
+        try container.encode(args, forKey: .args)
+        try container.encodeIfPresent(url, forKey: .url)
+        try container.encode(envVars, forKey: .envVars)
+        try container.encodeIfPresent(requiredArgs, forKey: .requiredArgs)
+        try container.encodeIfPresent(documentationURL, forKey: .documentationURL)
+        try container.encodeIfPresent(repositoryURL, forKey: .repositoryURL)
+        try container.encode(isOfficial, forKey: .isOfficial)
+        try container.encodeIfPresent(relatedApp, forKey: .relatedApp)
+        try container.encodeIfPresent(editorialRank, forKey: .editorialRank)
+        try container.encodeIfPresent(alternativeTo, forKey: .alternativeTo)
+        try container.encode(serverKey, forKey: .serverKey)
     }
 
     init(
@@ -82,7 +147,7 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
         transportType: String = "stdio", command: String = "", args: [String] = [],
         url: String? = nil, envVars: [EnvVarDefinition] = [], requiredArgs: [RequiredArgDefinition]? = nil,
         documentationURL: String? = nil, repositoryURL: String? = nil,
-        isVerified: Bool = false, isFirstParty: Bool = false,
+        isOfficial: Bool = false, relatedApp: String? = nil, editorialRank: Int? = nil,
         alternativeTo: String? = nil, serverKey: String
     ) {
         self.id = id
@@ -98,8 +163,9 @@ struct CatalogEntry: Identifiable, Codable, Sendable {
         self.requiredArgs = requiredArgs
         self.documentationURL = documentationURL
         self.repositoryURL = repositoryURL
-        self.isVerified = isVerified
-        self.isFirstParty = isFirstParty
+        self.isOfficial = isOfficial
+        self.relatedApp = relatedApp
+        self.editorialRank = editorialRank
         self.alternativeTo = alternativeTo
         self.serverKey = serverKey
     }
@@ -160,6 +226,15 @@ struct ServerMetrics: Codable, Sendable {
     var enabledCount: Int?
     var weeklyActiveCount: Int?
     var usageAggregatedAt: String?
+    // Signal fields (written by signals.py)
+    var githubStarsIsShared: Bool?
+    var githubCommits90d: Int?
+    var npmWeeklyDownloads: Int?
+    var pypiMonthlyDownloads: Int?
+    var dockerTotalPulls: Int?
+    var smitheryUseCount: Int?
+    var baseScore: Double?
+    var signalsRefreshedAt: String?
 
     enum CodingKeys: String, CodingKey {
         case serverKey, repositoryURL, starCount, forkCount, lastCommitDate
@@ -167,6 +242,9 @@ struct ServerMetrics: Codable, Sendable {
         case trendingScore, sentimentSummary, mentionCount, periodDays
         case sentimentComputedAt, userCount, enabledCount, weeklyActiveCount
         case usageAggregatedAt
+        case githubStarsIsShared, githubCommits90d
+        case npmWeeklyDownloads, pypiMonthlyDownloads, dockerTotalPulls
+        case smitheryUseCount, baseScore, signalsRefreshedAt
     }
 
     init(from decoder: Decoder) throws {
@@ -189,6 +267,14 @@ struct ServerMetrics: Codable, Sendable {
         enabledCount = try container.decodeIfPresent(Int.self, forKey: .enabledCount)
         weeklyActiveCount = try container.decodeIfPresent(Int.self, forKey: .weeklyActiveCount)
         usageAggregatedAt = try container.decodeIfPresent(String.self, forKey: .usageAggregatedAt)
+        githubStarsIsShared = try container.decodeIfPresent(Bool.self, forKey: .githubStarsIsShared)
+        githubCommits90d = try container.decodeIfPresent(Int.self, forKey: .githubCommits90d)
+        npmWeeklyDownloads = try container.decodeIfPresent(Int.self, forKey: .npmWeeklyDownloads)
+        pypiMonthlyDownloads = try container.decodeIfPresent(Int.self, forKey: .pypiMonthlyDownloads)
+        dockerTotalPulls = try container.decodeIfPresent(Int.self, forKey: .dockerTotalPulls)
+        smitheryUseCount = try container.decodeIfPresent(Int.self, forKey: .smitheryUseCount)
+        baseScore = try container.decodeIfPresent(Double.self, forKey: .baseScore)
+        signalsRefreshedAt = try container.decodeIfPresent(String.self, forKey: .signalsRefreshedAt)
     }
 
     init(
@@ -198,7 +284,11 @@ struct ServerMetrics: Codable, Sendable {
         isTrending: Bool = false, trendingScore: Int? = nil,
         sentimentSummary: String? = nil, mentionCount: Int? = nil, periodDays: Int? = nil,
         sentimentComputedAt: String? = nil, userCount: Int? = nil, enabledCount: Int? = nil,
-        weeklyActiveCount: Int? = nil, usageAggregatedAt: String? = nil
+        weeklyActiveCount: Int? = nil, usageAggregatedAt: String? = nil,
+        githubStarsIsShared: Bool? = nil, githubCommits90d: Int? = nil,
+        npmWeeklyDownloads: Int? = nil, pypiMonthlyDownloads: Int? = nil,
+        dockerTotalPulls: Int? = nil, smitheryUseCount: Int? = nil,
+        baseScore: Double? = nil, signalsRefreshedAt: String? = nil
     ) {
         self.serverKey = serverKey
         self.repositoryURL = repositoryURL
@@ -218,6 +308,14 @@ struct ServerMetrics: Codable, Sendable {
         self.enabledCount = enabledCount
         self.weeklyActiveCount = weeklyActiveCount
         self.usageAggregatedAt = usageAggregatedAt
+        self.githubStarsIsShared = githubStarsIsShared
+        self.githubCommits90d = githubCommits90d
+        self.npmWeeklyDownloads = npmWeeklyDownloads
+        self.pypiMonthlyDownloads = pypiMonthlyDownloads
+        self.dockerTotalPulls = dockerTotalPulls
+        self.smitheryUseCount = smitheryUseCount
+        self.baseScore = baseScore
+        self.signalsRefreshedAt = signalsRefreshedAt
     }
 }
 
@@ -226,9 +324,17 @@ struct ServerMetrics: Codable, Sendable {
 struct CatalogViewModel: Identifiable, Sendable {
     let entry: CatalogEntry
     let metrics: ServerMetrics?
+    let installedApps: Set<String>
+
+    init(entry: CatalogEntry, metrics: ServerMetrics?, installedApps: Set<String> = []) {
+        self.entry = entry
+        self.metrics = metrics
+        self.installedApps = installedApps
+    }
 
     var id: String { entry.id }
 
+    // Existing passthrough properties
     var isTrending: Bool { metrics?.isTrending ?? false }
     var trendingScore: Int? { metrics?.trendingScore }
     var starCount: Int? { metrics?.starCount }
@@ -236,6 +342,42 @@ struct CatalogViewModel: Identifiable, Sendable {
     var userCount: Int? { metrics?.userCount }
     var sentimentSummary: String? { metrics?.sentimentSummary }
     var isAlternative: Bool { entry.alternativeTo != nil }
+
+    // New signal properties
+    var isOfficial: Bool { entry.isOfficial }
+    var starsIsShared: Bool { metrics?.githubStarsIsShared ?? false }
+
+    var displayScore: Double {
+        let base = metrics?.baseScore ?? 0
+        let boost = entry.relatedApp.map {
+            installedApps.contains($0.lowercased()) ? 3.0 : 0.0
+        } ?? 0.0
+        return base + boost
+    }
+
+    var isStale: Bool {
+        guard let dateStr = metrics?.lastCommitDate else { return false }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        var date = formatter.date(from: dateStr)
+        if date == nil {
+            formatter.formatOptions = [.withInternetDateTime]
+            date = formatter.date(from: dateStr)
+        }
+        guard let date else { return false }
+        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        return days > 180
+    }
+
+    var installCount: Int? {
+        metrics?.npmWeeklyDownloads ?? metrics?.dockerTotalPulls
+    }
+
+    var installCountLabel: String? {
+        guard let count = installCount else { return nil }
+        let suffix = metrics?.npmWeeklyDownloads != nil ? "/wk" : " pulls"
+        return formatCount(count) + suffix
+    }
 }
 
 // MARK: - MCPServerConfig convenience init from CatalogEntry
@@ -265,5 +407,16 @@ extension MCPServerConfig {
                 headers: envVars
             )
         }
+    }
+}
+
+// MARK: - Formatting helper
+
+func formatCount(_ count: Int) -> String {
+    switch count {
+    case 0..<1_000: return "\(count)"
+    case 1_000..<10_000: return String(format: "%.1fk", Double(count) / 1_000)
+    case 10_000..<1_000_000: return "\(count / 1_000)k"
+    default: return String(format: "%.1fM", Double(count) / 1_000_000)
     }
 }

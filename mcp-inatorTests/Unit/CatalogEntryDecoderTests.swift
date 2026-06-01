@@ -16,14 +16,13 @@ final class CatalogEntryDecoderTests: XCTestCase {
         {
           "id": "github-mcp",
           "displayName": "GitHub MCP",
-          "category": "Code & Development",
+          "category": "developer-tools",
           "shortDescription": "Interact with GitHub via MCP.",
           "transportType": "stdio",
           "command": "npx",
           "args": ["-y", "@modelcontextprotocol/server-github"],
           "envVars": [],
-          "isVerified": false,
-          "isFirstParty": false,
+          "isOfficial": false,
           "serverKey": "github-mcp"
         }
         """
@@ -35,7 +34,7 @@ final class CatalogEntryDecoderTests: XCTestCase {
         let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
         XCTAssertEqual(entry.id, "github-mcp")
         XCTAssertEqual(entry.displayName, "GitHub MCP")
-        XCTAssertEqual(entry.category, .codeAndDevelopment)
+        XCTAssertEqual(entry.category, .developerTools)
         XCTAssertEqual(entry.shortDescription, "Interact with GitHub via MCP.")
         XCTAssertEqual(entry.transportType, "stdio")
         XCTAssertEqual(entry.command, "npx")
@@ -53,22 +52,21 @@ final class CatalogEntryDecoderTests: XCTestCase {
         XCTAssertNil(entry.documentationURL)
         XCTAssertNil(entry.repositoryURL)
         XCTAssertNil(entry.alternativeTo)
-        XCTAssertFalse(entry.isVerified)
-        XCTAssertFalse(entry.isFirstParty)
+        XCTAssertNil(entry.relatedApp)
+        XCTAssertNil(entry.editorialRank)
+        XCTAssertFalse(entry.isOfficial)
     }
 
     func testMissingBoolsDefaultToFalse() throws {
-        // isVerified and isFirstParty absent entirely — must default to false, not throw
         let json = """
         {
-          "id": "x", "displayName": "X", "category": "Productivity",
+          "id": "x", "displayName": "X", "category": "productivity",
           "shortDescription": "desc", "transportType": "stdio",
           "command": "npx", "args": [], "envVars": [], "serverKey": "x"
         }
         """
         let entry = try decode(CatalogEntry.self, from: json)
-        XCTAssertFalse(entry.isVerified)
-        XCTAssertFalse(entry.isFirstParty)
+        XCTAssertFalse(entry.isOfficial)
     }
 
     // MARK: - CatalogEntry full optional fields
@@ -78,7 +76,7 @@ final class CatalogEntryDecoderTests: XCTestCase {
         {
           "id": "notion-mcp",
           "displayName": "Notion",
-          "category": "Productivity",
+          "category": "productivity",
           "shortDescription": "Interact with Notion workspaces.",
           "curatorNote": "Official Notion server.",
           "transportType": "stdio",
@@ -92,16 +90,18 @@ final class CatalogEntryDecoderTests: XCTestCase {
           ],
           "documentationURL": "https://developers.notion.com",
           "repositoryURL": "https://github.com/makenotion/notion-mcp-server",
-          "isVerified": true,
-          "isFirstParty": true,
+          "isOfficial": true,
+          "relatedApp": "Notion",
+          "editorialRank": 2,
           "alternativeTo": null,
           "serverKey": "notion-mcp"
         }
         """
         let entry = try decode(CatalogEntry.self, from: json)
         XCTAssertEqual(entry.curatorNote, "Official Notion server.")
-        XCTAssertTrue(entry.isFirstParty)
-        XCTAssertTrue(entry.isVerified)
+        XCTAssertTrue(entry.isOfficial)
+        XCTAssertEqual(entry.relatedApp, "Notion")
+        XCTAssertEqual(entry.editorialRank, 2)
         XCTAssertEqual(entry.envVars.count, 1)
         XCTAssertEqual(entry.envVars[0].name, "OPENAPI_MCP_HEADERS")
         XCTAssertTrue(entry.envVars[0].isRequired)
@@ -116,9 +116,9 @@ final class CatalogEntryDecoderTests: XCTestCase {
     func testDecodeAlternativeTo() throws {
         let json = """
         {
-          "id": "notion-alt", "displayName": "Notion Alt", "category": "Productivity",
+          "id": "notion-alt", "displayName": "Notion Alt", "category": "productivity",
           "shortDescription": "desc", "transportType": "stdio", "command": "uvx",
-          "args": ["notion-mcp"], "envVars": [], "isVerified": false, "isFirstParty": false,
+          "args": ["notion-mcp"], "envVars": [], "isOfficial": false,
           "alternativeTo": "notion-mcp", "serverKey": "notion-alt"
         }
         """
@@ -126,17 +126,68 @@ final class CatalogEntryDecoderTests: XCTestCase {
         XCTAssertEqual(entry.alternativeTo, "notion-mcp")
     }
 
+    // MARK: - Backward compatibility
+
+    func testDecodesLegacyIsFirstPartyAsIsOfficial() throws {
+        let json = """
+        {
+          "id": "x", "displayName": "X", "category": "productivity",
+          "shortDescription": "desc", "transportType": "stdio",
+          "command": "npx", "args": [], "envVars": [],
+          "isFirstParty": true, "serverKey": "x"
+        }
+        """
+        let entry = try decode(CatalogEntry.self, from: json)
+        XCTAssertTrue(entry.isOfficial)
+    }
+
+    func testIsOfficialTakesPrecedenceOverIsFirstParty() throws {
+        let json = """
+        {
+          "id": "x", "displayName": "X", "category": "productivity",
+          "shortDescription": "desc", "transportType": "stdio",
+          "command": "npx", "args": [], "envVars": [],
+          "isOfficial": true, "isFirstParty": false, "serverKey": "x"
+        }
+        """
+        let entry = try decode(CatalogEntry.self, from: json)
+        XCTAssertTrue(entry.isOfficial)
+    }
+
+    func testDecodesLegacyCategoryDisplayStrings() throws {
+        let cases: [(String, CatalogCategory)] = [
+            ("Code & Development", .developerTools),
+            ("Web & Browser", .searchWeb),
+            ("Data & Analytics", .databases),
+            ("Communication", .productivity),
+            ("AI & LLMs", .aiMemory),
+            ("Infrastructure", .infrastructure),
+            ("Productivity", .productivity)
+        ]
+        for (categoryString, expected) in cases {
+            let json = """
+            {
+              "id": "x", "displayName": "X", "category": "\(categoryString)",
+              "shortDescription": "desc", "transportType": "stdio",
+              "command": "npx", "args": [], "envVars": [], "serverKey": "x"
+            }
+            """
+            let entry = try decode(CatalogEntry.self, from: json)
+            XCTAssertEqual(entry.category, expected, "'\(categoryString)' should map to \(expected)")
+        }
+    }
+
     // MARK: - CatalogFile (servers.json)
 
     func testDecodeCatalogFile() throws {
         let json = """
         {
-          "metadata": { "schemaVersion": "2", "bundledAt": "2026-01-01", "entryCount": 1 },
+          "metadata": { "schemaVersion": "3", "bundledAt": "2026-01-01", "entryCount": 1 },
           "entries": [\(minimalEntryJSON)]
         }
         """
         let file = try decode(CatalogFile.self, from: json)
-        XCTAssertEqual(file.metadata.schemaVersion, "2")
+        XCTAssertEqual(file.metadata.schemaVersion, "3")
         XCTAssertEqual(file.metadata.entryCount, 1)
         XCTAssertEqual(file.entries.count, 1)
         XCTAssertEqual(file.entries[0].id, "github-mcp")
@@ -145,7 +196,7 @@ final class CatalogEntryDecoderTests: XCTestCase {
     func testDecodeCatalogFileMetadataOptionals() throws {
         let json = """
         {
-          "metadata": { "schemaVersion": "2" },
+          "metadata": { "schemaVersion": "3" },
           "entries": []
         }
         """
@@ -171,6 +222,8 @@ final class CatalogEntryDecoderTests: XCTestCase {
         XCTAssertNil(metrics.starCount)
         XCTAssertNil(metrics.trendingScore)
         XCTAssertNil(metrics.sentimentSummary)
+        XCTAssertNil(metrics.baseScore)
+        XCTAssertNil(metrics.npmWeeklyDownloads)
     }
 
     func testDecodeFullMetrics() throws {
@@ -208,6 +261,33 @@ final class CatalogEntryDecoderTests: XCTestCase {
         XCTAssertEqual(metrics.userCount, 500)
     }
 
+    func testDecodeSignalFields() throws {
+        let json = """
+        {
+          "serverKey": "github-mcp",
+          "isArchived": false,
+          "isTrending": false,
+          "githubStarsIsShared": true,
+          "githubCommits90d": 12,
+          "npmWeeklyDownloads": 145230,
+          "pypiMonthlyDownloads": null,
+          "dockerTotalPulls": 116000,
+          "smitheryUseCount": 3873,
+          "baseScore": 35.9,
+          "signalsRefreshedAt": "2026-06-01T04:12:33Z"
+        }
+        """
+        let metrics = try decode(ServerMetrics.self, from: json)
+        XCTAssertTrue(metrics.githubStarsIsShared ?? false)
+        XCTAssertEqual(metrics.githubCommits90d, 12)
+        XCTAssertEqual(metrics.npmWeeklyDownloads, 145230)
+        XCTAssertNil(metrics.pypiMonthlyDownloads)
+        XCTAssertEqual(metrics.dockerTotalPulls, 116000)
+        XCTAssertEqual(metrics.smitheryUseCount, 3873)
+        XCTAssertEqual(metrics.baseScore ?? 0, 35.9, accuracy: 0.01)
+        XCTAssertEqual(metrics.signalsRefreshedAt, "2026-06-01T04:12:33Z")
+    }
+
     func testMetricsMissingBoolsDefaultToFalse() throws {
         let json = """
         { "serverKey": "x" }
@@ -222,14 +302,14 @@ final class CatalogEntryDecoderTests: XCTestCase {
     func testDecodeStatsFile() throws {
         let json = """
         {
-          "metadata": { "schemaVersion": "2", "computedAt": "2026-05-01T00:00:00Z" },
+          "metadata": { "schemaVersion": "3", "computedAt": "2026-05-01T00:00:00Z" },
           "servers": {
             "github-mcp": { "serverKey": "github-mcp", "starCount": 100, "isArchived": false, "isTrending": true }
           }
         }
         """
         let file = try decode(StatsFile.self, from: json)
-        XCTAssertEqual(file.metadata.schemaVersion, "2")
+        XCTAssertEqual(file.metadata.schemaVersion, "3")
         XCTAssertEqual(file.servers.count, 1)
         XCTAssertEqual(file.servers["github-mcp"]?.starCount, 100)
         XCTAssertTrue(file.servers["github-mcp"]?.isTrending ?? false)
@@ -269,6 +349,65 @@ final class CatalogEntryDecoderTests: XCTestCase {
         XCTAssertNil(vm.trendingScore)
         XCTAssertNil(vm.starCount)
         XCTAssertNil(vm.sentimentSummary)
+        XCTAssertNil(vm.installCountLabel)
+        XCTAssertFalse(vm.isStale)
+        XCTAssertFalse(vm.starsIsShared)
+        XCTAssertEqual(vm.displayScore, 0.0, accuracy: 0.001)
+    }
+
+    func testViewModelDisplayScoreUsesBaseScore() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp", baseScore: 20.5)
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertEqual(vm.displayScore, 20.5, accuracy: 0.001)
+    }
+
+    func testViewModelInstalledAppBoost() throws {
+        var entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        entry.relatedApp = "GitHub Desktop"
+        let metrics = ServerMetrics(serverKey: "github-mcp", baseScore: 10.0)
+        let vmWithApp = CatalogViewModel(entry: entry, metrics: metrics,
+                                         installedApps: ["github desktop"])
+        let vmWithout = CatalogViewModel(entry: entry, metrics: metrics,
+                                         installedApps: [])
+        XCTAssertEqual(vmWithApp.displayScore, 13.0, accuracy: 0.001)
+        XCTAssertEqual(vmWithout.displayScore, 10.0, accuracy: 0.001)
+    }
+
+    func testViewModelInstallCountLabel_npm() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp", npmWeeklyDownloads: 145230)
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertEqual(vm.installCountLabel, "145k/wk")
+    }
+
+    func testViewModelInstallCountLabel_docker() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp", dockerTotalPulls: 5000)
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertEqual(vm.installCountLabel, "5.0k pulls")
+    }
+
+    func testViewModelInstallCountLabel_npmPreferredOverDocker() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp",
+                                    npmWeeklyDownloads: 10000, dockerTotalPulls: 5000)
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertTrue(vm.installCountLabel?.hasSuffix("/wk") ?? false)
+    }
+
+    func testViewModelIsStaleForOldCommit() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp", lastCommitDate: "2020-01-01T00:00:00Z")
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertTrue(vm.isStale)
+    }
+
+    func testViewModelNotStaleForRecentCommit() throws {
+        let entry = try decode(CatalogEntry.self, from: minimalEntryJSON)
+        let metrics = ServerMetrics(serverKey: "github-mcp", lastCommitDate: "2026-05-01T00:00:00Z")
+        let vm = CatalogViewModel(entry: entry, metrics: metrics)
+        XCTAssertFalse(vm.isStale)
     }
 
     // MARK: - MCPServerConfig.init(from: CatalogEntry)
@@ -276,13 +415,13 @@ final class CatalogEntryDecoderTests: XCTestCase {
     func testMCPServerConfigFromStdioCatalogEntry() throws {
         let json = """
         {
-          "id": "github-mcp", "displayName": "GitHub MCP", "category": "Code & Development",
+          "id": "github-mcp", "displayName": "GitHub MCP", "category": "developer-tools",
           "shortDescription": "desc", "transportType": "stdio", "command": "npx",
           "args": ["-y", "@modelcontextprotocol/server-github"],
           "envVars": [
             { "name": "GITHUB_TOKEN", "description": "PAT", "isRequired": true, "isSensitive": true }
           ],
-          "isVerified": false, "isFirstParty": false, "serverKey": "github-mcp"
+          "isOfficial": false, "serverKey": "github-mcp"
         }
         """
         let entry = try decode(CatalogEntry.self, from: json)
@@ -302,10 +441,10 @@ final class CatalogEntryDecoderTests: XCTestCase {
     func testMCPServerConfigFromHTTPCatalogEntry() throws {
         let json = """
         {
-          "id": "remote-mcp", "displayName": "Remote MCP", "category": "Infrastructure",
+          "id": "remote-mcp", "displayName": "Remote MCP", "category": "infrastructure",
           "shortDescription": "desc", "transportType": "http",
           "command": "", "args": [], "url": "https://example.com/mcp",
-          "envVars": [], "isVerified": false, "isFirstParty": false, "serverKey": "remote-mcp"
+          "envVars": [], "isOfficial": false, "serverKey": "remote-mcp"
         }
         """
         let entry = try decode(CatalogEntry.self, from: json)

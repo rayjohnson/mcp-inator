@@ -9,99 +9,131 @@ final class CatalogStoreTests: XCTestCase {
     private func makeEntry(
         id: String,
         category: CatalogCategory = .productivity,
-        alternativeTo: String? = nil
+        editorialRank: Int? = nil,
+        alternativeTo: String? = nil,
+        relatedApp: String? = nil
     ) -> CatalogEntry {
         CatalogEntry(
             id: id, displayName: id, category: category,
-            shortDescription: "desc", alternativeTo: alternativeTo, serverKey: id
+            shortDescription: "desc",
+            relatedApp: relatedApp,
+            editorialRank: editorialRank,
+            alternativeTo: alternativeTo,
+            serverKey: id
         )
     }
 
-    private func makeMetrics(serverKey: String, isTrending: Bool = false, score: Int? = nil) -> ServerMetrics {
-        ServerMetrics(serverKey: serverKey, isTrending: isTrending, trendingScore: score)
+    private func makeMetrics(
+        serverKey: String,
+        baseScore: Double = 0,
+        isTrending: Bool = false,
+        score: Int? = nil
+    ) -> ServerMetrics {
+        ServerMetrics(serverKey: serverKey, isTrending: isTrending,
+                      trendingScore: score, baseScore: baseScore)
     }
 
     private func makeVM(
         id: String,
         category: CatalogCategory = .productivity,
+        editorialRank: Int? = nil,
         alternativeTo: String? = nil,
+        baseScore: Double = 0,
         isTrending: Bool = false,
-        trendingScore: Int? = nil
+        trendingScore: Int? = nil,
+        relatedApp: String? = nil,
+        installedApps: Set<String> = []
     ) -> CatalogViewModel {
-        let entry = makeEntry(id: id, category: category, alternativeTo: alternativeTo)
-        let metrics = makeMetrics(serverKey: id, isTrending: isTrending, score: trendingScore)
-        return CatalogViewModel(entry: entry, metrics: metrics)
+        let entry = makeEntry(id: id, category: category, editorialRank: editorialRank,
+                              alternativeTo: alternativeTo, relatedApp: relatedApp)
+        let metrics = makeMetrics(serverKey: id, baseScore: baseScore,
+                                  isTrending: isTrending, score: trendingScore)
+        return CatalogViewModel(entry: entry, metrics: metrics, installedApps: installedApps)
     }
 
-    // MARK: - trendingEntries
+    // MARK: - sortedEntries
 
-    func testTrendingEntriesReturnsOnlyTrending() {
+    func testSortedEntriesExcludesAlternatives() {
         let vms = [
-            makeVM(id: "a", isTrending: true, trendingScore: 60),
-            makeVM(id: "b", isTrending: false),
-            makeVM(id: "c", isTrending: true, trendingScore: 80)
+            makeVM(id: "primary"),
+            makeVM(id: "alt", alternativeTo: "primary")
         ]
         let store = CatalogStore(viewModels: vms)
-        let trending = store.trendingEntries
-        XCTAssertEqual(trending.map(\.id), ["c", "a"])
+        XCTAssertEqual(store.sortedEntries.map(\.id), ["primary"])
     }
 
-    func testTrendingEntriesEmptyWhenNoneTrending() {
+    func testSortedEntriesEditorialRankFirst() {
+        let vms = [
+            makeVM(id: "scored", baseScore: 99),
+            makeVM(id: "pinned", editorialRank: 1, baseScore: 1)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        XCTAssertEqual(store.sortedEntries.map(\.id), ["pinned", "scored"])
+    }
+
+    func testSortedEntriesMultipleEditorialRanks() {
+        let vms = [
+            makeVM(id: "rank2", editorialRank: 2),
+            makeVM(id: "rank1", editorialRank: 1),
+            makeVM(id: "scored", baseScore: 50)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        XCTAssertEqual(store.sortedEntries.map(\.id), ["rank1", "rank2", "scored"])
+    }
+
+    func testSortedEntriesByDisplayScoreDescending() {
+        let vms = [
+            makeVM(id: "low", baseScore: 5),
+            makeVM(id: "high", baseScore: 30),
+            makeVM(id: "mid", baseScore: 15)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        XCTAssertEqual(store.sortedEntries.map(\.id), ["high", "mid", "low"])
+    }
+
+    // MARK: - discoverEntries
+
+    func testDiscoverEntriesExcludesLibraryKeys() {
+        let vms = [
+            makeVM(id: "in-lib", baseScore: 20),
+            makeVM(id: "not-in-lib", baseScore: 10)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        let results = store.discoverEntries(libraryKeys: ["in-lib"])
+        XCTAssertEqual(results.map(\.id), ["not-in-lib"])
+    }
+
+    func testDiscoverEntriesExcludesEditorialByDefault() {
+        let vms = [
+            makeVM(id: "editorial", editorialRank: 1, baseScore: 1),
+            makeVM(id: "scored1", baseScore: 10),
+            makeVM(id: "scored2", baseScore: 8)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        let results = store.discoverEntries(libraryKeys: [])
+        XCTAssertFalse(results.map(\.id).contains("editorial"))
+    }
+
+    func testDiscoverEntriesFallsBackToEditorialWhenPrimaryEmpty() {
+        let vms = [
+            makeVM(id: "editorial", editorialRank: 1, baseScore: 1),
+            makeVM(id: "scored", baseScore: 10)
+        ]
+        let store = CatalogStore(viewModels: vms)
+        let results = store.discoverEntries(libraryKeys: ["scored"])
+        XCTAssertEqual(results.map(\.id), ["editorial"])
+    }
+
+    func testDiscoverEntriesCapsAtFive() {
+        let vms = (1...8).map { makeVM(id: "e\($0)", baseScore: Double($0)) }
+        let store = CatalogStore(viewModels: vms)
+        XCTAssertEqual(store.discoverEntries(libraryKeys: []).count, 5)
+    }
+
+    func testDiscoverEntriesEmptyWhenAllInLibrary() {
         let vms = [makeVM(id: "a"), makeVM(id: "b")]
         let store = CatalogStore(viewModels: vms)
-        XCTAssertTrue(store.trendingEntries.isEmpty)
-    }
-
-    func testTrendingEntriesSortedByScoreDescending() {
-        let vms = [
-            makeVM(id: "low", isTrending: true, trendingScore: 30),
-            makeVM(id: "high", isTrending: true, trendingScore: 90),
-            makeVM(id: "mid", isTrending: true, trendingScore: 55)
-        ]
-        let store = CatalogStore(viewModels: vms)
-        XCTAssertEqual(store.trendingEntries.map(\.id), ["high", "mid", "low"])
-    }
-
-    // MARK: - entriesByCategory
-
-    func testEntriesByCategoryGroupsCorrectly() {
-        let vms = [
-            makeVM(id: "a", category: .productivity),
-            makeVM(id: "b", category: .productivity),
-            makeVM(id: "c", category: .codeAndDevelopment)
-        ]
-        let store = CatalogStore(viewModels: vms)
-        XCTAssertEqual(store.entriesByCategory[.productivity]?.count, 2)
-        XCTAssertEqual(store.entriesByCategory[.codeAndDevelopment]?.count, 1)
-        XCTAssertNil(store.entriesByCategory[.communication])
-    }
-
-    func testEntriesByCategoryExcludesAlternatives() {
-        let vms = [
-            makeVM(id: "primary", category: .productivity),
-            makeVM(id: "alternative", category: .productivity, alternativeTo: "primary")
-        ]
-        let store = CatalogStore(viewModels: vms)
-        let productivityEntries = store.entriesByCategory[.productivity] ?? []
-        XCTAssertEqual(productivityEntries.count, 1)
-        XCTAssertEqual(productivityEntries[0].id, "primary")
-    }
-
-    // MARK: - topLevel(for:)
-
-    func testTopLevelReturnsNonAlternatives() {
-        let vms = [
-            makeVM(id: "pick", category: .productivity),
-            makeVM(id: "alt", category: .productivity, alternativeTo: "pick")
-        ]
-        let store = CatalogStore(viewModels: vms)
-        let top = store.topLevel(for: .productivity)
-        XCTAssertEqual(top.map(\.id), ["pick"])
-    }
-
-    func testTopLevelReturnsEmptyForUnknownCategory() {
-        let store = CatalogStore(viewModels: [makeVM(id: "a", category: .productivity)])
-        XCTAssertTrue(store.topLevel(for: .communication).isEmpty)
+        XCTAssertTrue(store.discoverEntries(libraryKeys: ["a", "b"]).isEmpty)
     }
 
     // MARK: - alternatives(for:)
@@ -157,12 +189,42 @@ final class CatalogStoreTests: XCTestCase {
     func testFetchIfNeededMergesMetrics() async {
         let entry = makeEntry(id: "github-mcp")
         let metrics = makeMetrics(serverKey: "github-mcp", isTrending: true, score: 75)
-        let client = StubCatalogClient(entries: [entry],
-                                       metrics: ["github-mcp": metrics])
+        let client = StubCatalogClient(entries: [entry], metrics: ["github-mcp": metrics])
         let store = CatalogStore(client: client)
         await store.fetchIfNeeded()
         XCTAssertTrue(store.viewModels[0].isTrending)
         XCTAssertEqual(store.viewModels[0].trendingScore, 75)
+    }
+
+    // MARK: - Installed-app boost via displayScore
+
+    func testInstalledAppBoostIncreasesSortOrder() {
+        let entry = CatalogEntry(
+            id: "github", displayName: "GitHub", category: .developerTools,
+            shortDescription: "desc", relatedApp: "GitHub Desktop", serverKey: "github"
+        )
+        let metricsGH = ServerMetrics(serverKey: "github", baseScore: 10.0)
+        let metricsNotion = ServerMetrics(serverKey: "notion", baseScore: 12.0)
+        let entryNotion = CatalogEntry(
+            id: "notion", displayName: "Notion", category: .productivity,
+            shortDescription: "desc", serverKey: "notion"
+        )
+
+        // Without app installed: notion (12) sorts above github (10)
+        let withoutBoost = [
+            CatalogViewModel(entry: entry, metrics: metricsGH, installedApps: []),
+            CatalogViewModel(entry: entryNotion, metrics: metricsNotion, installedApps: [])
+        ]
+        let store1 = CatalogStore(viewModels: withoutBoost)
+        XCTAssertEqual(store1.sortedEntries.map(\.id), ["notion", "github"])
+
+        // With app installed: github (10 + 3 = 13) sorts above notion (12)
+        let withBoost = [
+            CatalogViewModel(entry: entry, metrics: metricsGH, installedApps: ["github desktop"]),
+            CatalogViewModel(entry: entryNotion, metrics: metricsNotion, installedApps: [])
+        ]
+        let store2 = CatalogStore(viewModels: withBoost)
+        XCTAssertEqual(store2.sortedEntries.map(\.id), ["github", "notion"])
     }
 }
 

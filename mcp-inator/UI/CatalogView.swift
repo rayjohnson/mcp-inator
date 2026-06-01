@@ -36,7 +36,7 @@ struct CatalogView: View {
                     selectedCategory = nil
                 }
                 ForEach(CatalogCategory.allCases) { category in
-                    FilterChip(label: category.rawValue, isSelected: selectedCategory == category) {
+                    FilterChip(label: category.label, isSelected: selectedCategory == category) {
                         selectedCategory = selectedCategory == category ? nil : category
                     }
                 }
@@ -50,42 +50,61 @@ struct CatalogView: View {
 
     @ViewBuilder
     private var browseView: some View {
-        let trending = catalogStore.trendingEntries
-        let categories = selectedCategory.map { [$0] } ?? CatalogCategory.allCases
-
         if catalogStore.viewModels.isEmpty {
             emptyState
-        } else {
-            List {
-                if selectedCategory == nil && !trending.isEmpty {
-                    trendingSection(trending)
+        } else if let cat = selectedCategory {
+            // Category filter active: flat sorted list for that category
+            let filtered = catalogStore.sortedEntries.filter { $0.entry.category == cat }
+            if filtered.isEmpty {
+                emptyState
+            } else {
+                List {
+                    ForEach(filtered) { vm in entryRow(vm, showCategory: false) }
                 }
-                ForEach(categories, id: \.self) { cat in
-                    let entries = catalogStore.topLevel(for: cat)
-                    if !entries.isEmpty {
-                        Section(cat.rawValue) {
-                            ForEach(entries) { vm in
-                                entryRow(vm, showCategory: false)
-                            }
-                        }
+                .listStyle(.plain)
+            }
+        } else {
+            // No filter: Featured → Discover → flat sorted list
+            let libraryKeys = Set(store.configs.map(\.serverKey))
+            let editorial = catalogStore.sortedEntries.filter { $0.entry.editorialRank != nil }
+            let discover = catalogStore.discoverEntries(libraryKeys: libraryKeys)
+            let flat = catalogStore.sortedEntries.filter { $0.entry.editorialRank == nil }
+
+            List {
+                if !editorial.isEmpty {
+                    Section {
+                        ForEach(editorial) { vm in entryRow(vm, showCategory: true) }
+                    } header: {
+                        Label("Featured", systemImage: "star.fill")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .padding(.top, 4)
+                    }
+                }
+
+                if !discover.isEmpty {
+                    Section {
+                        ForEach(discover) { vm in entryRow(vm, showCategory: true) }
+                    } header: {
+                        Label("Discover", systemImage: "sparkles")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .padding(.top, 4)
+                    }
+                }
+
+                if !flat.isEmpty {
+                    Section {
+                        ForEach(flat) { vm in entryRow(vm, showCategory: true) }
+                    } header: {
+                        Text("All Servers")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .padding(.top, 4)
                     }
                 }
             }
             .listStyle(.plain)
-        }
-    }
-
-    @ViewBuilder
-    private func trendingSection(_ entries: [CatalogViewModel]) -> some View {
-        Section {
-            ForEach(entries) { vm in
-                entryRow(vm, showCategory: true)
-            }
-        } header: {
-            Label("Trending", systemImage: "chart.line.uptrend.xyaxis")
-                .font(.headline)
-                .foregroundColor(.primary)
-                .padding(.top, 4)
         }
     }
 
@@ -132,10 +151,11 @@ struct CatalogView: View {
     @ViewBuilder
     private var searchResultsView: some View {
         let query = searchText.trimmingCharacters(in: .whitespaces).lowercased()
-        let results = catalogStore.viewModels.filter { vm in
+        let results = catalogStore.sortedEntries.filter { vm in
             vm.entry.displayName.lowercased().contains(query) ||
             vm.entry.shortDescription.lowercased().contains(query) ||
-            (vm.entry.curatorNote?.lowercased().contains(query) ?? false)
+            (vm.entry.curatorNote?.lowercased().contains(query) ?? false) ||
+            vm.entry.category.label.lowercased().contains(query)
         }
 
         if results.isEmpty {
@@ -213,9 +233,6 @@ struct CatalogRow: View {
                     Text(vm.entry.displayName)
                         .font(.body)
                         .fontWeight(.medium)
-                    if vm.entry.isFirstParty {
-                        FirstPartyBadge()
-                    }
                     if showCategory {
                         CategoryBadge(category: vm.entry.category)
                     }
@@ -229,16 +246,26 @@ struct CatalogRow: View {
                     }
                 }
 
+                // Signal row
                 HStack(spacing: 8) {
-                    if let stars = vm.starCount {
-                        Label(formatStars(stars), systemImage: "star")
+                    if vm.isOfficial {
+                        OfficialBadge()
+                    }
+                    if let countLabel = vm.installCountLabel {
+                        Label(countLabel, systemImage: "arrow.down.circle")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
-                    if let dateStr = vm.lastCommitDate, let age = relativeAge(from: dateStr) {
-                        Text(age)
+                    if let stars = vm.starCount {
+                        let starsText = formatStars(stars) + (vm.starsIsShared ? " repo" : "")
+                        Label(starsText, systemImage: "star")
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                    }
+                    if vm.isStale {
+                        Label("Low activity", systemImage: "exclamationmark.triangle")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
                     }
                 }
 
@@ -322,9 +349,9 @@ private struct AlternativesRow: View {
     }
 }
 
-// MARK: - FirstPartyBadge
+// MARK: - OfficialBadge
 
-struct FirstPartyBadge: View {
+struct OfficialBadge: View {
     var body: some View {
         Text("Official")
             .font(.caption2)
