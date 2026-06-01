@@ -1,3 +1,4 @@
+- Fix deterministic test coverage: agent-discovery scan and dock-mode window are suppressed during tests; ClaudeCodeAdapter.isInstalled() no longer returns true on every machine; coverage threshold set to 25% (real, reproducible baseline)
 - Add per-file coverage breakdown to make cover output; upgrade CI to Xcode 26.3
 - Search bar in Servers tab — type to filter by name or command (including URL for HTTP servers); clears when switching tabs
 - Catalog now shows popularity and quality signals: GitHub stars, weekly install counts, official badge, and stale warning for unmaintained servers

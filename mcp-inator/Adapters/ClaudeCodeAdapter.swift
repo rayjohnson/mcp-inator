@@ -10,9 +10,10 @@ struct ClaudeCodeAdapter: AgentAdapter {
     }
 
     func isInstalled() -> Bool {
-        let path = defaultConfigPath()
-        return FileManager.default.fileExists(atPath: path.path) ||
-               FileManager.default.fileExists(atPath: path.deletingLastPathComponent().path)
+        let configFile = defaultConfigPath()                                                // ~/.claude.json
+        let claudeDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".claude")  // ~/.claude/
+        return FileManager.default.fileExists(atPath: configFile.path) ||
+               FileManager.default.fileExists(atPath: claudeDir.path)
     }
 
     func readConfigs(from path: URL) throws -> [String: MCPServerConfig] {
