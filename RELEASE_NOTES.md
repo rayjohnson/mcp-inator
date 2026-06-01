@@ -1,3 +1,4 @@
+- Search bar in Servers tab — type to filter by name or command (including URL for HTTP servers); clears when switching tabs
 - Catalog now shows popularity and quality signals: GitHub stars, weekly install counts, official badge, and stale warning for unmaintained servers
 - Catalog entries are scored and sorted by quality (baseScore + installed-app boost); editorially-ranked entries surface at top
 - Added Discover section: surfaces up to 5 top-scored servers not already in your library
