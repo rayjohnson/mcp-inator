@@ -44,6 +44,7 @@
 		698770EB8DB65E6BA481D464 /* RegistryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */; };
 		71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928B2492512ECFB579A7A67A /* CodexCLIAdapter.swift */; };
 		739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1876009CB9EF08303E122849 /* ConfigStoreTests.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* ConfigLibraryViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigLibraryViewTests.swift */; };
 		774A7276EC90260DBDB284F4 /* CatalogClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5136483F029BD505D48D581C /* CatalogClientTests.swift */; };
 		7877C4D786F70D5589D2BC2D /* ImportSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D93EC8166B021EEC823482 /* ImportSource.swift */; };
 		7A4207AC732B7EAE649654AD /* claude_desktop_config.json in Resources */ = {isa = PBXBuildFile; fileRef = 7ACD9873730B56F995155492 /* claude_desktop_config.json */; };
@@ -129,6 +130,7 @@
 		14925175871D556D6556A060 /* RegistryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryStore.swift; sourceTree = "<group>"; };
 		15439A8B79E4A88F7154D055 /* AppModeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModeManagerTests.swift; sourceTree = "<group>"; };
 		1876009CB9EF08303E122849 /* ConfigStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStoreTests.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigLibraryViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigLibraryViewTests.swift; sourceTree = "<group>"; };
 		1BBCA5A3DA8349D20E9A2C21 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		1D0A001ED63D7C644137B58E /* GeminiCLIAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiCLIAdapterTests.swift; sourceTree = "<group>"; };
 		1D5E12DD5F2F8255785408D2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -398,6 +400,7 @@
 				58005F52EC6E0393371118A4 /* CatalogEntryTests.swift */,
 				208282AF3881944515550A89 /* CatalogStoreTests.swift */,
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* ConfigLibraryViewTests.swift */,
 				F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
 				28A99FC7DF6D6744F5A22A16 /* ImportSourceScannerTests.swift */,
@@ -659,6 +662,7 @@
 				16D11BBA470D5B699EEBBFEC /* CodexCLIAdapterTests.swift in Sources */,
 				FA000000111122223333A001 /* FileBasedAdapterTests.swift in Sources */,
 				739B64DF1BEEC349B7F7D612 /* ConfigStoreTests.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* ConfigLibraryViewTests.swift in Sources */,
 				453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
 				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,

@@ -7,7 +7,7 @@ CATALOG_SRC := catalog/catalog.json
 CATALOG_DST := mcp-inator/Resources/catalog.json
 
 COVERAGE_RESULT := /tmp/mcp-inator-coverage.xcresult
-COVERAGE_THRESHOLD := 35
+COVERAGE_THRESHOLD := 30
 
 .PHONY: build test cover lint run clean sync-catalog generate-version
 

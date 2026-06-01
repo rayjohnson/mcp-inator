@@ -85,7 +85,7 @@ final class ConfigLibraryViewTests: XCTestCase {
     func testSwipeDeleteConfigReachableAfterFilter() {
         // Verify that a config surfaced by search is present in the full store list
         // (i.e., filtering does not clone or wrap configs — the original object is reachable).
-        let result = filterConfigs(allConfigs, query: "stripe")
+        let result = filterConfigs(allConfigs, query: "payments")
         XCTAssertEqual(result.count, 1)
         let found = result[0]
         XCTAssertTrue(allConfigs.contains { $0.uuid == found.uuid }, "Filtered config must exist in source list for delete to work")
