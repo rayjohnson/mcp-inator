@@ -1,0 +1,28 @@
+{
+  "context_servers" : {
+    "github-mcp" : {
+      "command" : {
+        "args" : [
+          "-y",
+          "@modelcontextprotocol/server-github"
+        ],
+        "path" : "npx"
+      },
+      "env" : {
+        "GITHUB_TOKEN" : "ghp_placeholder"
+      }
+    },
+    "filesystem" : {
+      "command" : {
+        "args" : [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/tmp"
+        ],
+        "path" : "npx"
+      },
+      "env" : {}
+    }
+  },
+  "otherZedSetting" : true
+}

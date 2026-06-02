@@ -1,3 +1,4 @@
+- Added Zed editor as a supported agent — mcp-inator discovers, reads, writes, and removes MCP server configs from `~/.config/zed/settings.json`; supports Zed's nested `context_servers` format with drift detection
 - Fix deterministic test coverage: agent-discovery scan and dock-mode window are suppressed during tests; ClaudeCodeAdapter.isInstalled() no longer returns true on every machine; coverage threshold set to 25% (real, reproducible baseline)
 - Add per-file coverage breakdown to make cover output; upgrade CI to Xcode 26.3
 - Search bar in Servers tab — type to filter by name or command (including URL for HTTP servers); clears when switching tabs

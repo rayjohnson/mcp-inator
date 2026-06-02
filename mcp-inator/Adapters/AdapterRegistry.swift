@@ -10,7 +10,7 @@ enum AdapterRegistry {
     // MARK: - Definitions (icon config and metadata for all agents)
 
     static let definitions: [AgentDefinition] = [
-        claudeCodeDef, claudeDesktopDef, geminiCLIDef, codexCLIDef, geminiDesktopDef, cursorDef
+        claudeCodeDef, claudeDesktopDef, geminiCLIDef, codexCLIDef, geminiDesktopDef, cursorDef, zedDef
     ]
 
     // MARK: - Adapters (read/write implementations)
@@ -21,7 +21,8 @@ enum AdapterRegistry {
         FileBasedAdapter(definition: geminiCLIDef),
         CodexCLIAdapter(),
         FileBasedAdapter(definition: geminiDesktopDef),
-        FileBasedAdapter(definition: cursorDef)
+        FileBasedAdapter(definition: cursorDef),
+        ZedAdapter()
     ]
 
     static func adapter(for agentType: AgentType) -> (any AgentAdapter)? {
@@ -126,6 +127,22 @@ enum AdapterRegistry {
             bundleIds: ["com.todesktop.230313mzl4w4u92"],
             appPaths: ["/Applications/Cursor.app"],
             fallback: .init(letter: "C", red: 0.07, green: 0.07, blue: 0.07)
+        ),
+        keyValidation: KeyValidationConfig(
+            pattern: "^[a-z0-9][a-z0-9-]*$",
+            errorMessage: "Server key must start with a letter or digit and contain only a-z, 0-9, or hyphens."
+        )
+    )
+
+    static let zedDef = AgentDefinition(
+        agentType: .zed,
+        displayName: "Zed",
+        configPathRelative: ".config/zed/settings.json",
+        mcpKey: "context_servers",
+        icon: AgentIconConfig(
+            bundleIds: ["dev.zed.Zed"],
+            appPaths: ["/Applications/Zed.app"],
+            fallback: .init(letter: "Z", red: 0.08, green: 0.52, blue: 0.69)
         ),
         keyValidation: KeyValidationConfig(
             pattern: "^[a-z0-9][a-z0-9-]*$",
