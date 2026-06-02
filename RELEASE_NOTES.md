@@ -1,3 +1,4 @@
+- Fix CI deploy: drop --allow-unauthenticated flag (deploy SA lacks setIamPolicy; IAM is set once during infrastructure setup)
 - Anonymous usage telemetry (opt-in): after 7 days the app prompts once per session to share which server keys you use; review screen lets you exclude individual servers; data is POSTed to a Cloud Run service and stored as aggregate counts in Firestore — no IPs, no file paths, no env var values
 - Private server toggle: mark any server as private so it is never included in usage reports
 - Automated backend deployment: push to main deploys the Cloud Run service via GitHub Actions + Workload Identity Federation (no stored GCP credentials)
