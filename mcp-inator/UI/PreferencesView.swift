@@ -41,6 +41,13 @@ struct PreferencesView: View {
     var body: some View {
         Form {
             Section("Contributing Usage Data") {
+                Text(
+                    "mcp-inator can share anonymous data about which MCP servers you use, helping surface popular" +
+                    " servers in the catalog. Only server names and command structure are shared — never API keys," +
+                    " passwords, or personal information. Private servers are always excluded."
+                )
+                .foregroundColor(.secondary)
+                    .font(.callout)
                 if sharingConsented {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
@@ -54,10 +61,6 @@ struct PreferencesView: View {
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                     }
-                } else {
-                    Text("Anonymous server usage data helps surface popular servers in the catalog. You'll be prompted to opt in after 7 days.")
-                        .foregroundColor(.secondary)
-                        .font(.callout)
                 }
             }
 

@@ -49,6 +49,7 @@ struct mcp_inatorApp: App {
     private let discoveryController = DiscoveryWindowController()
     private let aboutController = AboutWindowController()
     private let preferencesController = PreferencesWindowController()
+    private let helpController = HelpWindowController()
     private let mainWindowController = MainWindowController()
     private let consentController = ConsentWindowController()
 
@@ -71,6 +72,11 @@ struct mcp_inatorApp: App {
                     .environment(\.openPreferencesWindow, { [preferencesController, appModeManager] in
                         Task { @MainActor in
                             preferencesController.show(appModeManager: appModeManager)
+                        }
+                    })
+                    .environment(\.openHelpWindow, { [helpController] in
+                        Task { @MainActor in
+                            helpController.show()
                         }
                     })
                     .environmentObject(catalogStore)
@@ -133,6 +139,13 @@ struct mcp_inatorApp: App {
                     }
                 }
                 .keyboardShortcut(",", modifiers: .command)
+            }
+            CommandGroup(after: .help) {
+                Button("mcp-inator Help…") {
+                    Task { @MainActor in
+                        helpController.show()
+                    }
+                }
             }
         }
     }
@@ -397,6 +410,19 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - OpenHelpWindowKey
+
+private struct OpenHelpWindowKey: EnvironmentKey {
+    static let defaultValue: @Sendable () -> Void = {}
+}
+
+extension EnvironmentValues {
+    var openHelpWindow: @Sendable () -> Void {
+        get { self[OpenHelpWindowKey.self] }
+        set { self[OpenHelpWindowKey.self] = newValue }
+    }
+}
+
 // MARK: - NavigationIsCompactKey
 // True in the 420px menu bar popover (push navigation); false in the dock-mode
 // split window (tap-to-select). Detail views read this to decide whether to
@@ -464,6 +490,36 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         win.styleMask = [.titled, .closable]
         win.title = "Preferences"
         win.setContentSize(NSSize(width: 400, height: 280))
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
+}
+
+// MARK: - HelpWindowController
+
+@MainActor
+final class HelpWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show() {
+        if let existing = window {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let hosting = NSHostingController(rootView: HelpView())
+        let win = NSWindow(contentViewController: hosting)
+        win.styleMask = [.titled, .closable]
+        win.title = "mcp-inator Help"
+        win.setContentSize(NSSize(width: 520, height: 560))
         win.isReleasedWhenClosed = false
         win.delegate = self
         win.center()
