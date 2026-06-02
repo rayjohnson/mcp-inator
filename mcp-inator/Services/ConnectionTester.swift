@@ -156,7 +156,10 @@ actor ConnectionTester {
         }
 
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
+            // Use bytes(for:) so we get response headers immediately without
+            // waiting for the body — SSE streams never close, so data(for:) hangs.
+            let (byteStream, response) = try await URLSession.shared.bytes(for: request)
+            byteStream.task.cancel()
             guard let http = response as? HTTPURLResponse else {
                 return .protocolError(detail: "Invalid response")
             }
