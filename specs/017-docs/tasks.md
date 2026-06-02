@@ -25,7 +25,7 @@
 
 - [ ] T001 Add `OpenHelpWindowKey` environment key to `mcp-inator/App/mcp_inatorApp.swift` following the existing `OpenPreferencesWindowKey` pattern (around line 381); add `openHelpWindow` computed property on `EnvironmentValues`
 - [ ] T002 [P] Create `mcp-inator/UI/HelpView.swift`: a `ScrollView` with four `Section`-style `VStack` blocks (What is mcp-inator?, Adding and Configuring Servers, The Catalog, Usage Sharing) using the copy from `specs/017-docs/data-model.md`; no network calls, no state
-- [ ] T003 [P] Create `HelpWindowController` class in `mcp-inator/App/mcp_inatorApp.swift` (or a new `mcp-inator/App/HelpWindowController.swift`): opens an `NSWindow` hosting `HelpView` via `NSHostingController`; mirrors the existing `PreferencesWindowController` structure; window title "mcp-inator Help"
+- [ ] T003 [P] Create `HelpWindowController` class in `mcp-inator/App/mcp_inatorApp.swift`: opens an `NSWindow` hosting `HelpView` via `NSHostingController`; mirrors the existing `PreferencesWindowController` structure; window title "mcp-inator Help"
 
 **Checkpoint**: `HelpView` previews correctly in Xcode. `HelpWindowController` compiles.
 
@@ -52,7 +52,7 @@
 
 **Independent Test**: Quickstart Scenario 4 — README renders correctly in a Markdown previewer; all five sections present; Quick Start has ≤ 3 steps; Privacy section present and accurate.
 
-- [ ] T008 [US1] Launch the app, capture screenshots using `screencapture` for: (a) menu bar popover with server list visible → `docs/images/menubar-v0.5.0.png`; (b) catalog view → `docs/images/catalog-v0.5.0.png`; capture additional shots (add server form, preferences, help window) as needed to illustrate features in the README — this is a collaborative step, review captures with user before finalising
+- [ ] T008 [P] [US1] Launch the app, capture screenshots using `screencapture` for: (a) menu bar popover with server list visible → `docs/images/menubar-v0.5.0.png`; (b) catalog view → `docs/images/catalog-v0.5.0.png`; capture additional shots (add server form, preferences, help window) as needed to illustrate features in the README — this is a collaborative step, review captures with user before finalising
 - [ ] T009 [US1] Rewrite `README.md` with sections per `specs/017-docs/data-model.md`: Hero (1-sentence description + screenshot), Installation (preserve existing, polish), Quick Start (launch → add server → apply to agent, ≤ 3 steps), Features (server management, catalog, agent matrix, usage sharing opt-in), Privacy (3–4 sentences, accurate to what `UsageSharingService` sends)
 
 **Checkpoint**: `README.md` renders on GitHub with all sections. New-user test passes per SC-001.

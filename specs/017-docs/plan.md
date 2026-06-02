@@ -4,7 +4,7 @@
 
 ## Summary
 
-Add a Help view to the macOS app (reachable from the menu bar popover and the dock-mode Application menu) covering the four core topics: overview, server setup, catalog, and usage sharing. Simultaneously overhaul the GitHub README with a proper description, screenshots, quick-start, features, and privacy summary, and add a `CONTRIBUTING.md` for developers.
+Add a Help view to the macOS app (reachable from the menu bar popover and the dock-mode Application menu) covering the four core topics: overview, server setup, catalog, and usage sharing. Simultaneously overhaul the GitHub README with a proper description, screenshots, quick-start, features, and privacy summary.
 
 ## Technical Context
 
@@ -24,7 +24,7 @@ Add a Help view to the macOS app (reachable from the menu bar popover and the do
 
 **Constraints**: Help must work offline; no web view or URL fetch; must be reachable in both menu bar mode and dock mode
 
-**Scale/Scope**: Two files changed + two files created (Swift); two Markdown files created/updated
+**Scale/Scope**: One Markdown file updated (README.md); two Swift files created; two–three Swift files updated
 
 ## Constitution Check
 

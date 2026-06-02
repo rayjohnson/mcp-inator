@@ -20,7 +20,7 @@ A developer discovers mcp-inator on GitHub and wants to understand what it does,
 
 1. **Given** a developer lands on the GitHub repo page, **When** they read the README, **Then** they understand what mcp-inator does in the first two paragraphs.
 2. **Given** a new user wants to install the app, **When** they follow the README Quick Start section, **Then** they can install and launch the app successfully.
-3. **Given** a user wants to understand how to contribute, **When** they read the contributing section, **Then** they know how to set up a dev environment and open a PR.
+3. **Given** a user wants to understand what data is collected, **When** they read the README Privacy section, **Then** they can answer what is and isn't shared without needing to open the app.
 
 ---
 
@@ -60,11 +60,11 @@ A user inside the running app has a question — "How do I add a new MCP server?
 
 **In-app help**:
 
+- **FR-005**: The help content MUST use a friendly, tutorial-style tone that assumes technical competence (developer audience) but no prior knowledge of mcp-inator.
 - **FR-006**: The app MUST provide a Help entry point accessible from both menu bar mode (popover) and dock mode (Application menu or window).
 - **FR-007**: The help content MUST cover: overview of mcp-inator, adding and configuring MCP servers, the catalog and how to install from it, and the usage sharing opt-in (what is collected, how to withdraw).
 - **FR-008**: The help view MUST be readable offline — no web requests required to display content.
-- **FR-009**: The help content MUST be written for a technical audience (developers using MCP-compatible tools) but must not assume prior knowledge of mcp-inator.
-- **FR-010**: The Preferences pane "Contributing Usage Data" section MUST include a brief inline description of what is and isn't shared.
+- **FR-009**: The Preferences pane "Contributing Usage Data" section MUST include a brief inline description of what is and isn't shared.
 
 ### Key Entities
 
@@ -76,9 +76,9 @@ A user inside the running app has a question — "How do I add a new MCP server?
 ### Measurable Outcomes
 
 - **SC-001**: A person unfamiliar with the project can read the README and correctly describe what mcp-inator does — verified by informal user test or review.
-- **SC-002**: All primary in-app help topics (server setup, catalog, usage sharing) are reachable within 2 taps/clicks from any app state.
-- **SC-004**: The help view loads and displays fully without a network connection.
-- **SC-005**: Zero references to unimplemented or removed features appear in either the README or in-app help.
+- **SC-002**: All primary in-app help topics (server setup, catalog, usage sharing) are reachable within 2 taps/clicks from the app's resting state (popover closed, no sheet open).
+- **SC-003**: The help view loads and displays fully without a network connection.
+- **SC-004**: Zero references to unimplemented or removed features appear in either the README or in-app help.
 
 ## Assumptions
 
