@@ -34,4 +34,4 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT }}
           source: ./backend
           env_vars: TELEMETRY_BEARER_TOKEN=${{ secrets.TELEMETRY_BEARER_TOKEN }}
-          flags: --no-allow-unauthenticated
+          flags: --allow-unauthenticated

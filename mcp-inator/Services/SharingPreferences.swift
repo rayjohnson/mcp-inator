@@ -55,11 +55,7 @@ enum SharingPreferences {
 // MARK: - TelemetryConfig
 
 enum TelemetryConfig {
-    // Cloud Run service URL — replace with the deployed URL after running T007.
     // swiftlint:disable:next force_unwrapping
-    static let serviceURL = URL(string: "https://mcp-inator-telemetry-PLACEHOLDER.run.app")!
-
-    // Shared bearer token embedded in the binary.
-    // TODO: Replace with the value from TELEMETRY_BEARER_TOKEN after running setup-gcp.sh.
-    static let bearerToken = "REPLACE_WITH_TELEMETRY_BEARER_TOKEN"
+    static let serviceURL = URL(string: "https://mcp-inator-telemetry-128251816185.us-central1.run.app")!
+    static let bearerToken = "ff503c3842fd5d6fd6308874ee7f9a4f67ff4ed96d0116b248f94de97fadd873"
 }
