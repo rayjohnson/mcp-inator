@@ -64,6 +64,7 @@ else
     --workload-identity-pool=github-pool \
     --issuer-uri="https://token.actions.githubusercontent.com" \
     --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+    --attribute-condition="attribute.repository in ['${GITHUB_REPO}', '${CATALOG_REPO}']" \
     --project="${PROJECT}"
 fi
 
