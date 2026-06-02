@@ -4,6 +4,7 @@ import Sentry
 // swiftlint:disable:next type_body_length
 struct AddEditConfigView: View {
     @EnvironmentObject private var store: ConfigStore
+    @EnvironmentObject private var catalogStore: CatalogStore
     @Environment(\.dismiss) private var dismiss
 
     let existing: MCPServerConfig?
@@ -35,6 +36,7 @@ struct AddEditConfigView: View {
     @State private var propagationError: String?
     @State private var testResult: ConnectionTestResult?
     @State private var isTesting = false
+    @State private var showSuggest = false
     private let tester = ConnectionTester()
 
     init(existing: MCPServerConfig? = nil, onDelete: (() -> Void)? = nil) {
@@ -81,6 +83,11 @@ struct AddEditConfigView: View {
         }
         .navigationTitle((!propagationAgents.isEmpty || propagationPushed) ? "Push Changes" : title)
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showSuggest) {
+            if let config = existing {
+                SuggestServerView(config: config)
+            }
+        }
     }
 
     // MARK: - Edit Form
@@ -224,7 +231,21 @@ struct AddEditConfigView: View {
                         }
                     }
 
-                    // MARK: Delete (edit mode only)
+                    // MARK: Suggest / Delete (edit mode only)
+                    if isEditMode, let config = existing,
+                       !isPrivate,
+                       !catalogStore.viewModels.contains(where: { $0.entry.serverKey == config.serverKey }) {
+                        Divider()
+                            .padding(.top, 4)
+                        Button {
+                            showSuggest = true
+                        } label: {
+                            Label("Suggest to Catalog", systemImage: "plus.bubble")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
                     if isEditMode {
                         Divider()
                             .padding(.top, 4)

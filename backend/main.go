@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -61,9 +63,36 @@ func (s *firestoreStore) increment(ctx context.Context, key string, now time.Tim
 	return err
 }
 
+// submitRequest mirrors the fields an MCPServerConfig can contribute.
+type submitEnvVar struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IsRequired  bool   `json:"isRequired"`
+	IsSensitive bool   `json:"isSensitive"`
+}
+
+type submitRequest struct {
+	ServerKey     string         `json:"serverKey"`
+	DisplayName   string         `json:"displayName"`
+	TransportType string         `json:"transportType"`
+	Command       string         `json:"command"`
+	Args          []string       `json:"args"`
+	URL           string         `json:"url"`
+	EnvVars       []submitEnvVar `json:"envVars"`
+	Notes         string         `json:"notes"`
+	SubmitterNote string         `json:"submitterNote"`
+}
+
+type submitResponse struct {
+	Status   string `json:"status"`
+	IssueURL string `json:"issueURL,omitempty"`
+	Message  string `json:"message,omitempty"`
+}
+
 type server struct {
 	store       storer
 	bearerToken string
+	githubPAT   string
 }
 
 func (s *server) handleReport(w http.ResponseWriter, r *http.Request) {
@@ -105,6 +134,111 @@ func (s *server) handleReport(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, reportResponse{Status: "ok", Accepted: accepted})
 }
 
+func (s *server) handleSubmit(w http.ResponseWriter, r *http.Request) {
+	auth := r.Header.Get("Authorization")
+	token, found := strings.CutPrefix(auth, "Bearer ")
+	if !found || token != s.bearerToken {
+		writeJSON(w, http.StatusUnauthorized, submitResponse{Status: "error", Message: "unauthorized"})
+		return
+	}
+
+	if s.githubPAT == "" {
+		writeJSON(w, http.StatusServiceUnavailable, submitResponse{Status: "error", Message: "submissions not available yet"})
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeJSON(w, http.StatusRequestEntityTooLarge, submitResponse{Status: "error", Message: "request too large"})
+		return
+	}
+
+	var req submitRequest
+	if err := json.Unmarshal(body, &req); err != nil || req.ServerKey == "" {
+		writeJSON(w, http.StatusBadRequest, submitResponse{Status: "error", Message: "invalid request"})
+		return
+	}
+
+	issueURL, err := s.createSubmissionIssue(r.Context(), req)
+	if err != nil {
+		log.Printf("createSubmissionIssue: %v", err)
+		writeJSON(w, http.StatusServiceUnavailable, submitResponse{Status: "error", Message: "failed to create issue"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, submitResponse{Status: "ok", IssueURL: issueURL})
+}
+
+func (s *server) createSubmissionIssue(ctx context.Context, req submitRequest) (string, error) {
+	configJSON, err := json.MarshalIndent(map[string]interface{}{
+		"serverKey":     req.ServerKey,
+		"displayName":   req.DisplayName,
+		"transportType": req.TransportType,
+		"command":       req.Command,
+		"args":          req.Args,
+		"url":           req.URL,
+		"envVars":       req.EnvVars,
+		"notes":         req.Notes,
+	}, "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	submitterSection := ""
+	if strings.TrimSpace(req.SubmitterNote) != "" {
+		submitterSection = fmt.Sprintf("**Why I use it**: %s\n\n", req.SubmitterNote)
+	}
+
+	issueBody := fmt.Sprintf(`Submitted via mcp-inator.
+
+%s### Structured Config
+
+`+"```json\n%s\n```", submitterSection, string(configJSON))
+
+	title := fmt.Sprintf("[Submission] %s", req.DisplayName)
+
+	payload, err := json.Marshal(map[string]interface{}{
+		"title":  title,
+		"body":   issueBody,
+		"labels": []string{"submission"},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	ghReq, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		"https://api.github.com/repos/rayjohnson/mcp-catalog/issues",
+		bytes.NewReader(payload),
+	)
+	if err != nil {
+		return "", err
+	}
+	ghReq.Header.Set("Authorization", "Bearer "+s.githubPAT)
+	ghReq.Header.Set("Accept", "application/vnd.github+json")
+	ghReq.Header.Set("Content-Type", "application/json")
+	ghReq.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+
+	resp, err := http.DefaultClient.Do(ghReq)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		b, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("github API %d: %s", resp.StatusCode, string(b))
+	}
+
+	var created struct {
+		HTMLURL string `json:"html_url"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&created); err != nil {
+		return "", err
+	}
+	return created.HTMLURL, nil
+}
+
 func writeJSON(w http.ResponseWriter, code int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -133,6 +267,7 @@ func main() {
 	srv := &server{
 		store:       &firestoreStore{client: fsClient},
 		bearerToken: token,
+		githubPAT:   os.Getenv("GITHUB_PAT"),
 	}
 
 	port := os.Getenv("PORT")
@@ -142,6 +277,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /report", srv.handleReport)
+	mux.HandleFunc("POST /submit", srv.handleSubmit)
 
 	log.Printf("listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
