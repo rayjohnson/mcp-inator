@@ -57,5 +57,5 @@ enum SharingPreferences {
 enum TelemetryConfig {
     // swiftlint:disable:next force_unwrapping
     static let serviceURL = URL(string: "https://mcp-inator-telemetry-128251816185.us-central1.run.app")!
-    static let bearerToken = "ff503c3842fd5d6fd6308874ee7f9a4f67ff4ed96d0116b248f94de97fadd873"
+    static let bearerToken = "bb2c119bc11edb4c1c95a32f41ecdc1a4a3519de3b9be6261457c6cc6ccd892c"
 }
