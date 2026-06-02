@@ -93,6 +93,13 @@ gcloud projects add-iam-policy-binding "${PROJECT}" \
 echo "==> Resolving project number..."
 PROJECT_NUMBER=$(gcloud projects describe "${PROJECT}" --format='value(projectNumber)')
 
+echo "==> Granting deploy SA actAs on default compute SA (required for Cloud Run deploy)..."
+gcloud iam service-accounts add-iam-policy-binding \
+  "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:github-actions-deployer@${PROJECT}.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser" \
+  --project="${PROJECT}"
+
 echo "==> Binding deploy SA to WIF for mcp-inator repo..."
 gcloud iam service-accounts add-iam-policy-binding \
   "github-actions-deployer@${PROJECT}.iam.gserviceaccount.com" \

@@ -1,4 +1,4 @@
-- Fix CI deploy: build and push Docker image directly instead of using --source (avoids Cloud Build permission requirement)
+- Fix CI deploy: grant actAs on compute SA so deployer can set Cloud Run service identity; speed up brew install steps by skipping auto-update and making SwiftLint install conditional
 - Add workflow_dispatch to deploy-backend workflow for manual triggering
 - Fix CI deploy: drop --allow-unauthenticated flag (deploy SA lacks setIamPolicy; IAM is set once during infrastructure setup)
 - Anonymous usage telemetry (opt-in): after 7 days the app prompts once per session to share which server keys you use; review screen lets you exclude individual servers; data is POSTed to a Cloud Run service and stored as aggregate counts in Firestore — no IPs, no file paths, no env var values

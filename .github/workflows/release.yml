@@ -27,6 +27,8 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.3.app
 
       - name: Install tools
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew install xcodegen create-dmg
           gem install xcpretty
