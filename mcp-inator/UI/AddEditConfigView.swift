@@ -88,13 +88,22 @@ struct AddEditConfigView: View {
                 SuggestServerView(config: config)
             }
         }
+        .confirmationDialog(
+            "Delete \"\(existing?.displayName ?? "")\"?",
+            isPresented: $confirmingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { deleteServer() }
+            Button("Cancel", role: .cancel) { confirmingDelete = false }
+        } message: {
+            Text("This removes the server from your library and disables it for all agents.")
+        }
     }
 
     // MARK: - Edit Form
 
     private var editFormBody: some View {
         VStack(spacing: 0) {
-            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
@@ -249,45 +258,18 @@ struct AddEditConfigView: View {
                     if isEditMode {
                         Divider()
                             .padding(.top, 4)
-                        if confirmingDelete {
-                            VStack(spacing: 8) {
-                                Text("Delete this server? This removes it from your library and disables it for all agents.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                                HStack(spacing: 12) {
-                                    Button("Cancel") { confirmingDelete = false }
-                                        .frame(maxWidth: .infinity)
-                                    Button("Delete", role: .destructive) { deleteServer() }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.red)
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .id("deleteConfirmButtons")
-                            }
-                        } else {
-                            Button(role: .destructive) {
-                                confirmingDelete = true
-                            } label: {
-                                Label("Delete Server", systemImage: "trash")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(.red)
+                        Button(role: .destructive) {
+                            confirmingDelete = true
+                        } label: {
+                            Label("Delete Server", systemImage: "trash")
+                                .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
                     }
                 }
                 .padding()
             }
-            .onChange(of: confirmingDelete) { isConfirming in
-                if isConfirming {
-                    DispatchQueue.main.async {
-                        withAnimation { proxy.scrollTo("deleteConfirmButtons", anchor: .bottom) }
-                    }
-                }
-            }
-            } // ScrollViewReader
-
             if let error = validationError {
                 Text(error)
                     .foregroundColor(.red)

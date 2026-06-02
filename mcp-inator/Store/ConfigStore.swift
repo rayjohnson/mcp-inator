@@ -14,6 +14,7 @@ final class ConfigStore: ObservableObject {
     // MARK: - Private
 
     private let pool: DatabasePool
+    private var storeChangeObserver: NSObjectProtocol?
 
     // MARK: - Init
 
@@ -30,6 +31,17 @@ final class ConfigStore: ObservableObject {
         pool = try DatabasePool(path: dbURL.path)
         try runMigrations()
         try reload()
+
+        // In the UI process, listen for writes made by the MCP server process.
+        if !CommandLine.arguments.contains("--mcp-server") {
+            storeChangeObserver = DistributedNotificationCenter.default().addObserver(
+                forName: .mcpinatorStoreChanged,
+                object: nil,
+                queue: nil
+            ) { [weak self] _ in
+                Task { @MainActor [weak self] in try? self?.reload() }
+            }
+        }
     }
 
     init(databasePath: URL) throws {
@@ -60,6 +72,11 @@ final class ConfigStore: ObservableObject {
     func reload() throws {
         configs = try pool.read { db in try MCPServerConfig.fetchAll(db) }
         agents  = try pool.read { db in try AgentRecord.fetchAll(db) }
+
+        // Signal the UI process when a write is made by the MCP server process.
+        if CommandLine.arguments.contains("--mcp-server") {
+            DistributedNotificationCenter.default().post(name: .mcpinatorStoreChanged, object: nil)
+        }
     }
 
     var visibleAgents: [AgentRecord] { agents.filter(\.isVisible) }
@@ -291,11 +308,6 @@ final class ConfigStore: ObservableObject {
 
     // MARK: - Discovery (T030)
 
-    struct DiscoveryResult {
-        let agent: AgentRecord
-        let isNew: Bool
-    }
-
     func discoverAgents(adapters: [any AgentAdapter]) throws -> [DiscoveryResult] {
         var results: [DiscoveryResult] = []
         for adapter in adapters {
@@ -326,12 +338,6 @@ final class ConfigStore: ObservableObject {
     }
 
     // MARK: - Import Categorisation (T035)
-
-    enum ImportCategory {
-        case new(MCPServerConfig)
-        case exactMatch(MCPServerConfig)
-        case conflict(library: MCPServerConfig, onDisk: MCPServerConfig)
-    }
 
     func categorizeImport(
         from adapter: any AgentAdapter,
@@ -406,11 +412,6 @@ final class ConfigStore: ObservableObject {
 
     // MARK: - Status Matrix (T055)
 
-    struct StatusRow {
-        let config: MCPServerConfig
-        let agentStates: [(agent: AgentRecord, state: EffectiveState)]
-    }
-
     func fetchStatusMatrix() throws -> [StatusRow] {
         try pool.read { db in
             let allConfigs = try MCPServerConfig.fetchAll(db)
@@ -454,12 +455,6 @@ final class ConfigStore: ObservableObject {
 
     // MARK: - Bulk Enable (T046)
 
-    struct BulkEnableResult {
-        let succeeded: [UUID]
-        let failed: [(uuid: UUID, error: Error)]
-        let driftDetected: [(uuid: UUID, result: WriteResult)]
-    }
-
     func bulkEnableConfigs(
         uuids: [UUID],
         agentId: Int64,
@@ -486,4 +481,34 @@ final class ConfigStore: ObservableObject {
         }
         return BulkEnableResult(succeeded: succeeded, failed: failed, driftDetected: drifted)
     }
+}
+
+// MARK: - Notification name
+
+extension NSNotification.Name {
+    static let mcpinatorStoreChanged = NSNotification.Name("com.mcp-inator.storeChanged")
+}
+
+// MARK: - ConfigStore value types
+
+struct DiscoveryResult {
+    let agent: AgentRecord
+    let isNew: Bool
+}
+
+enum ImportCategory {
+    case new(MCPServerConfig)
+    case exactMatch(MCPServerConfig)
+    case conflict(library: MCPServerConfig, onDisk: MCPServerConfig)
+}
+
+struct StatusRow {
+    let config: MCPServerConfig
+    let agentStates: [(agent: AgentRecord, state: EffectiveState)]
+}
+
+struct BulkEnableResult {
+    let succeeded: [UUID]
+    let failed: [(uuid: UUID, error: Error)]
+    let driftDetected: [(uuid: UUID, result: WriteResult)]
 }
