@@ -1,3 +1,4 @@
+- Fix duplicate "mcp-inator Help" entry in Application → Help menu; add app icon header to Help window
 - In-app help: new Help window (accessible from the menu bar popover footer and the Application → Help menu in dock mode) covering four topics — What is mcp-inator?, Adding and Configuring Servers, The Catalog, and Usage Sharing
 - README overhaul: hero screenshot, Quick Start (3 steps), Features section with agent support matrix, and Privacy section
 - MCP tool fixes: add_server now supports HTTP/SSE transport (pass transport_type and url); MCP writes now immediately refresh the UI via DistributedNotificationCenter; connection test works correctly for SSE servers
