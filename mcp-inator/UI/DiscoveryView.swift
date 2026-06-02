@@ -3,12 +3,12 @@ import SwiftUI
 struct DiscoveryView: View {
     @EnvironmentObject private var store: ConfigStore
 
-    let results: [ConfigStore.DiscoveryResult]
+    let results: [DiscoveryResult]
     var onDismiss: () -> Void
 
     @State private var managedAgentTypes: Set<AgentType>
 
-    init(results: [ConfigStore.DiscoveryResult], onDismiss: @escaping () -> Void) {
+    init(results: [DiscoveryResult], onDismiss: @escaping () -> Void) {
         self.results = results
         self.onDismiss = onDismiss
         _managedAgentTypes = State(initialValue: Set(

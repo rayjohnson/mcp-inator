@@ -4,6 +4,7 @@ import Sentry
 // swiftlint:disable:next type_body_length
 struct AddEditConfigView: View {
     @EnvironmentObject private var store: ConfigStore
+    @EnvironmentObject private var catalogStore: CatalogStore
     @Environment(\.dismiss) private var dismiss
 
     let existing: MCPServerConfig?
@@ -35,6 +36,7 @@ struct AddEditConfigView: View {
     @State private var propagationError: String?
     @State private var testResult: ConnectionTestResult?
     @State private var isTesting = false
+    @State private var showSuggest = false
     private let tester = ConnectionTester()
 
     init(existing: MCPServerConfig? = nil, onDelete: (() -> Void)? = nil) {
@@ -81,13 +83,27 @@ struct AddEditConfigView: View {
         }
         .navigationTitle((!propagationAgents.isEmpty || propagationPushed) ? "Push Changes" : title)
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showSuggest) {
+            if let config = existing {
+                SuggestServerView(config: config)
+            }
+        }
+        .confirmationDialog(
+            "Delete \"\(existing?.displayName ?? "")\"?",
+            isPresented: $confirmingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { deleteServer() }
+            Button("Cancel", role: .cancel) { confirmingDelete = false }
+        } message: {
+            Text("This removes the server from your library and disables it for all agents.")
+        }
     }
 
     // MARK: - Edit Form
 
     private var editFormBody: some View {
         VStack(spacing: 0) {
-            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
@@ -224,49 +240,36 @@ struct AddEditConfigView: View {
                         }
                     }
 
-                    // MARK: Delete (edit mode only)
+                    // MARK: Suggest / Delete (edit mode only)
+                    if isEditMode, let config = existing,
+                       !isPrivate,
+                       !catalogStore.viewModels.contains(where: { $0.entry.serverKey == config.serverKey }) {
+                        Divider()
+                            .padding(.top, 4)
+                        Button {
+                            showSuggest = true
+                        } label: {
+                            Label("Suggest to Catalog", systemImage: "plus.bubble")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
                     if isEditMode {
                         Divider()
                             .padding(.top, 4)
-                        if confirmingDelete {
-                            VStack(spacing: 8) {
-                                Text("Delete this server? This removes it from your library and disables it for all agents.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                                HStack(spacing: 12) {
-                                    Button("Cancel") { confirmingDelete = false }
-                                        .frame(maxWidth: .infinity)
-                                    Button("Delete", role: .destructive) { deleteServer() }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.red)
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .id("deleteConfirmButtons")
-                            }
-                        } else {
-                            Button(role: .destructive) {
-                                confirmingDelete = true
-                            } label: {
-                                Label("Delete Server", systemImage: "trash")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(.red)
+                        Button(role: .destructive) {
+                            confirmingDelete = true
+                        } label: {
+                            Label("Delete Server", systemImage: "trash")
+                                .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
                     }
                 }
                 .padding()
             }
-            .onChange(of: confirmingDelete) { isConfirming in
-                if isConfirming {
-                    DispatchQueue.main.async {
-                        withAnimation { proxy.scrollTo("deleteConfirmButtons", anchor: .bottom) }
-                    }
-                }
-            }
-            } // ScrollViewReader
-
             if let error = validationError {
                 Text(error)
                     .foregroundColor(.red)

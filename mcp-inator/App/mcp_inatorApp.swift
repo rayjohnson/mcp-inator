@@ -290,7 +290,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 final class DiscoveryWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
 
-    func show(results: [ConfigStore.DiscoveryResult], store: ConfigStore) {
+    func show(results: [DiscoveryResult], store: ConfigStore) {
         guard window == nil else { return }
 
         let view = DiscoveryView(results: results, onDismiss: { [weak self] in

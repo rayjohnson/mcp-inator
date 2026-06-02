@@ -28,6 +28,7 @@
 		2E5B4594ABC6042E399DCCE6 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F68EC4EB8D4D17E1DA079D1E /* Sentry */; };
 		2F0DA0B200410D50277841A3 /* RegistryClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DD36F7DDC9A9860FE4EDEA /* RegistryClientTests.swift */; };
 		33053242EE65629DBFB1B090 /* CatalogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C228AE4F2C3BDADFAEC9E /* CatalogDetailView.swift */; };
+		3596E0175ECC391750E0B233 /* CatalogSubmissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED518DAD2D90688768C299A /* CatalogSubmissionService.swift */; };
 		3FBF669EF46E71655E39D8F2 /* Migration005.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673672951A0D420C1E6170F5 /* Migration005.swift */; };
 		400927860892CA6B0842C128 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */; };
 		453B363D5CDB11421F5D6C53 /* ConnectionTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */; };
@@ -75,6 +76,7 @@
 		A1A2821481A692361A7A1649 /* AgentAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37D5345D3420AEF5883EFC /* AgentAdapter.swift */; };
 		ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */; };
 		AC53161BD0A5CB8B45259502 /* RegistryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CC96624DE869D9F82E2505 /* RegistryStoreTests.swift */; };
+		B19C5107F046EF85A91E7447 /* SuggestServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BC8677A1837BA59A1814F5 /* SuggestServerView.swift */; };
 		B3F24BE0BA8D8436E74603EE /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A789E346EC685FBD34C7C235 /* CatalogStore.swift */; };
 		B87D7C53A59072AA20ED57AB /* zed_settings.json in Resources */ = {isa = PBXBuildFile; fileRef = F3E3552DC6AD70648D0CA1CD /* zed_settings.json */; };
 		B8F4435B355967AA1318B6A3 /* RegistryEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1C956B68491FA9BE832D21 /* RegistryEntryTests.swift */; };
@@ -145,6 +147,7 @@
 		30560F888607C8CDB96E1EDA /* Migration001.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration001.swift; sourceTree = "<group>"; };
 		321510F7DE0AC3347438F283 /* SharingReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingReviewView.swift; sourceTree = "<group>"; };
 		32C057F5CFACEFE7B55E6BCA /* CatalogClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogClient.swift; sourceTree = "<group>"; };
+		37BC8677A1837BA59A1814F5 /* SuggestServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestServerView.swift; sourceTree = "<group>"; };
 		37F1FD08B9BD4BAD09187956 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiDesktopAdapterTests.swift; sourceTree = "<group>"; };
 		3A762F05A3F65129BC592917 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
@@ -190,6 +193,7 @@
 		A3B865013EA65AAE8229C657 /* AgentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRecord.swift; sourceTree = "<group>"; };
 		A789E346EC685FBD34C7C235 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
 		ACE92C3D0FF0F195C1DEE50F /* Migration006.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration006.swift; sourceTree = "<group>"; };
+		AED518DAD2D90688768C299A /* CatalogSubmissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSubmissionService.swift; sourceTree = "<group>"; };
 		AFE8B8FA13F587123365E245 /* Migration004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration004.swift; sourceTree = "<group>"; };
 		B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveFieldTests.swift; sourceTree = "<group>"; };
 		B1DD36F7DDC9A9860FE4EDEA /* RegistryClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistryClientTests.swift; sourceTree = "<group>"; };
@@ -348,6 +352,7 @@
 				248D5AE687DBC05E2A3D1AA5 /* PreferencesView.swift */,
 				E98BD45F6BC8E244D4E0624B /* SharingConsentView.swift */,
 				321510F7DE0AC3347438F283 /* SharingReviewView.swift */,
+				37BC8677A1837BA59A1814F5 /* SuggestServerView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -418,7 +423,7 @@
 				1876009CB9EF08303E122849 /* ConfigStoreTests.swift */,
 				F0EB2096A1EA02DB27CCBA4E /* ConnectionTesterTests.swift */,
 				38F6749549191E257D4F63A9 /* GeminiDesktopAdapterTests.swift */,
-						062B29929666B95C6887ECAE /* MCPServerConfigEquatableTests.swift */,
+				062B29929666B95C6887ECAE /* MCPServerConfigEquatableTests.swift */,
 				56E4117000B48D5E6022D835 /* MCPToolHandlerTests.swift */,
 				B1DD36F7DDC9A9860FE4EDEA /* RegistryClientTests.swift */,
 				7F1C956B68491FA9BE832D21 /* RegistryEntryTests.swift */,
@@ -454,6 +459,7 @@
 			children = (
 				32C057F5CFACEFE7B55E6BCA /* CatalogClient.swift */,
 				A789E346EC685FBD34C7C235 /* CatalogStore.swift */,
+				AED518DAD2D90688768C299A /* CatalogSubmissionService.swift */,
 				00FDDFF5C5091102C5B67845 /* ConnectionTester.swift */,
 				2BC3F99DF88E320E1D1FCDF0 /* RegistryClient.swift */,
 				14925175871D556D6556A060 /* RegistryStore.swift */,
@@ -626,6 +632,7 @@
 				49C139F2C652AF12C85B2621 /* CatalogEntry.swift in Sources */,
 				50976F473DE40F2112AAD598 /* CatalogEntryDetailView.swift in Sources */,
 				B3F24BE0BA8D8436E74603EE /* CatalogStore.swift in Sources */,
+				3596E0175ECC391750E0B233 /* CatalogSubmissionService.swift in Sources */,
 				8659AD4092A2503E6C1E79C3 /* CatalogView.swift in Sources */,
 				85B079D9EB93DDCAA8010FE6 /* ClaudeCodeAdapter.swift in Sources */,
 				71F05D0A5B9BB688FCB269C1 /* CodexCLIAdapter.swift in Sources */,
@@ -656,6 +663,7 @@
 				283E1F88AC97E121BA88FE42 /* SharingPreferences.swift in Sources */,
 				5CB80F6CEA2ECF5D2BBFF0D2 /* SharingReviewView.swift in Sources */,
 				EBF6FFCF9F935C8238AA03F3 /* StringExtensions.swift in Sources */,
+				B19C5107F046EF85A91E7447 /* SuggestServerView.swift in Sources */,
 				DE69884DF6F47E398AB72305 /* UsageSharingService.swift in Sources */,
 				D6C11B1C5BD27B528707A28C /* ZedAdapter.swift in Sources */,
 				CD942979217CDD9C83888173 /* main.swift in Sources */,
@@ -686,7 +694,7 @@
 				BD63C7C89D880E06086E37A3 /* FileBasedAdapterTests.swift in Sources */,
 				9D56C739C96A2204F5D0E255 /* GeminiCLIAdapterTests.swift in Sources */,
 				ABF9EE50C4FC84D9D135F9AC /* GeminiDesktopAdapterTests.swift in Sources */,
-						9680CAFED3EC68BA8DEBD628 /* MCPServerConfigEquatableTests.swift in Sources */,
+				9680CAFED3EC68BA8DEBD628 /* MCPServerConfigEquatableTests.swift in Sources */,
 				48E52DCFCDB5F632E463C938 /* MCPServerTests.swift in Sources */,
 				F3C7E6D23AAC6499C9678663 /* MCPToolHandlerTests.swift in Sources */,
 				2F0DA0B200410D50277841A3 /* RegistryClientTests.swift in Sources */,

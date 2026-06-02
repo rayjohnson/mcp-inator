@@ -44,4 +44,6 @@ jobs:
           region: ${{ vars.GCP_REGION }}
           project_id: ${{ vars.GCP_PROJECT }}
           image: ${{ env.IMAGE }}
-          env_vars: TELEMETRY_BEARER_TOKEN=${{ secrets.TELEMETRY_BEARER_TOKEN }}
+          env_vars: |
+            TELEMETRY_BEARER_TOKEN=${{ secrets.TELEMETRY_BEARER_TOKEN }}
+            GITHUB_PAT=${{ secrets.CATALOG_GITHUB_PAT }}

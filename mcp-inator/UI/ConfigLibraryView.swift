@@ -8,7 +8,7 @@ struct ConfigLibraryView: View {
     @State private var showAddConfig = false
     @State private var editingConfig: MCPServerConfig?
     @State private var confirmDelete: MCPServerConfig?
-    @State private var statusMatrix: [ConfigStore.StatusRow] = []
+    @State private var statusMatrix: [StatusRow] = []
     @State private var searchText = ""
 
     private var filteredConfigs: [MCPServerConfig] {
