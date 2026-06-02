@@ -7,6 +7,7 @@ struct AddEditConfigView: View {
     @Environment(\.dismiss) private var dismiss
 
     let existing: MCPServerConfig?
+    var onDelete: (() -> Void)?
 
     @State private var displayName: String
     @State private var serverKey: String
@@ -36,8 +37,9 @@ struct AddEditConfigView: View {
     @State private var isTesting = false
     private let tester = ConnectionTester()
 
-    init(existing: MCPServerConfig? = nil) {
+    init(existing: MCPServerConfig? = nil, onDelete: (() -> Void)? = nil) {
         self.existing = existing
+        self.onDelete = onDelete
         _displayName     = State(initialValue: existing?.displayName ?? "")
         _serverKey       = State(initialValue: existing?.serverKey ?? "")
         _serverKeyEdited = State(initialValue: existing != nil)
@@ -421,7 +423,7 @@ struct AddEditConfigView: View {
         breadcrumb("delete: removing server '\(config.serverKey)'")
         do {
             try store.delete(config)
-            dismiss()
+            if let onDelete { onDelete() } else { dismiss() }
         } catch {
             breadcrumb("delete: failed — \(error.localizedDescription)", level: .error)
             validationError = "Delete failed: \(error.localizedDescription)"

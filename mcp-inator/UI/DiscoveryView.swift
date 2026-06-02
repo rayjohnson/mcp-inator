@@ -135,7 +135,7 @@ struct DiscoveryView: View {
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Spacer()
-                Button("Done") { onDismiss() }
+                Button("Done") { applyAndDismiss() }
                     .buttonStyle(.borderedProminent)
                     .padding()
             }
@@ -155,6 +155,15 @@ struct DiscoveryView: View {
                 }
             }
         )
+    }
+
+    private func applyAndDismiss() {
+        for result in results where !result.agent.agentType.isAppManaged {
+            guard let agentId = result.agent.id else { continue }
+            let managed = managedAgentTypes.contains(result.agent.agentType)
+            try? store.setAgentVisibility(agentId: agentId, visible: managed)
+        }
+        onDismiss()
     }
 
     private func prepareImport(for agent: AgentRecord) {

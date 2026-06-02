@@ -56,7 +56,7 @@ struct MainWindowView: View {
                 case .servers:
                     if let config = selectedServer, !config.isBuiltIn {
                         NavigationStack {
-                            AddEditConfigView(existing: config)
+                            AddEditConfigView(existing: config, onDelete: {})
                                 .environmentObject(store)
                         }
                         .id(config.uuid)
