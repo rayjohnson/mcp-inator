@@ -1,3 +1,4 @@
+- Discovery view: per-agent toggle lets you opt out of mcp-inator managing any agent's config file; explanatory text clarifies that enabling an agent allows mcp-inator to read and write its config; fixed blank sheet when tapping Import on a newly-discovered agent
 - Fix CI deploy: grant actAs on compute SA so deployer can set Cloud Run service identity; speed up brew install steps by skipping auto-update and making SwiftLint install conditional
 - Add workflow_dispatch to deploy-backend workflow for manual triggering
 - Fix CI deploy: drop --allow-unauthenticated flag (deploy SA lacks setIamPolicy; IAM is set once during infrastructure setup)
