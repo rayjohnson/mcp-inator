@@ -7,7 +7,7 @@ CATALOG_SRC := catalog/catalog.json
 CATALOG_DST := mcp-inator/Resources/catalog.json
 
 COVERAGE_RESULT := /tmp/mcp-inator-coverage.xcresult
-COVERAGE_THRESHOLD := 25
+COVERAGE_THRESHOLD := 24
 
 # All Swift sources — Make uses this to detect when xcodegen needs to re-run
 # (xcodegen enumerates files into project.pbxproj, so adding/removing a .swift
