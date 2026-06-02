@@ -19,6 +19,9 @@ gcloud services enable \
   iamcredentials.googleapis.com \
   --project="${PROJECT}"
 
+echo "==> Waiting 30s for API enablement to propagate..."
+sleep 30
+
 echo "==> Creating Firestore database (native mode)..."
 if gcloud firestore databases describe --project="${PROJECT}" &>/dev/null; then
   echo "    Firestore database already exists, skipping."
