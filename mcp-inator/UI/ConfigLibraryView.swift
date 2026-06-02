@@ -9,11 +9,7 @@ struct ConfigLibraryView: View {
     @State private var editingConfig: MCPServerConfig?
     @State private var confirmDelete: MCPServerConfig?
     @State private var statusMatrix: [ConfigStore.StatusRow] = []
-    @State private var importSource: ImportSource?
-    @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
     @State private var searchText = ""
-
-    private var importSources: [ImportSource] { ImportSourceScanner().scan() }
 
     private var filteredConfigs: [MCPServerConfig] {
         filterConfigs(store.configs, query: searchText)
@@ -38,17 +34,6 @@ struct ConfigLibraryView: View {
         .sheet(isPresented: $showAddConfig) {
             AddEditConfigView()
                 .environmentObject(store)
-        }
-        .navigationDestination(
-            isPresented: Binding(
-                get: { importSource != nil },
-                set: { if !$0 { importSource = nil } }
-            )
-        ) {
-            if let source = importSource {
-                ImportReviewView(source: source, categories: importCategories)
-                    .environmentObject(store)
-            }
         }
         .navigationDestination(
             isPresented: Binding(
@@ -132,20 +117,6 @@ struct ConfigLibraryView: View {
                 }
                 .buttonStyle(.plain)
 
-                if !importSources.isEmpty {
-                    Spacer()
-                    Menu {
-                        ForEach(importSources, id: \.agentType) { source in
-                            Button(source.displayName) { prepareImport(for: source) }
-                                .disabled(!source.isImportable)
-                                .help(source.unavailableReason ?? "")
-                        }
-                    } label: {
-                        Label("Import…", systemImage: "square.and.arrow.down")
-                            .font(.callout)
-                            .foregroundColor(.secondary)
-                    }
-                }
             }
             .listRowBackground(Color.clear)
 
@@ -184,11 +155,6 @@ struct ConfigLibraryView: View {
         statusMatrix = (try? store.fetchStatusMatrix()) ?? []
     }
 
-    private func prepareImport(for source: ImportSource) {
-        guard let categories = try? store.categorizeImport(from: source.adapter, configPath: source.configPath) else { return }
-        importCategories = categories
-        importSource = source
-    }
 }
 
 // MARK: - Filter logic

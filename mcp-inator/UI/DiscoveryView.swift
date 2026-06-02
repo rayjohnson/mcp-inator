@@ -7,8 +7,6 @@ struct DiscoveryView: View {
     var onDismiss: () -> Void
 
     @State private var managedAgentTypes: Set<AgentType>
-    @State private var importTarget: AgentRecord?
-    @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
 
     init(results: [ConfigStore.DiscoveryResult], onDismiss: @escaping () -> Void) {
         self.results = results
@@ -31,24 +29,6 @@ struct DiscoveryView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Skip All") { onDismiss() }
-                }
-            }
-            .sheet(item: $importTarget) { agent in
-                if let adapter = AdapterRegistry.adapter(for: agent.agentType) {
-                    ImportReviewView(
-                        source: ImportSource(
-                            displayName: agent.displayName,
-                            agentType: agent.agentType,
-                            adapter: adapter,
-                            configPath: URL(fileURLWithPath: agent.configPath),
-                            isImportable: true,
-                            unavailableReason: nil
-                        ),
-                        categories: importCategories,
-                        agentId: agent.id
-                    )
-                    .environmentObject(store)
-                    .frame(width: 440, height: 380)
                 }
             }
         }
@@ -121,11 +101,6 @@ struct DiscoveryView: View {
                             .padding(.vertical, 2)
                             .background(Color.secondary.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 4))
-                    } else if managedAgentTypes.contains(result.agent.agentType) {
-                        Button("Import…") {
-                            prepareImport(for: result.agent)
-                        }
-                        .buttonStyle(.bordered)
                     }
                 }
                 .padding(.vertical, 2)
@@ -162,18 +137,10 @@ struct DiscoveryView: View {
             guard let agentId = result.agent.id else { continue }
             let managed = managedAgentTypes.contains(result.agent.agentType)
             try? store.setAgentVisibility(agentId: agentId, visible: managed)
+            if managed, let adapter = AdapterRegistry.adapter(for: result.agent.agentType) {
+                try? store.autoImport(agent: result.agent, adapter: adapter)
+            }
         }
         onDismiss()
-    }
-
-    private func prepareImport(for agent: AgentRecord) {
-        guard let adapter = AdapterRegistry.adapter(for: agent.agentType) else { return }
-        let configURL = URL(fileURLWithPath: agent.configPath)
-        do {
-            importCategories = try store.categorizeImport(from: adapter, configPath: configURL)
-            importTarget = agent
-        } catch {
-            // If we can't read the agent file, just skip silently
-        }
     }
 }
