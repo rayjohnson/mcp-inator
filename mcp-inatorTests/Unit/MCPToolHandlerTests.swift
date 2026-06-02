@@ -123,9 +123,53 @@ final class MCPToolHandlerTests: XCTestCase {
     }
 
     func testAddServer_missingCommand() async throws {
-        let result = await call("add_server", ["name": "Tool"])
+        let result = await call("add_server", ["name": "Tool", "transport_type": "stdio"])
         XCTAssertTrue(isError(result))
         XCTAssertTrue(text(from: result).contains("'command'"))
+    }
+
+    func testAddServer_sseTransport() async throws {
+        let result = await call("add_server", [
+            "name": "OpenTofu",
+            "transport_type": "sse",
+            "url": "https://mcp.opentofu.org/sse"
+        ])
+        XCTAssertFalse(isError(result), text(from: result))
+        let config = try XCTUnwrap(store.configs.first)
+        XCTAssertEqual(config.serverKey, "opentofu")
+        XCTAssertEqual(config.transportType, .sse)
+        XCTAssertEqual(config.url, "https://mcp.opentofu.org/sse")
+        XCTAssertTrue(config.command.isEmpty)
+    }
+
+    func testAddServer_httpTransport() async throws {
+        let result = await call("add_server", [
+            "name": "My Remote",
+            "transport_type": "http",
+            "url": "https://api.example.com/mcp"
+        ])
+        XCTAssertFalse(isError(result), text(from: result))
+        let config = try XCTUnwrap(store.configs.first)
+        XCTAssertEqual(config.transportType, .http)
+        XCTAssertEqual(config.url, "https://api.example.com/mcp")
+    }
+
+    func testAddServer_sseTransport_missingURL() async throws {
+        let result = await call("add_server", ["name": "Remote", "transport_type": "sse"])
+        XCTAssertTrue(isError(result))
+        XCTAssertTrue(text(from: result).contains("'url'"))
+    }
+
+    func testAddServer_invalidTransportType() async throws {
+        let result = await call("add_server", ["name": "Bad", "transport_type": "websocket"])
+        XCTAssertTrue(isError(result))
+        XCTAssertTrue(text(from: result).contains("Invalid transport_type"))
+    }
+
+    func testAddServer_defaultsToStdio() async throws {
+        let result = await call("add_server", ["name": "Tool", "command": "npx"])
+        XCTAssertFalse(isError(result), text(from: result))
+        XCTAssertEqual(store.configs.first?.transportType, .stdio)
     }
 
     // MARK: - remove_server

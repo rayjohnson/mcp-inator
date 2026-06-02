@@ -25,16 +25,31 @@ struct MCPToolHandler: @unchecked Sendable {
             ),
             Tool(
                 name: "add_server",
-                description: "Add a new stdio MCP server configuration to the library.",
+                description: """
+                    Add an MCP server configuration to the library. \
+                    Supports stdio (local process) and HTTP/SSE (remote) transports. \
+                    For HTTP or SSE servers provide transport_type and url; command/args are not used. \
+                    For stdio servers provide command and optional args/env; url is not used.
+                    """,
                 inputSchema: .object([
                     "type": "object",
                     "properties": .object([
-                        "name": .object(["type": "string", "description": "Display name (e.g. 'Playwright')"]),
-                        "command": .object(["type": "string", "description": "Executable path or name (e.g. 'npx')"]),
-                        "args": .object(["type": "array", "items": .object(["type": "string"]), "description": "CLI arguments"]),
-                        "env": .object(["type": "object", "additionalProperties": .object(["type": "string"]), "description": "Environment variables"])
+                        "name": .object(["type": "string", "description": "Display name (e.g. 'OpenTofu')"]),
+                        "transport_type": .object([
+                            "type": "string",
+                            "enum": .array(["stdio", "http", "sse"]),
+                            "description": "Transport type. Defaults to 'stdio' if omitted."
+                        ]),
+                        "url": .object(["type": "string", "description": "Endpoint URL for http or sse transport (e.g. 'https://mcp.example.com/sse')"]),
+                        "command": .object(["type": "string", "description": "Executable for stdio transport (e.g. 'npx')"]),
+                        "args": .object(["type": "array", "items": .object(["type": "string"]), "description": "CLI arguments for stdio transport"]),
+                        "env": .object([
+                            "type": "object",
+                            "additionalProperties": .object(["type": "string"]),
+                            "description": "Environment variables for stdio transport"
+                        ])
                     ]),
-                    "required": .array(["name", "command"])
+                    "required": .array(["name"])
                 ])
             ),
             Tool(
@@ -145,25 +160,44 @@ struct MCPToolHandler: @unchecked Sendable {
         guard let name = args["name"]?.stringValue, !name.isEmpty else {
             return toolError("Missing required argument: 'name'")
         }
-        guard let command = args["command"]?.stringValue, !command.isEmpty else {
-            return toolError("Missing required argument: 'command'")
+
+        let transportRaw = args["transport_type"]?.stringValue ?? "stdio"
+        guard let transport = TransportType(rawValue: transportRaw) else {
+            return toolError("Invalid transport_type '\(transportRaw)'; must be stdio, http, or sse")
         }
-        let cliArgs: [String] = args["args"]?.arrayValue?.compactMap(\.stringValue) ?? []
-        let envVars: [EnvVar] = args["env"]?.objectValue?.sorted(by: { $0.key < $1.key })
-            .map { EnvVar(key: $0.key, value: $0.value.stringValue ?? "") } ?? []
 
         let serverKey = MCPServerConfig.generateKey(from: name)
         if store.configs.contains(where: { $0.serverKey == serverKey }) {
             return toolError("server '\(serverKey)' already exists")
         }
 
-        let config = MCPServerConfig(
-            displayName: name,
-            serverKey: serverKey,
-            command: command,
-            args: cliArgs,
-            envVars: envVars
-        )
+        let config: MCPServerConfig
+        if transport == .http || transport == .sse {
+            guard let url = args["url"]?.stringValue, !url.isEmpty else {
+                return toolError("'url' is required for \(transportRaw) transport")
+            }
+            config = MCPServerConfig(
+                displayName: name,
+                serverKey: serverKey,
+                transportType: transport,
+                url: url
+            )
+        } else {
+            guard let command = args["command"]?.stringValue, !command.isEmpty else {
+                return toolError("'command' is required for stdio transport")
+            }
+            let cliArgs: [String] = args["args"]?.arrayValue?.compactMap(\.stringValue) ?? []
+            let envVars: [EnvVar] = args["env"]?.objectValue?.sorted(by: { $0.key < $1.key })
+                .map { EnvVar(key: $0.key, value: $0.value.stringValue ?? "") } ?? []
+            config = MCPServerConfig(
+                displayName: name,
+                serverKey: serverKey,
+                command: command,
+                args: cliArgs,
+                envVars: envVars
+            )
+        }
+
         do {
             _ = try store.insert(config)
             return CallTool.Result(
