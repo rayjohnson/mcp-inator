@@ -2,7 +2,6 @@ import SwiftUI
 
 // Shows all library configs for a specific agent with enable/disable toggles.
 // Handles drift detection, conflict detection, restart notifications, and path overrides.
-// swiftlint:disable:next type_body_length
 struct AgentListView: View {
     @EnvironmentObject private var store: ConfigStore
     @Environment(\.dismiss) private var dismiss
@@ -16,8 +15,6 @@ struct AgentListView: View {
     @State private var writeErrorBanner: String?
     @State private var showPathOverride = false
     @State private var customPathInput: String = ""
-    @State private var showImportReview = false
-    @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
     @State private var cloudMCPs: [ClaudeCodeAdapter.CloudManagedMCP] = []
 
     private struct PendingWrite {
@@ -48,13 +45,9 @@ struct AgentListView: View {
                 unavailableBanner
             } else if store.configs.isEmpty && cloudMCPs.isEmpty {
                 Spacer()
-                VStack(spacing: 12) {
-                    Text("No configs in your library yet.")
-                        .foregroundColor(.secondary)
-                    Button("Import from \(agent.displayName)…") { triggerImport() }
-                        .buttonStyle(.borderedProminent)
-                }
-                .frame(maxWidth: .infinity)
+                Text("No configs in your library yet.")
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 configRows
@@ -115,21 +108,6 @@ struct AgentListView: View {
         .toolbar { toolbarContent }
         .navigationDestination(isPresented: $showPathOverride) {
             pathOverrideView
-        }
-        .navigationDestination(isPresented: $showImportReview) {
-            ImportReviewView(
-                source: ImportSource(
-                    displayName: agent.displayName,
-                    agentType: agent.agentType,
-                    adapter: adapter,
-                    configPath: configPath,
-                    isImportable: true,
-                    unavailableReason: nil
-                ),
-                categories: importCategories,
-                agentId: agent.id
-            )
-            .environmentObject(store)
         }
         .onAppear {
             refreshEnabledSet()
@@ -243,15 +221,6 @@ struct AgentListView: View {
                     action: { dismiss() },
                     label: { Label("Back", systemImage: "chevron.left") }
                 )
-            }
-        }
-        if !agent.agentType.isAppManaged {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button("Import from \(agent.displayName)…") { triggerImport() }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                }
             }
         }
     }
@@ -423,17 +392,6 @@ struct AgentListView: View {
         }
         .navigationTitle("Change Config Path")
         .navigationBarBackButtonHidden(true)
-    }
-
-    // MARK: - Import
-
-    private func triggerImport() {
-        do {
-            importCategories = try store.categorizeImport(from: adapter, configPath: configPath)
-            showImportReview = true
-        } catch {
-            writeErrorBanner = describeError(error, configPath: configPath)
-        }
     }
 
     // MARK: - Helpers

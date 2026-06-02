@@ -357,6 +357,21 @@ final class ConfigStore: ObservableObject {
         return results
     }
 
+    // MARK: - Auto Import (on consent)
+
+    func autoImport(agent: AgentRecord, adapter: any AgentAdapter) throws {
+        guard let agentId = agent.id else { return }
+        let configPath = URL(fileURLWithPath: agent.configPath)
+        let decisions: [(key: String, config: MCPServerConfig)] =
+            try categorizeImport(from: adapter, configPath: configPath).map { key, category in
+                switch category {
+                case .new(let cfg), .exactMatch(let cfg): return (key, cfg)
+                case .conflict(let library, _): return (key, library)
+                }
+            }
+        try applyImportDecisions(decisions, agentId: agentId)
+    }
+
     // MARK: - Apply Import Decisions (T054)
 
     func applyImportDecisions(

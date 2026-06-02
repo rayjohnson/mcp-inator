@@ -6,9 +6,15 @@ struct DiscoveryView: View {
     let results: [ConfigStore.DiscoveryResult]
     var onDismiss: () -> Void
 
-    @State private var importTarget: AgentRecord?
-    @State private var showImportReview = false
-    @State private var importCategories: [(key: String, category: ConfigStore.ImportCategory)] = []
+    @State private var managedAgentTypes: Set<AgentType>
+
+    init(results: [ConfigStore.DiscoveryResult], onDismiss: @escaping () -> Void) {
+        self.results = results
+        self.onDismiss = onDismiss
+        _managedAgentTypes = State(initialValue: Set(
+            results.map(\.agent.agentType).filter { !$0.isAppManaged }
+        ))
+    }
 
     var body: some View {
         NavigationStack {
@@ -25,27 +31,8 @@ struct DiscoveryView: View {
                     Button("Skip All") { onDismiss() }
                 }
             }
-            .sheet(isPresented: $showImportReview) {
-                if let agent = importTarget,
-                   let adapter = AdapterRegistry.adapter(for: agent.agentType) {
-                    ImportReviewView(
-                        source: ImportSource(
-                            displayName: agent.displayName,
-                            agentType: agent.agentType,
-                            adapter: adapter,
-                            configPath: URL(fileURLWithPath: agent.configPath),
-                            isImportable: true,
-                            unavailableReason: nil
-                        ),
-                        categories: importCategories,
-                        agentId: agent.id
-                    )
-                    .environmentObject(store)
-                    .frame(width: 440, height: 380)
-                }
-            }
         }
-        .frame(width: 440, height: 380)
+        .frame(width: 480, height: 420)
     }
 
     // MARK: - Subviews
@@ -69,65 +56,91 @@ struct DiscoveryView: View {
     }
 
     private var agentList: some View {
-        List(results, id: \.agent.agentType) { result in
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                VStack(alignment: .leading) {
-                    Text(result.agent.displayName)
-                        .fontWeight(.medium)
+        VStack(spacing: 0) {
+            Text(
+                "mcp-inator will read and write the config file for each enabled agent " +
+                "to keep your MCP servers in sync. Toggle off any agent you prefer to manage manually."
+            )
+            .font(.callout)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+
+            List(results, id: \.agent.agentType) { result in
+                HStack {
                     if result.agent.agentType.isAppManaged {
-                        Text("MCP servers managed internally")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
                     } else {
-                        Text(result.agent.configPath)
+                        Toggle("", isOn: toggleBinding(for: result.agent.agentType))
+                            .labelsHidden()
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(result.agent.displayName)
+                            .fontWeight(.medium)
+                        if result.agent.agentType.isAppManaged {
+                            Text("MCP servers managed internally")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text(result.agent.configPath)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                    }
+                    Spacer()
+                    if result.agent.agentType.isAppManaged {
+                        Text("In-app managed")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                Spacer()
-                if result.agent.agentType.isAppManaged {
-                    Text("In-app managed")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.secondary.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                } else {
-                    Button("Import…") {
-                        prepareImport(for: result.agent)
-                    }
-                    .buttonStyle(.bordered)
-                }
+                .padding(.vertical, 2)
             }
-            .padding(.vertical, 2)
+            .listStyle(.inset)
         }
-        .listStyle(.inset)
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Spacer()
-                Button("Done") { onDismiss() }
+                Button("Done") { applyAndDismiss() }
                     .buttonStyle(.borderedProminent)
                     .padding()
             }
         }
     }
 
-    // MARK: - Import Preparation
+    // MARK: - Helpers
 
-    private func prepareImport(for agent: AgentRecord) {
-        guard let adapter = AdapterRegistry.adapter(for: agent.agentType) else { return }
-        let configURL = URL(fileURLWithPath: agent.configPath)
-        do {
-            importCategories = try store.categorizeImport(from: adapter, configPath: configURL)
-            importTarget = agent
-            showImportReview = true
-        } catch {
-            // If we can't read the agent file, just skip silently
+    private func toggleBinding(for agentType: AgentType) -> Binding<Bool> {
+        Binding(
+            get: { managedAgentTypes.contains(agentType) },
+            set: { enabled in
+                if enabled {
+                    managedAgentTypes.insert(agentType)
+                } else {
+                    managedAgentTypes.remove(agentType)
+                }
+            }
+        )
+    }
+
+    private func applyAndDismiss() {
+        for result in results where !result.agent.agentType.isAppManaged {
+            guard let agentId = result.agent.id else { continue }
+            let managed = managedAgentTypes.contains(result.agent.agentType)
+            try? store.setAgentVisibility(agentId: agentId, visible: managed)
+            if managed, let adapter = AdapterRegistry.adapter(for: result.agent.agentType) {
+                try? store.autoImport(agent: result.agent, adapter: adapter)
+            }
         }
+        onDismiss()
     }
 }
