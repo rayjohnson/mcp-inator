@@ -140,7 +140,7 @@ struct mcp_inatorApp: App {
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
-            CommandGroup(after: .help) {
+            CommandGroup(replacing: .help) {
                 Button("mcp-inator Help…") {
                     Task { @MainActor in
                         helpController.show()

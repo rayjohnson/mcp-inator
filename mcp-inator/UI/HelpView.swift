@@ -4,6 +4,22 @@ struct HelpView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                HStack(spacing: 16) {
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable()
+                        .frame(width: 64, height: 64)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("mcp-inator")
+                            .font(.title.bold())
+                        Text("MCP server configs for every AI agent, managed in one place.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.bottom, 4)
+
+                Divider()
+
                 HelpSection(title: "What is mcp-inator?", icon: "app.badge") {
                     Text("""
                     mcp-inator is a macOS menu bar app that manages your MCP (Model Context Protocol) \
