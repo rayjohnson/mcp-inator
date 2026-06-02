@@ -36,8 +36,31 @@ struct PreferencesView: View {
         self.launchAtLogin = launchAtLogin ?? SMAppServiceAdapter()
     }
 
+    @AppStorage("sharingConsented") private var sharingConsented = false
+
     var body: some View {
         Form {
+            Section("Contributing Usage Data") {
+                if sharingConsented {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("You are contributing anonymous usage data.")
+                        Spacer()
+                        Button("Withdraw") {
+                            sharingConsented = false
+                            UsageSharingService.shared.clearPending()
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                } else {
+                    Text("Anonymous server usage data helps surface popular servers in the catalog. You'll be prompted to opt in after 7 days.")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                }
+            }
+
             Section("General") {
                 Picker("App Mode", selection: Binding(
                     get: { appModeManager.showInDock },

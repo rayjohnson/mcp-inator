@@ -1,3 +1,7 @@
+- Anonymous usage telemetry (opt-in): after 7 days the app prompts once per session to share which server keys you use; review screen lets you exclude individual servers; data is POSTed to a Cloud Run service and stored as aggregate counts in Firestore — no IPs, no file paths, no env var values
+- Private server toggle: mark any server as private so it is never included in usage reports
+- Automated backend deployment: push to main deploys the Cloud Run service via GitHub Actions + Workload Identity Federation (no stored GCP credentials)
+- Catalog pipeline now reads usage counts from Firestore instead of a static `usage.json` file
 - Added Zed editor as a supported agent — mcp-inator discovers, reads, writes, and removes MCP server configs from `~/.config/zed/settings.json`; supports Zed's nested `context_servers` format with drift detection
 - Fix deterministic test coverage: agent-discovery scan and dock-mode window are suppressed during tests; ClaudeCodeAdapter.isInstalled() no longer returns true on every machine; coverage threshold set to 25% (real, reproducible baseline)
 - Add per-file coverage breakdown to make cover output; upgrade CI to Xcode 26.3

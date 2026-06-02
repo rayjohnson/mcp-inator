@@ -14,7 +14,7 @@ COVERAGE_THRESHOLD := 25
 # file requires regeneration even though project.yml didn't change).
 SWIFT_SOURCES := $(shell find mcp-inator mcp-inatorTests -name "*.swift" 2>/dev/null)
 
-.PHONY: build test cover lint run clean generate-version sync-catalog
+.PHONY: build test cover lint run clean generate-version sync-catalog backend-build backend-test
 
 # ── Generated files ──────────────────────────────────────────────────────────
 # Make tracks timestamps: recipes run only when a prerequisite is newer than
@@ -88,3 +88,11 @@ run: build
 ## Clean build artifacts.
 clean:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) clean
+
+## Build the Go Cloud Run backend.
+backend-build:
+	cd backend && go build ./...
+
+## Run Go unit tests for the Cloud Run backend.
+backend-test:
+	cd backend && go test ./...

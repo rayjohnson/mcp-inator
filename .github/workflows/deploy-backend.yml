@@ -1,0 +1,37 @@
+---
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+
+jobs:
+  deploy:
+    name: Build and deploy Cloud Run service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: mcp-inator-telemetry
+          region: ${{ vars.GCP_REGION }}
+          project_id: ${{ vars.GCP_PROJECT }}
+          source: ./backend
+          env_vars: TELEMETRY_BEARER_TOKEN=${{ secrets.TELEMETRY_BEARER_TOKEN }}
+          flags: --no-allow-unauthenticated

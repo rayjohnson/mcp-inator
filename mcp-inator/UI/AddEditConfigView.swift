@@ -23,6 +23,7 @@ struct AddEditConfigView: View {
     @State private var newEnvKey: String = ""
     @State private var newEnvValue: String = ""
     @State private var notes: String
+    @State private var isPrivate: Bool
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
     @State private var confirmingDelete = false
@@ -46,6 +47,7 @@ struct AddEditConfigView: View {
         _url             = State(initialValue: existing?.url ?? "")
         _envVars         = State(initialValue: existing?.envVars ?? [])
         _notes           = State(initialValue: existing?.notes ?? "")
+        _isPrivate       = State(initialValue: existing?.isPrivate ?? false)
     }
 
     init(prefill: MCPServerConfig) {
@@ -59,6 +61,7 @@ struct AddEditConfigView: View {
         _url             = State(initialValue: prefill.url)
         _envVars         = State(initialValue: prefill.envVars)
         _notes           = State(initialValue: prefill.notes)
+        _isPrivate       = State(initialValue: false)
     }
 
     private var isEditMode: Bool { existing != nil }
@@ -189,6 +192,8 @@ struct AddEditConfigView: View {
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
                             )
+                        Toggle("Private server", isOn: $isPrivate)
+                            .help("Private servers are never included in anonymous usage reports.")
                     }
 
                     // MARK: Test Connection
@@ -391,6 +396,7 @@ struct AddEditConfigView: View {
             || url.trimmingCharacters(in: .whitespaces) != existing.url
             || envVars != existing.envVars
             || notes != existing.notes
+            || isPrivate != existing.isPrivate
     }
 
     private var isSaveDisabled: Bool {
@@ -466,13 +472,13 @@ struct AddEditConfigView: View {
                 displayName: name, serverKey: key,
                 transportType: transportType,
                 url: url.trimmingCharacters(in: .whitespaces),
-                headers: envVars, notes: notes
+                headers: envVars, notes: notes, isPrivate: isPrivate
             )
         }
         return MCPServerConfig(
             displayName: name, serverKey: key,
             command: command.trimmingCharacters(in: .whitespaces),
-            args: args, envVars: envVars, notes: notes
+            args: args, envVars: envVars, notes: notes, isPrivate: isPrivate
         )
     }
 
@@ -504,6 +510,7 @@ struct AddEditConfigView: View {
                 config.url            = isHTTP ? url.trimmingCharacters(in: .whitespaces) : ""
                 config.envVars        = envVars
                 config.notes          = notes
+                config.isPrivate      = isPrivate
                 try store.update(config)
                 saved = config
             } else {

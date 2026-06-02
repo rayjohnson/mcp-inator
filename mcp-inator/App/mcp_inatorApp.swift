@@ -22,6 +22,13 @@ struct mcp_inatorApp: App {
     private let updaterController: SPUStandardUpdaterController
 
     init() {
+        // Record first launch date once; clear session flag so the consent prompt
+        // can appear again if eligible.
+        if SharingPreferences.firstLaunchDate == nil {
+            SharingPreferences.firstLaunchDate = Date()
+        }
+        SharingPreferences.shownThisSession = false
+
         SentrySDK.start { options in
             options.dsn = "https://6927130d1d328a2ac1b66594f5d480a2@o4511470552678400.ingest.us.sentry.io/4511470571618304"
             #if DEBUG
@@ -43,6 +50,7 @@ struct mcp_inatorApp: App {
     private let aboutController = AboutWindowController()
     private let preferencesController = PreferencesWindowController()
     private let mainWindowController = MainWindowController()
+    private let consentController = ConsentWindowController()
 
     var body: some Scene {
         // isInserted drives status-item presence reactively: false in dock mode removes the
@@ -92,6 +100,12 @@ struct mcp_inatorApp: App {
                     for: NSApplication.didFinishLaunchingNotification
                 )) { _ in
                     wireWindowController()
+                }
+                // Check consent eligibility each time the app becomes active.
+                .onReceive(NotificationCenter.default.publisher(
+                    for: NSApplication.didBecomeActiveNotification
+                )) { _ in
+                    checkSharingEligibility()
                 }
                 // Reacts when the user toggles dock mode mid-session.
                 .onChange(of: showInDock) { newValue in
@@ -150,6 +164,26 @@ struct mcp_inatorApp: App {
         if showInDock && !mcp_inatorApp.isRunningTests {
             mainWindowController.open()
         }
+    }
+
+    // MARK: - Sharing Consent Eligibility
+
+    private func checkSharingEligibility() {
+        guard !mcp_inatorApp.isRunningTests else { return }
+        Task { @MainActor in
+            await UsageSharingService.shared.flushPendingIfNeeded()
+        }
+        guard !SharingPreferences.consented,
+              !SharingPreferences.shownThisSession,
+              let firstLaunch = SharingPreferences.firstLaunchDate,
+              let daysSince = Calendar.current.dateComponents([.day], from: firstLaunch, to: Date()).day,
+              daysSince > 7,
+              let store = storeContainer.store,
+              store.configs.filter({ !$0.isPrivate }).count >= 1 else { return }
+
+        SharingPreferences.shownThisSession = true
+        SharingPreferences.consentShownAt = Date()
+        consentController.show(servers: storeContainer.store?.configs ?? [])
     }
 
     // MARK: - Agent Scan (FR-019, T031, T032)
@@ -430,6 +464,36 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         win.styleMask = [.titled, .closable]
         win.title = "Preferences"
         win.setContentSize(NSSize(width: 400, height: 150))
+        win.isReleasedWhenClosed = false
+        win.delegate = self
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = win
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
+}
+
+// MARK: - ConsentWindowController
+
+@MainActor
+final class ConsentWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(servers: [MCPServerConfig]) {
+        guard window == nil else { return }
+
+        let view = SharingConsentView(
+            servers: servers,
+            onDismiss: { [weak self] in self?.window?.close() }
+        )
+        let hosting = NSHostingController(rootView: view)
+        let win = NSWindow(contentViewController: hosting)
+        win.title = "Help improve mcp-inator"
+        win.styleMask = [.titled, .closable]
         win.isReleasedWhenClosed = false
         win.delegate = self
         win.center()
