@@ -18,6 +18,7 @@ struct AgentType: RawRepresentable, Hashable, Sendable {
     static let codexCLI      = AgentType(rawValue: "codex_cli")
     static let geminiDesktop = AgentType(rawValue: "gemini_desktop")
     static let cursor        = AgentType(rawValue: "cursor")
+    static let zed           = AgentType(rawValue: "zed")
 
     var displayName: String {
         AdapterRegistry.adapter(for: self)?.displayName ?? rawValue
