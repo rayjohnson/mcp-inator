@@ -27,11 +27,21 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOY_SA }}
 
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT }}/mcp-inator/telemetry:${{ github.sha }}"
+          docker build -t "$IMAGE" ./backend
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: mcp-inator-telemetry
           region: ${{ vars.GCP_REGION }}
           project_id: ${{ vars.GCP_PROJECT }}
-          source: ./backend
+          image: ${{ env.IMAGE }}
           env_vars: TELEMETRY_BEARER_TOKEN=${{ secrets.TELEMETRY_BEARER_TOKEN }}
