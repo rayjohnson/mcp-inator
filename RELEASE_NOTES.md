@@ -1,3 +1,5 @@
+- In-app help: new Help window (accessible from the menu bar popover footer and the Application → Help menu in dock mode) covering four topics — What is mcp-inator?, Adding and Configuring Servers, The Catalog, and Usage Sharing
+- README overhaul: hero screenshot, Quick Start (3 steps), Features section with agent support matrix, and Privacy section
 - MCP tool fixes: add_server now supports HTTP/SSE transport (pass transport_type and url); MCP writes now immediately refresh the UI via DistributedNotificationCenter; connection test works correctly for SSE servers
 - Delete server: now shows a confirmation dialog before deleting; navigates back to the server list after deletion instead of leaving the edit panel open
 - Suggest a Server: from the Catalog tab, submit any server already in your library to the public mcp-catalog — pick the server from a dropdown, add an optional note on why you find it useful, and the app opens a GitHub issue pre-filled with the server config for curator review

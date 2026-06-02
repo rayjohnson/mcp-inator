@@ -7,6 +7,7 @@ struct MenuBarView: View {
     @EnvironmentObject var registryStore: RegistryStore
     @Environment(\.openAboutWindow) private var openAboutWindow: @Sendable () -> Void
     @Environment(\.openPreferencesWindow) private var openPreferencesWindow: @Sendable () -> Void
+    @Environment(\.openHelpWindow) private var openHelpWindow: @Sendable () -> Void
     @State private var showManageAgents = false
 
     var body: some View {
@@ -49,6 +50,15 @@ struct MenuBarView: View {
             HStack {
                 Button("About mcp-inator…") {
                     openAboutWindow()
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Help…") {
+                    openHelpWindow()
                 }
                 .buttonStyle(.plain)
                 .font(.caption)

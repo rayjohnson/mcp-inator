@@ -87,6 +87,7 @@
 		C950538B5ACD5D589F17ECCF /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = 571E43C54CCE0B46A9AA5E44 /* appcast.xml */; };
 		CBA52672B4392C62429C3CFE /* AgentDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 605C0A262DA0E459C6716380 /* AgentDefinition.swift */; };
 		CCCEEB624CD6B6ECF4335159 /* ServerKeyTransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF180D6A3C0770A9FDDB23DC /* ServerKeyTransformTests.swift */; };
+		CD289D6900CDCC05823F82E9 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7563335A57E3C3A027686774 /* HelpView.swift */; };
 		CD3D7E4F7290A6B2F6141295 /* RegistryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14925175871D556D6556A060 /* RegistryStore.swift */; };
 		CD942979217CDD9C83888173 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5E12DD5F2F8255785408D2 /* main.swift */; };
 		D075D896B707D3A64AA5D8CC /* ClaudeDesktopAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FF1E5FCFCBCE43F44D5EFD /* ClaudeDesktopAdapterTests.swift */; };
@@ -173,6 +174,7 @@
 		67EC9770AC45367A218213E2 /* mcp-inator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "mcp-inator.entitlements"; sourceTree = "<group>"; };
 		6B2C903DEFCE53C220D5BB0D /* AgentListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentListView.swift; sourceTree = "<group>"; };
 		6BDD852709F641ED9CAB7766 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7563335A57E3C3A027686774 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		7ACD9873730B56F995155492 /* claude_desktop_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = claude_desktop_config.json; sourceTree = "<group>"; };
 		7D06963756EC1BCB53722FEB /* MCPServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServerConfig.swift; sourceTree = "<group>"; };
 		7DD886E87C3E0E2B43C852F3 /* FileBasedAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBasedAdapter.swift; sourceTree = "<group>"; };
@@ -346,6 +348,7 @@
 				DF94672DFC83B2A8317F2FCC /* CatalogView.swift */,
 				7ED501CEF7D52CD3969E24D6 /* ConfigLibraryView.swift */,
 				55B09DE2D809C77FE508549F /* DiscoveryView.swift */,
+				7563335A57E3C3A027686774 /* HelpView.swift */,
 				214E59A05F9F902E36E0D7BA /* MainWindowView.swift */,
 				40A8651F3E7C02E5C5C382BF /* ManageAgentsView.swift */,
 				3CF4F2B6B5CBE2539FAE1F74 /* MenuBarView.swift */,
@@ -643,6 +646,7 @@
 				817549DE3D56B1B542C04875 /* ConnectionTester.swift in Sources */,
 				14378934D5CF574B6A7F9642 /* DiscoveryView.swift in Sources */,
 				FFE122CF14F705248B47C1A2 /* FileBasedAdapter.swift in Sources */,
+				CD289D6900CDCC05823F82E9 /* HelpView.swift in Sources */,
 				13C9B634A309A2877B2B3CC5 /* MCPServer.swift in Sources */,
 				E5221B2C979D7A69913D03C4 /* MCPServerConfig.swift in Sources */,
 				C3FB9A65EFD12042DE880E77 /* MCPTools.swift in Sources */,
