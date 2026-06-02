@@ -1,7 +1,7 @@
 import Foundation
 
 enum ConnectionTestResult {
-    case success(elapsedSeconds: Double, toolCount: Int)
+    case success(elapsedSeconds: Double, toolCount: Int?)
     case authRequired                   // server responded 401/403 — reachable but needs auth
     case launchError(detail: String)
     case protocolError(detail: String)
@@ -20,7 +20,12 @@ enum ConnectionTestResult {
     var shortLabel: String {
         switch self {
         case .success(let elapsed, let toolCount):
-            let toolStr = toolCount == 1 ? "1 tool" : "\(toolCount) tools"
+            let toolStr: String
+            if let toolCount {
+                toolStr = toolCount == 1 ? "1 tool" : "\(toolCount) tools"
+            } else {
+                toolStr = "reachable"
+            }
             return String(format: "Connected in %.1fs · %@", elapsed, toolStr)
         case .authRequired:
             return "Server reached · auth required (OAuth not testable)"

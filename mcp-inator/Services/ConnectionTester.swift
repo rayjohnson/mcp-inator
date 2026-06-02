@@ -95,6 +95,13 @@ actor ConnectionTester {
             return .launchError(detail: "Invalid URL")
         }
 
+        // Legacy SSE servers (2024-11-05 spec) use GET /sse → endpoint event → POST /message.
+        // The SDK's HTTPClientTransport implements the newer Streamable HTTP spec (2025-11-25)
+        // and is incompatible with legacy SSE. Do a simple reachability check instead.
+        if config.transportType == .sse {
+            return await testSSEReachability(url: url, config: config)
+        }
+
         // Inject configured headers (API keys etc.) into every request.
         let headers = config.envVars.filter { !$0.value.isEmpty }
         let requestModifier: @Sendable (URLRequest) -> URLRequest = { request in
@@ -130,6 +137,45 @@ actor ConnectionTester {
 
         await client.disconnect()
         return result
+    }
+
+    // MARK: - Legacy SSE reachability
+
+    // The MCP SDK only implements Streamable HTTP (2025-11-25). Legacy SSE servers (2024-11-05)
+    // speak a different protocol: GET /sse establishes the stream, responses arrive on that stream,
+    // and messages are POSTed to a separate endpoint URL sent in an "endpoint" SSE event.
+    // Full MCP handshake isn't possible with the current SDK, so we verify the endpoint is
+    // reachable and responding with text/event-stream as a proxy for "server is up".
+    private func testSSEReachability(url: URL, config: MCPServerConfig) async -> ConnectionTestResult {
+        let start = Date()
+        var request = URLRequest(url: url, timeoutInterval: 15)
+        request.httpMethod = "GET"
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+        for ev in config.envVars where !ev.value.isEmpty {
+            request.setValue(ev.value, forHTTPHeaderField: ev.key)
+        }
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                return .protocolError(detail: "Invalid response")
+            }
+            let contentType = http.value(forHTTPHeaderField: "Content-Type") ?? ""
+            switch http.statusCode {
+            case 200..<300:
+                let elapsed = Date().timeIntervalSince(start)
+                if contentType.contains("text/event-stream") {
+                    return .success(elapsedSeconds: elapsed, toolCount: nil)
+                }
+                return .protocolError(detail: "Expected text/event-stream, got \(contentType)")
+            case 401, 403:
+                return .authRequired
+            default:
+                return .protocolError(detail: "HTTP \(http.statusCode)")
+            }
+        } catch {
+            return .protocolError(detail: error.localizedDescription)
+        }
     }
 
     // MARK: - Race helper
