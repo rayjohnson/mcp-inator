@@ -58,7 +58,6 @@ specs/017-docs/
 ```text
 mcp-inator/                             (this repo)
 ├── README.md                           UPDATE — full overhaul
-├── CONTRIBUTING.md                     NEW — dev setup, build, test, PR process
 ├── docs/
 │   └── images/                         UPDATE — add new screenshots for README
 │
@@ -73,6 +72,5 @@ mcp-inator/                             (this repo)
 
 ## Phase Summary
 
-- **Phase 1 (US2)**: In-app help — `HelpView.swift` + wiring in `MenuBarView` and `mcp_inatorApp` + inline copy in `PreferencesView`
-- **Phase 2 (US1)**: README overhaul — new `README.md` with description, screenshot, quick start, features, privacy
-- **Phase 3 (US3)**: `CONTRIBUTING.md` — prerequisites, build, test/lint, version bump, PR checklist
+- **Phase 1 (US2)**: In-app help — `HelpView.swift` (friendly/tutorial tone) + wiring in `MenuBarView` and `mcp_inatorApp` + inline copy in `PreferencesView`
+- **Phase 2 (US1)**: README overhaul — new `README.md` with description, screenshots, quick start, features, privacy

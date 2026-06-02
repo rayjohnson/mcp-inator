@@ -2,6 +2,8 @@
 
 The help content is static — no persistence, no network. This document defines the topic structure and copy outline for `HelpView.swift`.
 
+**Tone**: Friendly and tutorial-style. Write as if explaining to a developer who is technically capable but has never heard of mcp-inator. Use "you" and "your". Avoid jargon where possible; introduce terms briefly when needed.
+
 ## HelpView Structure
 
 `HelpView` is a single scrollable SwiftUI view with named sections. No tab bar needed — the content fits in one linear flow with clear section headings.
@@ -59,18 +61,21 @@ The help content is static — no persistence, no network. This document defines
 
 The new `README.md` will contain:
 
-1. **Hero**: one-sentence description + screenshot
+1. **Hero**: one-sentence description + screenshot(s)
 2. **Installation**: one-line install, manual install, uninstall (already exists — preserve and polish)
 3. **Quick Start**: launch → add first server → apply to an agent (3 steps max)
 4. **Features**: server management, catalog, agent support matrix, usage sharing opt-in
 5. **Privacy**: 3–4 sentence summary matching the in-app help copy above
-6. **Contributing**: one-liner linking to `CONTRIBUTING.md`
 
-## CONTRIBUTING.md Sections
+## Screenshots
 
-1. **Prerequisites**: Xcode version, `swiftlint` via Homebrew, `make`
-2. **Build**: `xcodebuild` command and DerivedData path
-3. **Run**: kill + launch command
-4. **Test & Lint**: `make test`, `make lint`, `make cover`
-5. **Before Every PR**: checklist (lint clean, tests pass, VERSION bump, RELEASE_NOTES.md update) — mirrors CLAUDE.md
-6. **Opening a PR**: branch naming, PR description expectations
+Screenshots are a manual capture step. The plan calls for at minimum:
+- Menu bar popover (server list visible) — hero shot
+- Catalog view
+
+Additional shots that may add value (decide during implementation):
+- Add server form
+- Preferences window
+- Help window itself
+
+**Capture workflow**: Launch the app, position the window, use `screencapture` to capture. Save to `docs/images/` with version suffix (e.g., `menubar-v0.5.0.png`) so staleness is obvious.

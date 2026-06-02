@@ -2,7 +2,7 @@
 
 **Input**: Design documents from `specs/017-docs/`
 
-**Feature**: Add a `HelpView` to the macOS app (reachable from the menu bar popover footer and the dock-mode Help menu) covering four topics: overview, server setup, catalog, and usage sharing. Overhaul `README.md` and add `CONTRIBUTING.md`.
+**Feature**: Add a `HelpView` to the macOS app (reachable from the menu bar popover footer and the dock-mode Help menu) covering four topics: overview, server setup, catalog, and usage sharing. Overhaul `README.md`. No `CONTRIBUTING.md`.
 
 **Key architectural decisions**:
 - `HelpView` is a static SwiftUI `ScrollView` — no network calls, works offline
@@ -52,32 +52,20 @@
 
 **Independent Test**: Quickstart Scenario 4 — README renders correctly in a Markdown previewer; all five sections present; Quick Start has ≤ 3 steps; Privacy section present and accurate.
 
-- [ ] T008 [P] [US1] Capture new screenshots: menu bar popover (server list visible) and catalog view; save as `docs/images/menubar-v0.5.0.png` and `docs/images/catalog-v0.5.0.png`
-- [ ] T009 [US1] Rewrite `README.md` with sections per `specs/017-docs/data-model.md`: Hero (1-sentence description + screenshot), Installation (preserve existing, polish), Quick Start (launch → add server → apply to agent, ≤ 3 steps), Features (server management, catalog, agent matrix, usage sharing opt-in), Privacy (3–4 sentences, accurate to what `UsageSharingService` sends), Contributing (1 line linking to `CONTRIBUTING.md`)
+- [ ] T008 [US1] Launch the app, capture screenshots using `screencapture` for: (a) menu bar popover with server list visible → `docs/images/menubar-v0.5.0.png`; (b) catalog view → `docs/images/catalog-v0.5.0.png`; capture additional shots (add server form, preferences, help window) as needed to illustrate features in the README — this is a collaborative step, review captures with user before finalising
+- [ ] T009 [US1] Rewrite `README.md` with sections per `specs/017-docs/data-model.md`: Hero (1-sentence description + screenshot), Installation (preserve existing, polish), Quick Start (launch → add server → apply to agent, ≤ 3 steps), Features (server management, catalog, agent matrix, usage sharing opt-in), Privacy (3–4 sentences, accurate to what `UsageSharingService` sends)
 
 **Checkpoint**: `README.md` renders on GitHub with all sections. New-user test passes per SC-001.
 
 ---
 
-## Phase 4: User Story 3 — Contributing Guide (Priority: P3)
+## Phase 4: Polish & Cross-Cutting Concerns
 
-**Goal**: A developer can build the app from source and open a PR using only `CONTRIBUTING.md`.
-
-**Independent Test**: Quickstart Scenario 5 — `CONTRIBUTING.md` renders on GitHub; a developer following it can build the app and knows the full PR checklist.
-
-- [ ] T010 [US3] Create `CONTRIBUTING.md` at repo root with sections per `specs/017-docs/data-model.md`: Prerequisites (Xcode version, `swiftlint` via Homebrew, `make`), Build (`xcodebuild` command + DerivedData path), Run (kill + launch command), Test & Lint (`make test`, `make lint`, `make cover`), Before Every PR (checklist mirroring `CLAUDE.md`: lint clean, tests pass, VERSION bump, RELEASE_NOTES.md), Opening a PR (branch naming `feature/NNN-name`, PR description)
-
-**Checkpoint**: `CONTRIBUTING.md` renders on GitHub. PR checklist matches `CLAUDE.md`.
-
----
-
-## Phase 5: Polish & Cross-Cutting Concerns
-
-- [ ] T011 Run `make lint` and fix all SwiftLint warnings in `HelpView.swift`, `HelpWindowController`, and any updated files (`MenuBarView.swift`, `PreferencesView.swift`, `mcp_inatorApp.swift`)
-- [ ] T012 Run `make cover` — verify tests pass and coverage threshold is met
-- [ ] T013 [P] Bump patch version in `VERSION`
-- [ ] T014 [P] Update `RELEASE_NOTES.md`: add entry for in-app help view and README/CONTRIBUTING overhaul
-- [ ] T015 Run all five quickstart.md scenarios to confirm the full feature works
+- [ ] T010 Run `make lint` and fix all SwiftLint warnings in `HelpView.swift`, `HelpWindowController`, and any updated files (`MenuBarView.swift`, `PreferencesView.swift`, `mcp_inatorApp.swift`)
+- [ ] T011 Run `make cover` — verify tests pass and coverage threshold is met
+- [ ] T012 [P] Bump patch version in `VERSION`
+- [ ] T013 [P] Update `RELEASE_NOTES.md`: add entry for in-app help view and README overhaul
+- [ ] T014 Run all four quickstart.md scenarios to confirm the full feature works
 
 **Checkpoint**: PR ready — lint clean, tests green, coverage above threshold, version bumped.
 
@@ -90,8 +78,7 @@
 - **Setup (Phase 1)**: No dependencies — T002 and T003 can run in parallel
 - **US2 (Phase 2)**: Requires Phase 1 complete (needs `HelpWindowController` + environment key); T004–T007 are sequential after T001; T005 and T006 can run in parallel after T004
 - **US1 (Phase 3)**: Independent of US2 — T008 and T009 can overlap; T009 depends on T008 for screenshot paths
-- **US3 (Phase 4)**: Independent of US1 and US2
-- **Polish (Phase 5)**: Requires all implementation phases complete; T013 and T014 are parallel
+- **Polish (Phase 4)**: Requires all implementation phases complete; T012 and T013 are parallel
 
 ### Parallel Opportunities
 
@@ -108,9 +95,9 @@ T006: CommandGroup Help menu entry
 T008: Capture screenshots
 T009: Write README (can draft without final screenshots, insert at end)
 
-# Phase 5 — run together:
-T013: Bump VERSION
-T014: Update RELEASE_NOTES.md
+# Phase 4 — run together:
+T012: Bump VERSION
+T013: Update RELEASE_NOTES.md
 ```
 
 ---
@@ -126,10 +113,9 @@ T014: Update RELEASE_NOTES.md
 
 ### Full Delivery Order
 
-1. Phase 1 (Setup) → Phase 2 (US2 in-app help) — highest user value
+1. Phase 1 (Setup) → Phase 2 (US2 in-app help) — highest user value for existing users
 2. Phase 3 (US1 README) — new user experience
-3. Phase 4 (US3 Contributing guide) — developer experience
-4. Phase 5 (Polish)
+3. Phase 4 (Polish)
 
 ---
 
@@ -140,9 +126,8 @@ T014: Update RELEASE_NOTES.md
 | Phase 1: Setup | T001–T003 | 3 |
 | Phase 2: US2 (In-App Help) | T004–T007 | 4 |
 | Phase 3: US1 (README) | T008–T009 | 2 |
-| Phase 4: US3 (Contributing) | T010 | 1 |
-| Phase 5: Polish | T011–T015 | 5 |
-| **Total** | | **15** |
+| Phase 4: Polish | T010–T014 | 5 |
+| **Total** | | **14** |
 
-**Parallel opportunities**: 6 tasks marked [P]
+**Parallel opportunities**: 5 tasks marked [P]
 **MVP scope**: Phases 1–2 (7 tasks) — in-app help live, no README changes yet

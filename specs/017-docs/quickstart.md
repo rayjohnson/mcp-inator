@@ -32,13 +32,7 @@ Manual test scenarios. Run after implementation to verify the feature.
 
 1. Open `README.md` in a Markdown previewer (GitHub or VS Code)
 2. Verify: first two paragraphs clearly explain what the app does
-3. Verify: Quick Start section has ≤ 3 steps to get the app running
-4. Verify: Features section covers server management, catalog, agent support, usage sharing
-5. Verify: Privacy section is present and accurate
-6. Verify: "Contributing" links to `CONTRIBUTING.md`
-
-## Scenario 5 — Contributing Guide
-
-1. Open `CONTRIBUTING.md`
-2. Follow the build instructions from scratch (or verify against a fresh clone)
-3. Verify the PR checklist matches the requirements in `CLAUDE.md`
+3. Verify: screenshots render and show the app clearly
+4. Verify: Quick Start section has ≤ 3 steps to get the app running
+5. Verify: Features section covers server management, catalog, agent support, usage sharing
+6. Verify: Privacy section is present and accurate
