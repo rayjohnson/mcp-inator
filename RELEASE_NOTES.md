@@ -1,3 +1,4 @@
+- External server import: when an agent's config file contains a server that mcp-inator didn't add, a banner now appears in the agent view offering to import it into your library or leave it unmanaged (won't prompt again for dismissed servers)
 - Fix duplicate "mcp-inator Help" entry in Application → Help menu; add app icon header to Help window
 - In-app help: new Help window (accessible from the menu bar popover footer and the Application → Help menu in dock mode) covering four topics — What is mcp-inator?, Adding and Configuring Servers, The Catalog, and Usage Sharing
 - README overhaul: hero screenshot, Quick Start (3 steps), Features section with agent support matrix, and Privacy section

@@ -4,6 +4,7 @@ import GRDB
 // Central access layer for the mcp-inator SQLite store.
 // All database operations go through here; adapters handle file I/O separately.
 @MainActor
+// swiftlint:disable:next type_body_length
 final class ConfigStore: ObservableObject {
 
     // MARK: - Published State
@@ -64,6 +65,7 @@ final class ConfigStore: ObservableObject {
         Migration004.register(in: &migrator)
         Migration005.register(in: &migrator)
         Migration006.register(in: &migrator)
+        Migration007.register(in: &migrator)
         try migrator.migrate(pool)
     }
 
@@ -408,6 +410,42 @@ final class ConfigStore: ObservableObject {
                 }
             }
         }
+    }
+
+    // MARK: - Unmanaged Key Tracking
+
+    func markUnmanaged(agentId: Int64, keys: [String]) throws {
+        let now = Date().timeIntervalSince1970
+        try pool.write { db in
+            for key in keys {
+                try db.execute(
+                    sql: """
+                         INSERT OR IGNORE INTO unmanaged_keys (agentId, serverKey, createdAt)
+                         VALUES (?, ?, ?)
+                         """,
+                    arguments: [agentId, key, now]
+                )
+            }
+        }
+    }
+
+    func scanForExternalKeys(agent: AgentRecord, adapter: any AgentAdapter) throws -> [String] {
+        guard let agentId = agent.id else { return [] }
+        let configPath = URL(fileURLWithPath: agent.configPath)
+        let categories = try categorizeImport(from: adapter, configPath: configPath)
+        let newKeys = categories.compactMap { key, category -> String? in
+            if case .new = category { return key }
+            return nil
+        }
+        let dismissed = try pool.read { db in
+            try String.fetchAll(
+                db,
+                sql: "SELECT serverKey FROM unmanaged_keys WHERE agentId = ?",
+                arguments: [agentId]
+            )
+        }
+        let dismissedSet = Set(dismissed)
+        return newKeys.filter { !dismissedSet.contains($0) }.sorted()
     }
 
     // MARK: - Status Matrix (T055)

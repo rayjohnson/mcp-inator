@@ -40,6 +40,7 @@
 		4A019B214A6AC7948459BFCA /* AddEditConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AA0D309B195442D289C705 /* AddEditConfigView.swift */; };
 		4A4F7705E77210F4C1C9E981 /* CatalogClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C057F5CFACEFE7B55E6BCA /* CatalogClient.swift */; };
 		4B147B91E919B19B9CE0B1EB /* Migration006.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE92C3D0FF0F195C1DEE50F /* Migration006.swift */; };
+		21A44795329340F29E9D3231 /* Migration007.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66BA0C39F3CB4CE9923CFA1B /* Migration007.swift */; };
 		4F4CF6DCE4EFAD4C97111496 /* registry-response.json in Resources */ = {isa = PBXBuildFile; fileRef = 103464A0B60E21763BEBA7DB /* registry-response.json */; };
 		50976F473DE40F2112AAD598 /* CatalogEntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77A0B956DEBE407E4AC5EEF /* CatalogEntryDetailView.swift */; };
 		522BBCF11D47611FC3977B78 /* Migration003.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB0CF0BD8FDC62D6E3BFB2EF /* Migration003.swift */; };
@@ -195,6 +196,7 @@
 		A3B865013EA65AAE8229C657 /* AgentRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRecord.swift; sourceTree = "<group>"; };
 		A789E346EC685FBD34C7C235 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
 		ACE92C3D0FF0F195C1DEE50F /* Migration006.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration006.swift; sourceTree = "<group>"; };
+		66BA0C39F3CB4CE9923CFA1B /* Migration007.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration007.swift; sourceTree = "<group>"; };
 		AED518DAD2D90688768C299A /* CatalogSubmissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSubmissionService.swift; sourceTree = "<group>"; };
 		AFE8B8FA13F587123365E245 /* Migration004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration004.swift; sourceTree = "<group>"; };
 		B1155D8F7EA9583614AF25AF /* SensitiveFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveFieldTests.swift; sourceTree = "<group>"; };
@@ -275,6 +277,7 @@
 				AFE8B8FA13F587123365E245 /* Migration004.swift */,
 				673672951A0D420C1E6170F5 /* Migration005.swift */,
 				ACE92C3D0FF0F195C1DEE50F /* Migration006.swift */,
+				66BA0C39F3CB4CE9923CFA1B /* Migration007.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -659,6 +662,7 @@
 				03112027C047E7EAF9BA153E /* Migration004.swift in Sources */,
 				3FBF669EF46E71655E39D8F2 /* Migration005.swift in Sources */,
 				4B147B91E919B19B9CE0B1EB /* Migration006.swift in Sources */,
+				21A44795329340F29E9D3231 /* Migration007.swift in Sources */,
 				54BF6E7E6F982967E9444220 /* PreferencesView.swift in Sources */,
 				698770EB8DB65E6BA481D464 /* RegistryClient.swift in Sources */,
 				2CAA3A60F6990A6105BB2939 /* RegistryEntry.swift in Sources */,
