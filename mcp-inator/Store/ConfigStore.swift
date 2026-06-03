@@ -64,6 +64,7 @@ final class ConfigStore: ObservableObject {
         Migration004.register(in: &migrator)
         Migration005.register(in: &migrator)
         Migration006.register(in: &migrator)
+        Migration007.register(in: &migrator)
         try migrator.migrate(pool)
     }
 
