@@ -411,6 +411,23 @@ final class ConfigStore: ObservableObject {
         }
     }
 
+    // MARK: - Unmanaged Key Tracking
+
+    func markUnmanaged(agentId: Int64, keys: [String]) throws {
+        let now = Date().timeIntervalSince1970
+        try pool.write { db in
+            for key in keys {
+                try db.execute(
+                    sql: """
+                         INSERT OR IGNORE INTO unmanaged_keys (agentId, serverKey, createdAt)
+                         VALUES (?, ?, ?)
+                         """,
+                    arguments: [agentId, key, now]
+                )
+            }
+        }
+    }
+
     // MARK: - Status Matrix (T055)
 
     func fetchStatusMatrix() throws -> [StatusRow] {

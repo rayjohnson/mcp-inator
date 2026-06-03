@@ -476,4 +476,16 @@ final class ConfigStoreTests: XCTestCase {
         XCTAssertEqual(result.failed.count, 1)
     }
 
+    // MARK: - markUnmanaged
+
+    func testMarkUnmanaged_idempotent() throws {
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+
+        // Calling twice with the same key must not throw (INSERT OR IGNORE)
+        try store.markUnmanaged(agentId: agentId, keys: ["foo-server"])
+        try store.markUnmanaged(agentId: agentId, keys: ["foo-server"])
+        // Success = no error thrown
+    }
+
 }
