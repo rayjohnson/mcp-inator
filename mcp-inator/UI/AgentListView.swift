@@ -2,6 +2,7 @@ import SwiftUI
 
 // Shows all library configs for a specific agent with enable/disable toggles.
 // Handles drift detection, conflict detection, restart notifications, and path overrides.
+// swiftlint:disable:next type_body_length
 struct AgentListView: View {
     @EnvironmentObject private var store: ConfigStore
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +17,7 @@ struct AgentListView: View {
     @State private var showPathOverride = false
     @State private var customPathInput: String = ""
     @State private var cloudMCPs: [ClaudeCodeAdapter.CloudManagedMCP] = []
+    @State private var externalKeys: [String] = []
 
     private struct PendingWrite {
         let uuid: UUID
@@ -43,14 +45,20 @@ struct AgentListView: View {
                 appManagedBanner
             } else if !agent.isAvailable {
                 unavailableBanner
-            } else if store.configs.isEmpty && cloudMCPs.isEmpty {
-                Spacer()
-                Text("No configs in your library yet.")
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity)
-                Spacer()
             } else {
-                configRows
+                if !externalKeys.isEmpty {
+                    externalServersBanner
+                    Divider()
+                }
+                if store.configs.isEmpty && cloudMCPs.isEmpty {
+                    Spacer()
+                    Text("No configs in your library yet.")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
+                    Spacer()
+                } else {
+                    configRows
+                }
             }
 
             if let notice = restartNotice {
@@ -183,6 +191,32 @@ struct AgentListView: View {
                 showPathOverride = true
             }
             .buttonStyle(.bordered)
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+    }
+
+    private var externalServersBanner: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "square.and.arrow.down.fill")
+                    .foregroundColor(.orange)
+                Text("New server\(externalKeys.count == 1 ? "" : "s") found in config file")
+                    .fontWeight(.medium)
+                Spacer()
+            }
+            Text(externalKeys.joined(separator: ", "))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+            HStack {
+                Spacer()
+                Button("Leave Unmanaged") { leaveUnmanaged() }
+                    .buttonStyle(.bordered)
+                Button("Import All") { importExternalKeys() }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+            }
         }
         .padding()
         .background(Color.orange.opacity(0.1))
@@ -419,9 +453,49 @@ struct AgentListView: View {
                 let state: AssignmentState = diskKeys.contains(config.serverKey) ? .enabled : .disabled
                 try? store.setAssignmentState(configUUID: config.uuid, agentId: agentId, state: state)
             }
+            // Detect externally-added servers not yet in the library or dismissed.
+            do {
+                externalKeys = try store.scanForExternalKeys(agent: agent, adapter: adapter)
+            } catch {
+                externalKeys = []
+            }
         } catch {
             // File unreadable — fall back to database assignment state.
             enabledUUIDs = (try? Set(store.fetchEnabledConfigs(for: agentId).map(\.uuid))) ?? []
+            externalKeys = []
+        }
+    }
+
+    private func importExternalKeys() {
+        guard let agentId = agent.id else { return }
+        do {
+            let keysToImport = Set(externalKeys)
+            let decisions: [(key: String, config: MCPServerConfig)] =
+                try store.categorizeImport(from: adapter, configPath: configPath)
+                    .compactMap { key, category in
+                        guard keysToImport.contains(key) else { return nil }
+                        switch category {
+                        case .new(let cfg): return (key, cfg)
+                        case .exactMatch(let cfg): return (key, cfg)
+                        case .conflict(let library, _): return (key, library)
+                        }
+                    }
+            try store.applyImportDecisions(decisions, agentId: agentId)
+            externalKeys = []
+            refreshEnabledSet()
+            restartNotice = restartMessageText
+        } catch {
+            writeErrorBanner = describeError(error, configPath: configPath)
+        }
+    }
+
+    private func leaveUnmanaged() {
+        guard let agentId = agent.id else { return }
+        do {
+            try store.markUnmanaged(agentId: agentId, keys: externalKeys)
+            externalKeys = []
+        } catch {
+            writeErrorBanner = describeError(error, configPath: configPath)
         }
     }
 
