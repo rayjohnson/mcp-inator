@@ -428,6 +428,25 @@ final class ConfigStore: ObservableObject {
         }
     }
 
+    func scanForExternalKeys(agent: AgentRecord, adapter: any AgentAdapter) throws -> [String] {
+        guard let agentId = agent.id else { return [] }
+        let configPath = URL(fileURLWithPath: agent.configPath)
+        let categories = try categorizeImport(from: adapter, configPath: configPath)
+        let newKeys = categories.compactMap { key, category -> String? in
+            if case .new = category { return key }
+            return nil
+        }
+        let dismissed = try pool.read { db in
+            try String.fetchAll(
+                db,
+                sql: "SELECT serverKey FROM unmanaged_keys WHERE agentId = ?",
+                arguments: [agentId]
+            )
+        }
+        let dismissedSet = Set(dismissed)
+        return newKeys.filter { !dismissedSet.contains($0) }.sorted()
+    }
+
     // MARK: - Status Matrix (T055)
 
     func fetchStatusMatrix() throws -> [StatusRow] {

@@ -488,4 +488,50 @@ final class ConfigStoreTests: XCTestCase {
         // Success = no error thrown
     }
 
+    func testScanForExternalKeys_returnsOnlyNewUndismissedKeys() throws {
+        // Library has "a-server"
+        _ = try store.insert(MCPServerConfig(
+            displayName: "A Server", serverKey: "a-server", command: "/bin/a"
+        ))
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+        let agentId = try XCTUnwrap(agent.id)
+
+        // "c-server" is already dismissed
+        try store.markUnmanaged(agentId: agentId, keys: ["c-server"])
+
+        // Config file has a-server (in library), b-server (new), c-server (dismissed)
+        let adapter = StubAdapter()
+        adapter.readResult = [
+            "a-server": MCPServerConfig(
+                displayName: "A Server", serverKey: "a-server", command: "/bin/a"
+            ),
+            "b-server": MCPServerConfig(
+                displayName: "B Server", serverKey: "b-server", command: "/bin/b"
+            ),
+            "c-server": MCPServerConfig(
+                displayName: "C Server", serverKey: "c-server", command: "/bin/c"
+            ),
+        ]
+
+        let result = try store.scanForExternalKeys(agent: agent, adapter: adapter)
+        XCTAssertEqual(result, ["b-server"])
+    }
+
+    func testScanForExternalKeys_allLibraryKeys_returnsEmpty() throws {
+        _ = try store.insert(MCPServerConfig(
+            displayName: "Known", serverKey: "known-server", command: "/bin/known"
+        ))
+        let agent = try store.upsertAgent(AgentRecord(agentType: .claudeCode))
+
+        let adapter = StubAdapter()
+        adapter.readResult = [
+            "known-server": MCPServerConfig(
+                displayName: "Known", serverKey: "known-server", command: "/bin/known"
+            )
+        ]
+
+        let result = try store.scanForExternalKeys(agent: agent, adapter: adapter)
+        XCTAssertTrue(result.isEmpty)
+    }
+
 }
