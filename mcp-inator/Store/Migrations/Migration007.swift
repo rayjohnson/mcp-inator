@@ -2,13 +2,17 @@ import GRDB
 
 enum Migration007 {
     static func register(in migrator: inout DatabaseMigrator) {
-        migrator.registerMigration("007_add_unmanaged_keys") { db in
-            try db.create(table: "unmanaged_keys") { tbl in
-                tbl.column("agentId", .integer).notNull().references("agents", onDelete: .cascade)
-                tbl.column("serverKey", .text).notNull()
-                tbl.column("createdAt", .double).notNull()
-                tbl.primaryKey(["agentId", "serverKey"])
-            }
+        // .immediate avoids the full PRAGMA foreign_key_check that .deferred runs across
+        // all tables — which would surface pre-existing violations unrelated to this migration.
+        migrator.registerMigration("007_add_unmanaged_keys", foreignKeyChecks: .immediate) { db in
+            try db.execute(sql: """
+                CREATE TABLE unmanaged_keys (
+                    agentId   INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+                    serverKey TEXT    NOT NULL,
+                    createdAt REAL    NOT NULL,
+                    PRIMARY KEY (agentId, serverKey)
+                )
+            """)
         }
     }
 }
