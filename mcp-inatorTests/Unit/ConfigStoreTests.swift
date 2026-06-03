@@ -510,7 +510,7 @@ final class ConfigStoreTests: XCTestCase {
             ),
             "c-server": MCPServerConfig(
                 displayName: "C Server", serverKey: "c-server", command: "/bin/c"
-            ),
+            )
         ]
 
         let result = try store.scanForExternalKeys(agent: agent, adapter: adapter)

@@ -4,6 +4,7 @@ import GRDB
 // Central access layer for the mcp-inator SQLite store.
 // All database operations go through here; adapters handle file I/O separately.
 @MainActor
+// swiftlint:disable:next type_body_length
 final class ConfigStore: ObservableObject {
 
     // MARK: - Published State
