@@ -28,7 +28,6 @@ struct AddEditConfigView: View {
     @State private var isPrivate: Bool
     @State private var revealedEnvIds: Set<UUID> = []
     @State private var validationError: String?
-    @State private var confirmingDelete = false
     // Propagation state (shown inline after save, no sheet)
     @State private var propagationAgents: [AgentRecord] = []
     @State private var propagationConfig: MCPServerConfig?
@@ -87,16 +86,6 @@ struct AddEditConfigView: View {
             if let config = existing {
                 SuggestServerView(config: config)
             }
-        }
-        .confirmationDialog(
-            "Delete \"\(existing?.displayName ?? "")\"?",
-            isPresented: $confirmingDelete,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) { deleteServer() }
-            Button("Cancel", role: .cancel) { confirmingDelete = false }
-        } message: {
-            Text("This removes the server from your library and disables it for all agents.")
         }
     }
 
@@ -259,7 +248,7 @@ struct AddEditConfigView: View {
                         Divider()
                             .padding(.top, 4)
                         Button(role: .destructive) {
-                            confirmingDelete = true
+                            confirmAndDelete()
                         } label: {
                             Label("Delete Server", systemImage: "trash")
                                 .frame(maxWidth: .infinity)
@@ -421,8 +410,16 @@ struct AddEditConfigView: View {
         SentrySDK.addBreadcrumb(crumb)
     }
 
-    private func deleteServer() {
+    private func confirmAndDelete() {
         guard let config = existing else { return }
+        let alert = NSAlert()
+        alert.messageText = "Delete \"\(config.displayName)\"?"
+        alert.informativeText = "This removes the server from your library and disables it for all agents."
+        alert.alertStyle = .warning
+        let deleteButton = alert.addButton(withTitle: "Delete")
+        deleteButton.hasDestructiveAction = true
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
         breadcrumb("delete: removing server '\(config.serverKey)'")
         do {
             try store.delete(config)

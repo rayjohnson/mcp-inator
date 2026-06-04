@@ -54,7 +54,10 @@ struct HelpView: View {
                     )
                     .padding(.top, 8)
 
-                    Text("Tip: Use the **Private server** toggle to exclude a server from usage reports. Private servers are never included in any data sharing.")
+                    Text(
+                        "Tip: Use the **Private server** toggle to exclude a server from usage reports." +
+                        " Private servers are never included in any data sharing."
+                    )
                         .padding(.top, 4)
                 }
 

@@ -42,7 +42,7 @@ struct ConfigLibraryView: View {
             )
         ) {
             if let config = editingConfig {
-                AddEditConfigView(existing: config)
+                AddEditConfigView(existing: config, onDelete: { editingConfig = nil })
                     .environmentObject(store)
             }
         }
