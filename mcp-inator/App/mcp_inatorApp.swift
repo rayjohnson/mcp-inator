@@ -186,6 +186,9 @@ struct mcp_inatorApp: App {
         Task { @MainActor in
             await UsageSharingService.shared.flushPendingIfNeeded()
         }
+        Task { @MainActor in
+            await PingService.shared.firePingsIfNeeded()
+        }
         guard !SharingPreferences.consented,
               !SharingPreferences.shownThisSession,
               let firstLaunch = SharingPreferences.firstLaunchDate,
