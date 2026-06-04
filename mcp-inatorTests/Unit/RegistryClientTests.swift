@@ -3,14 +3,14 @@ import XCTest
 
 // MARK: - URLProtocol stub for URLSessionRegistryClient tests
 
-private class MockURLProtocol: URLProtocol {
+private class RegistryMockURLProtocol: URLProtocol {
     static nonisolated(unsafe) var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
+        guard let handler = RegistryMockURLProtocol.requestHandler else {
             client?.urlProtocol(self, didFailWithError: URLError(.cannotLoadFromNetwork))
             return
         }
@@ -115,11 +115,11 @@ final class RegistryClientTests: XCTestCase {
         let data = try loadFixture()
 
         let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [MockURLProtocol.self]
+        config.protocolClasses = [RegistryMockURLProtocol.self]
         let session = URLSession(configuration: config)
         let client = URLSessionRegistryClient(session: session)
 
-        MockURLProtocol.requestHandler = { _ in
+        RegistryMockURLProtocol.requestHandler = { _ in
             // swiftlint:disable force_unwrapping
             let response = HTTPURLResponse(
                 url: URL(string: "https://registry.modelcontextprotocol.io")!,
