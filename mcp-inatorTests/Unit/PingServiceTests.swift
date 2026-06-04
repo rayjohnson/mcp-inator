@@ -106,7 +106,7 @@ final class PingServiceTests: XCTestCase {
         await service.firePingsIfNeeded()
         let reports = capturedReports()
         XCTAssertFalse(reports.isEmpty)
-        XCTAssertTrue(reports.allSatisfy { !$0.appVersion.isEmpty })
+        XCTAssertTrue(reports.allSatisfy { !$0.appVersion.isEmpty && $0.appVersion != "unknown" })
     }
 
     // MARK: - Helpers
@@ -123,6 +123,7 @@ final class PingServiceTests: XCTestCase {
 
     private func todayString() -> String {
         let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
         fmt.dateFormat = "yyyy-MM-dd"
         return fmt.string(from: Date())
     }

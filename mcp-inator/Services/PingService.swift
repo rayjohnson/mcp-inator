@@ -77,6 +77,7 @@ final class PingService {
 
     private func todayString() -> String {
         let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
         fmt.dateFormat = "yyyy-MM-dd"
         return fmt.string(from: Date())
     }
