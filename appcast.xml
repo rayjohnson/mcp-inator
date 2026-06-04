@@ -1025,5 +1025,59 @@
         length="11209824"
         type="application/octet-stream" />
     </item>
+    <item>
+      <title>Version 0.5.4</title>
+      <pubDate>Thu, 04 Jun 2026 16:10:44 +0000</pubDate>
+      <sparkle:version>41</sparkle:version>
+      <sparkle:shortVersionString>0.5.4</sparkle:shortVersionString>
+      <description><![CDATA[<html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;margin:16px;color:#1d1d1f;background:transparent;}@media(prefers-color-scheme:dark){body{color:#f5f5f7;}}h3{font-size:14px;font-weight:600;margin:0 0 10px;}ul{margin:0;padding-left:18px;}li{margin-bottom:4px;}p{margin:0 0 8px;}</style></head><body><h3>What&#8217;s New in 0.5.4</h3>
+<ul>
+<li>Anonymous install and daily-active pings: on first launch the app fires a one-time install ping; once per calendar day it fires a daily-active ping — both POST to the existing Cloud Run backend and store aggregate counts in Firestore (no opt-in required, no PII)</li>
+<li>Fix delete server in menu bar mode: SwiftUI alert/confirmationDialog inside a MenuBarExtra popover closed the popover on button tap; replaced with NSAlert.runModal() which runs its own event loop and leaves the popover open</li>
+<li>External server import: when an agent's config file contains a server that mcp-inator didn't add, a banner now appears in the agent view offering to import it into your library or leave it unmanaged (won't prompt again for dismissed servers)</li>
+<li>Fix duplicate "mcp-inator Help" entry in Application → Help menu; add app icon header to Help window</li>
+<li>In-app help: new Help window (accessible from the menu bar popover footer and the Application → Help menu in dock mode) covering four topics — What is mcp-inator?, Adding and Configuring Servers, The Catalog, and Usage Sharing</li>
+<li>README overhaul: hero screenshot, Quick Start (3 steps), Features section with agent support matrix, and Privacy section</li>
+<li>MCP tool fixes: add_server now supports HTTP/SSE transport (pass transport_type and url); MCP writes now immediately refresh the UI via DistributedNotificationCenter; connection test works correctly for SSE servers</li>
+<li>Delete server: now shows a confirmation dialog before deleting; navigates back to the server list after deletion instead of leaving the edit panel open</li>
+<li>Suggest a Server: from the Catalog tab, submit any server already in your library to the public mcp-catalog — pick the server from a dropdown, add an optional note on why you find it useful, and the app opens a GitHub issue pre-filled with the server config for curator review</li>
+<li>Auto-import on agent consent: enabling mcp-inator management of an agent (in the discovery flow) now automatically imports that agent's existing servers into your library — no separate Import step needed; removed Import button from Agents and Servers tabs</li>
+<li>Discovery view: per-agent toggle lets you opt out of mcp-inator managing any agent's config file; explanatory text clarifies that enabling an agent allows mcp-inator to read and write its config; fixed blank sheet when tapping Import on a newly-discovered agent</li>
+<li>Fix CI deploy: grant actAs on compute SA so deployer can set Cloud Run service identity; speed up brew install steps by skipping auto-update and making SwiftLint install conditional</li>
+<li>Add workflow_dispatch to deploy-backend workflow for manual triggering</li>
+<li>Fix CI deploy: drop --allow-unauthenticated flag (deploy SA lacks setIamPolicy; IAM is set once during infrastructure setup)</li>
+<li>Anonymous usage telemetry (opt-in): after 7 days the app prompts once per session to share which server keys you use; review screen lets you exclude individual servers; data is POSTed to a Cloud Run service and stored as aggregate counts in Firestore — no IPs, no file paths, no env var values</li>
+<li>Private server toggle: mark any server as private so it is never included in usage reports</li>
+<li>Automated backend deployment: push to main deploys the Cloud Run service via GitHub Actions + Workload Identity Federation (no stored GCP credentials)</li>
+<li>Catalog pipeline now reads usage counts from Firestore instead of a static `usage.json` file</li>
+<li>Added Zed editor as a supported agent — mcp-inator discovers, reads, writes, and removes MCP server configs from `~/.config/zed/settings.json`; supports Zed's nested `context_servers` format with drift detection</li>
+<li>Fix deterministic test coverage: agent-discovery scan and dock-mode window are suppressed during tests; ClaudeCodeAdapter.isInstalled() no longer returns true on every machine; coverage threshold set to 25% (real, reproducible baseline)</li>
+<li>Add per-file coverage breakdown to make cover output; upgrade CI to Xcode 26.3</li>
+<li>Search bar in Servers tab — type to filter by name or command (including URL for HTTP servers); clears when switching tabs</li>
+<li>Catalog now shows popularity and quality signals: GitHub stars, weekly install counts, official badge, and stale warning for unmaintained servers</li>
+<li>Catalog entries are scored and sorted by quality (baseScore + installed-app boost); editorially-ranked entries surface at top</li>
+<li>Added Discover section: surfaces up to 5 top-scored servers not already in your library</li>
+<li>Added moov-docs as an official entry (finance / compliance documentation)</li>
+<li>Backward-compatible: existing registry cache and catalog data continues to load correctly</li>
+<li>Added Cursor IDE / Cursor CLI as a supported agent — mcp-inator discovers, reads, writes, and imports MCP server configs from `~/.cursor/mcp.json`</li>
+<li>Refactored adapter layer: agent support is now fully configuration-driven via `AgentDefinition` structs and a generic `FileBasedAdapter` — adding a new agent requires only a definition entry, no new code</li>
+<li>Dock mode window is now a native three-column split view (sidebar | list | detail) matching macOS HIG — no more push navigation or back buttons in the main window</li>
+<li>Fixed: catalog not loading on cold launch in Dock mode</li>
+<li>Fixed: toolbar height no longer shifts when switching between Servers, Agents, and Catalog tabs in Dock mode; Catalog now uses a native macOS search field in the toolbar</li>
+<li>Fixed: menu bar icon no longer remains visible after switching to Dock mode</li>
+<li>In Dock mode, Application menu now shows custom About window (with Check for Updates), a Check for Updates... item, and Preferences... (Cmd+,)</li>
+<li>Switch between Menu Bar and Dock modes instantly from Preferences — no restart required</li>
+<li>In Dock mode, mcp-inator gets a full resizable window with a Servers / Agents / Catalog sidebar</li>
+<li>Preferences window accessible from the menu bar popover footer or via Cmd+, in Dock mode</li>
+<li>Launch at Login setting in Preferences</li>
+<li>App quits when the main window is closed in Dock mode (standard Mac behavior)</li>
+<li>New app icon — bold colorful ray gun, readable at small sizes</li>
+</ul></body></html>]]></description>
+      <enclosure
+        url="https://github.com/rayjohnson/mcp-inator/releases/download/v0.5.4/mcp-inator-0.5.4.dmg"
+        sparkle:edSignature="ME41eD9e6G2aQTL0VB7czdaa4k2SDLjXA4wPmZIKfYl/4M8OgwWneNXZ/vU0Xn5b+gQts4rv7eAphiF386PvDg=="
+        length="11236626"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
