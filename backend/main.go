@@ -18,10 +18,13 @@ import (
 )
 
 const (
-	maxBodyBytes   = 64 * 1024
-	maxKeyLen      = 256
-	schemaVersion1 = "1"
-	collection     = "server_usage"
+	maxBodyBytes          = 64 * 1024
+	maxKeyLen             = 256
+	maxAppVersionLen      = 32
+	schemaVersion1        = "1"
+	collection            = "server_usage"
+	collectionInstalls    = "app_installs"
+	collectionDailyActive = "daily_active"
 )
 
 type reportRequest struct {
@@ -35,9 +38,25 @@ type reportResponse struct {
 	Message  string `json:"message,omitempty"`
 }
 
+type pingRequest struct {
+	SchemaVersion string `json:"schemaVersion"`
+	Event         string `json:"event"`
+	AppVersion    string `json:"appVersion"`
+}
+
+type pingResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message,omitempty"`
+}
+
 // storer abstracts Firestore so the handler is testable without a real client.
 type storer interface {
 	increment(ctx context.Context, key string, now time.Time) error
+}
+
+type pinger interface {
+	recordInstall(ctx context.Context, appVersion string, now time.Time) error
+	recordDailyActive(ctx context.Context, dateStr string, now time.Time) error
 }
 
 type firestoreStore struct {
@@ -58,6 +77,36 @@ func (s *firestoreStore) increment(ctx context.Context, key string, now time.Tim
 		_, err = ref.Update(ctx, []firestore.Update{
 			{Path: "count", Value: firestore.Increment(1)},
 			{Path: "lastSeenAt", Value: now},
+		})
+	}
+	return err
+}
+
+func (s *firestoreStore) recordInstall(ctx context.Context, appVersion string, now time.Time) error {
+	ref := s.client.Collection(collectionInstalls).Doc(appVersion)
+	_, err := ref.Create(ctx, map[string]interface{}{
+		"count":       1,
+		"firstSeenAt": now,
+		"lastSeenAt":  now,
+	})
+	if status.Code(err) == codes.AlreadyExists {
+		_, err = ref.Update(ctx, []firestore.Update{
+			{Path: "count", Value: firestore.Increment(1)},
+			{Path: "lastSeenAt", Value: now},
+		})
+	}
+	return err
+}
+
+func (s *firestoreStore) recordDailyActive(ctx context.Context, dateStr string, now time.Time) error {
+	ref := s.client.Collection(collectionDailyActive).Doc(dateStr)
+	_, err := ref.Create(ctx, map[string]interface{}{
+		"count": 1,
+		"date":  dateStr,
+	})
+	if status.Code(err) == codes.AlreadyExists {
+		_, err = ref.Update(ctx, []firestore.Update{
+			{Path: "count", Value: firestore.Increment(1)},
 		})
 	}
 	return err
@@ -91,6 +140,7 @@ type submitResponse struct {
 
 type server struct {
 	store       storer
+	ping        pinger
 	bearerToken string
 	githubPAT   string
 }
@@ -168,6 +218,56 @@ func (s *server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, submitResponse{Status: "ok", IssueURL: issueURL})
+}
+
+func (s *server) handlePing(w http.ResponseWriter, r *http.Request) {
+	auth := r.Header.Get("Authorization")
+	token, found := strings.CutPrefix(auth, "Bearer ")
+	if !found || token != s.bearerToken {
+		writeJSON(w, http.StatusUnauthorized, pingResponse{Status: "error", Message: "unauthorized"})
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeJSON(w, http.StatusRequestEntityTooLarge, pingResponse{Status: "error", Message: "request too large"})
+		return
+	}
+
+	var req pingRequest
+	if err := json.Unmarshal(body, &req); err != nil || req.SchemaVersion != schemaVersion1 {
+		writeJSON(w, http.StatusBadRequest, pingResponse{Status: "error", Message: "missing or invalid schemaVersion"})
+		return
+	}
+
+	if req.Event != "first_launch" && req.Event != "daily_active" {
+		writeJSON(w, http.StatusBadRequest, pingResponse{Status: "error", Message: "invalid event"})
+		return
+	}
+
+	if req.AppVersion == "" || len(req.AppVersion) > maxAppVersionLen {
+		writeJSON(w, http.StatusBadRequest, pingResponse{Status: "error", Message: "invalid appVersion"})
+		return
+	}
+
+	ctx := r.Context()
+	now := time.Now().UTC()
+
+	var storeErr error
+	switch req.Event {
+	case "first_launch":
+		storeErr = s.ping.recordInstall(ctx, req.AppVersion, now)
+	case "daily_active":
+		storeErr = s.ping.recordDailyActive(ctx, now.Format("2006-01-02"), now)
+	}
+
+	if storeErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, pingResponse{Status: "error", Message: "storage unavailable, please retry"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, pingResponse{Status: "ok"})
 }
 
 func (s *server) createSubmissionIssue(ctx context.Context, req submitRequest) (string, error) {
@@ -264,8 +364,10 @@ func main() {
 	}
 	defer fsClient.Close()
 
+	fs := &firestoreStore{client: fsClient}
 	srv := &server{
-		store:       &firestoreStore{client: fsClient},
+		store:       fs,
+		ping:        fs,
 		bearerToken: token,
 		githubPAT:   os.Getenv("GITHUB_PAT"),
 	}
@@ -278,6 +380,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /report", srv.handleReport)
 	mux.HandleFunc("POST /submit", srv.handleSubmit)
+	mux.HandleFunc("POST /ping", srv.handlePing)
 
 	log.Printf("listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
