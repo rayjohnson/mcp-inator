@@ -5,6 +5,7 @@ import AppKit
 struct MenuBarView: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var registryStore: RegistryStore
+    @EnvironmentObject var privateCatalogStore: PrivateCatalogStore
     @Environment(\.openAboutWindow) private var openAboutWindow: @Sendable () -> Void
     @Environment(\.openPreferencesWindow) private var openPreferencesWindow: @Sendable () -> Void
     @Environment(\.openHelpWindow) private var openHelpWindow: @Sendable () -> Void
@@ -41,6 +42,22 @@ struct MenuBarView: View {
                 .environment(\.navigationIsCompact, true)
                 .tabItem {
                     Label("Catalog", systemImage: "square.grid.2x2")
+                }
+
+                ForEach(privateCatalogStore.sources) { source in
+                    NavigationStack {
+                        PrivateCatalogView(
+                            entries: source.entries,
+                            tabTitle: source.tabName,
+                            isCompact: true,
+                            selectedEntry: .constant(nil)
+                        )
+                        .environmentObject(store)
+                    }
+                    .environment(\.navigationIsCompact, true)
+                    .tabItem {
+                        Label(source.tabName, systemImage: "building.2")
+                    }
                 }
             }
             .frame(width: 420, height: 548)
