@@ -88,7 +88,7 @@ struct PreferencesView: View {
 
             Section("Private Catalogs") {
                 Text("Add a URL to a private catalog JSON file. Each source gets its own tab in the Catalog view.")
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .font(.callout)
 
                 ForEach(privateCatalogURLs, id: \.self) { url in
