@@ -40,11 +40,12 @@ final class PrivateCatalogStore: ObservableObject {
 
     private let session: URLSession
     private let cacheDir: URL
+    nonisolated(unsafe) private var urlsObserver: NSObjectProtocol?
 
     init(session: URLSession = .shared, cacheDir: URL = PrivateCatalogStore.defaultCacheDir) {
         self.session = session
         self.cacheDir = cacheDir
-        NotificationCenter.default.addObserver(
+        urlsObserver = NotificationCenter.default.addObserver(
             forName: PrivateCatalogPreferences.urlsChangedNotification,
             object: nil,
             queue: .main
@@ -54,12 +55,16 @@ final class PrivateCatalogStore: ObservableObject {
         }
     }
 
+    deinit {
+        if let observer = urlsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     static var defaultCacheDir: URL {
         // swiftlint:disable:next force_unwrapping
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dir = appSupport.appendingPathComponent("mcp-inator")
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
+        return appSupport.appendingPathComponent("mcp-inator")
     }
 
     // MARK: - Public API
