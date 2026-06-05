@@ -156,6 +156,9 @@ struct MainWindowView: View {
                     selectedServer = nil
                 }
             }
+            .onChange(of: selectedSection) { _ in
+                selectedPrivateEntry = nil
+            }
         } else {
             StoreUnavailableView()
         }
