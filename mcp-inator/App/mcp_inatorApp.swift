@@ -17,6 +17,7 @@ struct mcp_inatorApp: App {
     @StateObject private var storeContainer = StoreContainer()
     @StateObject private var registryStore = RegistryStore()
     @StateObject private var catalogStore  = CatalogStore()
+    @StateObject private var privateCatalogStore = PrivateCatalogStore()
 
     private let sparkleDelegate = SparkleDelegate()
     private let updaterController: SPUStandardUpdaterController
@@ -80,11 +81,13 @@ struct mcp_inatorApp: App {
                         }
                     })
                     .environmentObject(catalogStore)
+                    .environmentObject(privateCatalogStore)
                     .onAppear {
                         wireWindowController()
                         try? store.seedSelfEntry()
                         Task { await registryStore.populateCategories() }
                         Task { await catalogStore.fetchIfNeeded() }
+                        Task { await privateCatalogStore.fetch() }
                         runAgentScan(store: store)
                     }
             } else {
@@ -98,6 +101,7 @@ struct mcp_inatorApp: App {
                     wireWindowController()
                     Task { await registryStore.populateCategories() }
                     Task { await catalogStore.fetchIfNeeded() }
+                    Task { await privateCatalogStore.fetch() }
                     if let store = storeContainer.store { runAgentScan(store: store) }
                 }
                 // Fires at cold launch (including when isInserted = false) so dock-mode
@@ -163,6 +167,7 @@ struct mcp_inatorApp: App {
             storeContainer: storeContainer,
             registryStore: registryStore,
             catalogStore: catalogStore,
+            privateCatalogStore: privateCatalogStore,
             updater: updaterController.updater,
             aboutController: aboutController
         )
@@ -229,6 +234,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     private weak var storeContainer: StoreContainer?
     private weak var registryStore: RegistryStore?
     private weak var catalogStore: CatalogStore?
+    private weak var privateCatalogStore: PrivateCatalogStore?
     private var updater: SPUUpdater?
     private weak var aboutController: AboutWindowController?
 
@@ -238,6 +244,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         storeContainer: StoreContainer,
         registryStore: RegistryStore,
         catalogStore: CatalogStore,
+        privateCatalogStore: PrivateCatalogStore,
         updater: SPUUpdater,
         aboutController: AboutWindowController
     ) {
@@ -245,6 +252,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         self.storeContainer = storeContainer
         self.registryStore = registryStore
         self.catalogStore = catalogStore
+        self.privateCatalogStore = privateCatalogStore
         self.updater = updater
         self.aboutController = aboutController
     }
@@ -259,6 +267,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
               let storeContainer,
               let registryStore,
               let catalogStore,
+              let privateCatalogStore,
               let updater,
               let aboutController else { return }
 
@@ -267,6 +276,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             .environmentObject(storeContainer)
             .environmentObject(registryStore)
             .environmentObject(catalogStore)
+            .environmentObject(privateCatalogStore)
             .environment(\.openAboutWindow, { [weak aboutController] in
                 Task { @MainActor in
                     aboutController?.show(updater: updater)
