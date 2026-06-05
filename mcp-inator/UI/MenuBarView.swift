@@ -52,8 +52,8 @@ struct MenuBarView: View {
                             isCompact: true,
                             selectedEntry: .constant(nil)
                         )
-                        .environmentObject(store)
                     }
+                    .environmentObject(store)
                     .environment(\.navigationIsCompact, true)
                     .tabItem {
                         Label(source.tabName, systemImage: "building.2")
@@ -118,4 +118,5 @@ struct MenuBarView: View {
         // swiftlint:disable:next force_try
         .environmentObject(try! ConfigStore())
         .environmentObject(RegistryStore())
+        .environmentObject(PrivateCatalogStore())
 }
