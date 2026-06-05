@@ -366,7 +366,7 @@ struct OfficialBadge: View {
 
 // MARK: - FilterChip
 
-private struct FilterChip: View {
+struct FilterChip: View {
     let label: String
     let isSelected: Bool
     let action: () -> Void
