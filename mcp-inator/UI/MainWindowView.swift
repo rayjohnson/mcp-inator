@@ -1,19 +1,22 @@
 import SwiftUI
 
-enum SidebarSection: String, Hashable {
+enum SidebarSection: Hashable {
     case servers, agents, catalog
+    case privateSource(String) // String = source URL, used as stable identity
 }
 
 struct MainWindowView: View {
     @EnvironmentObject private var storeContainer: StoreContainer
     @EnvironmentObject private var registryStore: RegistryStore
     @EnvironmentObject private var catalogStore: CatalogStore
+    @EnvironmentObject private var privateCatalogStore: PrivateCatalogStore
     @State private var selectedSection: SidebarSection = .servers
     @State private var showAddServer = false
     @State private var showManageAgents = false
     @State private var selectedServer: MCPServerConfig?
     @State private var selectedAgent: AgentRecord?
     @State private var selectedCatalogEntry: CatalogViewModel?
+    @State private var selectedPrivateEntry: CatalogViewModel?
 
     var body: some View {
         if let store = storeContainer.store {
@@ -25,6 +28,14 @@ struct MainWindowView: View {
                         .tag(SidebarSection.agents)
                     Label("Catalog", systemImage: "square.grid.2x2")
                         .tag(SidebarSection.catalog)
+                    if !privateCatalogStore.sources.isEmpty {
+                        Section("Private") {
+                            ForEach(privateCatalogStore.sources) { source in
+                                Label(source.tabName, systemImage: "building.2")
+                                    .tag(SidebarSection.privateSource(source.url))
+                            }
+                        }
+                    }
                 }
                 .navigationTitle("mcp-inator")
                 .listStyle(.sidebar)
@@ -49,6 +60,18 @@ struct MainWindowView: View {
                         CatalogView(selectedEntry: $selectedCatalogEntry, isCompact: false)
                             .environmentObject(registryStore)
                             .environmentObject(store)
+                    }
+                case .privateSource(let url):
+                    if let source = privateCatalogStore.sources.first(where: { $0.url == url }) {
+                        NavigationStack {
+                            PrivateCatalogView(
+                                entries: source.entries,
+                                tabTitle: source.tabName,
+                                isCompact: false,
+                                selectedEntry: $selectedPrivateEntry
+                            )
+                            .environmentObject(store)
+                        }
                     }
                 }
             } detail: {
@@ -89,6 +112,19 @@ struct MainWindowView: View {
                     } else {
                         DetailPlaceholderView(
                             systemImage: "square.grid.2x2",
+                            message: "Select a server from the catalog"
+                        )
+                    }
+                case .privateSource:
+                    if let entry = selectedPrivateEntry {
+                        NavigationStack {
+                            CatalogEntryDetailView(vm: entry)
+                                .environmentObject(store)
+                        }
+                        .id(entry.id)
+                    } else {
+                        DetailPlaceholderView(
+                            systemImage: "building.2",
                             message: "Select a server from the catalog"
                         )
                     }
