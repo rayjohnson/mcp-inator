@@ -1,3 +1,7 @@
+## 0.5.5
+
+- Private catalog sources: configure additional catalog URLs in Preferences to add internal MCP servers as a separate tab
+
 - Anonymous install and daily-active pings: on first launch the app fires a one-time install ping; once per calendar day it fires a daily-active ping — both POST to the existing Cloud Run backend and store aggregate counts in Firestore (no opt-in required, no PII)
 - Fix delete server in menu bar mode: SwiftUI alert/confirmationDialog inside a MenuBarExtra popover closed the popover on button tap; replaced with NSAlert.runModal() which runs its own event loop and leaves the popover open
 - External server import: when an agent's config file contains a server that mcp-inator didn't add, a banner now appears in the agent view offering to import it into your library or leave it unmanaged (won't prompt again for dismissed servers)

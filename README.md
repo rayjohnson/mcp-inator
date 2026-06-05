@@ -59,7 +59,7 @@ Add, edit, and remove MCP servers from a single list. Each server can be enabled
   <img src="docs/images/catalog-v0.5.0.png" alt="mcp-inator catalog" width="640" />
 </p>
 
-Browse a curated list of popular MCP servers with pre-filled defaults. Tap any entry to see its description, required environment variables, and community usage stats, then tap **Add to Library** to install it in one step. The catalog is fetched from GitHub and cached locally — it works offline after the first load.
+Browse a curated list of popular MCP servers with pre-filled defaults. Tap any entry to see its description, required environment variables, and community usage stats, then tap **Add to Library** to install it in one step. The catalog is fetched from GitHub and cached locally — it works offline after the first load. Teams can also add internal servers via [private catalogs](docs/private-catalogs.md).
 
 ### Agent Support Matrix
 
@@ -87,13 +87,6 @@ Usage sharing is **opt-in and off by default**. When enabled, mcp-inator sends s
 ## Requirements
 
 - macOS 13.0 or later
-
-## Building from Source
-
-```bash
-xcodegen generate
-xcodebuild -project mcp-inator.xcodeproj -scheme mcp-inator -configuration Debug build
-```
 
 ## License
 

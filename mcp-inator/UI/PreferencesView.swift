@@ -37,6 +37,8 @@ struct PreferencesView: View {
     }
 
     @AppStorage("sharingConsented") private var sharingConsented = false
+    @State private var privateCatalogURLs: [String] = []
+    @State private var newCatalogURL: String = ""
 
     var body: some View {
         Form {
@@ -83,10 +85,53 @@ struct PreferencesView: View {
                         .foregroundStyle(.red)
                 }
             }
+
+            Section("Private Catalogs") {
+                Text("Add a URL to a private catalog JSON file. Each source gets its own tab in the Catalog view.")
+                    .foregroundStyle(.secondary)
+                    .font(.callout)
+
+                ForEach(privateCatalogURLs, id: \.self) { url in
+                    HStack {
+                        Text(url)
+                            .font(.callout)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Spacer()
+                        Button {
+                            privateCatalogURLs.removeAll { $0 == url }
+                            PrivateCatalogPreferences.urls = privateCatalogURLs
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+
+                HStack {
+                    TextField("https://example.com/catalog.json", text: $newCatalogURL)
+                    Button("Add") {
+                        let trimmed = newCatalogURL.trimmingCharacters(in: .whitespaces)
+                        guard !trimmed.isEmpty, URL(string: trimmed) != nil else { return }
+                        guard !privateCatalogURLs.contains(trimmed) else { return }
+                        privateCatalogURLs.append(trimmed)
+                        PrivateCatalogPreferences.urls = privateCatalogURLs
+                        newCatalogURL = ""
+                    }
+                    .disabled(
+                        newCatalogURL.trimmingCharacters(in: .whitespaces).isEmpty ||
+                        URL(string: newCatalogURL.trimmingCharacters(in: .whitespaces)) == nil
+                    )
+                }
+            }
         }
         .formStyle(.grouped)
         .frame(width: 360)
         .padding()
+        .onAppear {
+            privateCatalogURLs = PrivateCatalogPreferences.urls
+        }
     }
 
     private var launchAtLoginBinding: Binding<Bool> {
