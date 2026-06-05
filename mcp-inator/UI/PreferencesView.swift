@@ -91,7 +91,7 @@ struct PreferencesView: View {
                     .foregroundColor(.secondary)
                     .font(.callout)
 
-                ForEach(Array(privateCatalogURLs.enumerated()), id: \.offset) { index, url in
+                ForEach(privateCatalogURLs, id: \.self) { url in
                     HStack {
                         Text(url)
                             .font(.callout)
@@ -99,11 +99,11 @@ struct PreferencesView: View {
                             .truncationMode(.middle)
                         Spacer()
                         Button {
-                            privateCatalogURLs.remove(at: index)
+                            privateCatalogURLs.removeAll { $0 == url }
                             PrivateCatalogPreferences.urls = privateCatalogURLs
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.borderless)
                     }
@@ -113,12 +113,16 @@ struct PreferencesView: View {
                     TextField("https://example.com/catalog.json", text: $newCatalogURL)
                     Button("Add") {
                         let trimmed = newCatalogURL.trimmingCharacters(in: .whitespaces)
-                        guard !trimmed.isEmpty else { return }
+                        guard !trimmed.isEmpty, URL(string: trimmed) != nil else { return }
+                        guard !privateCatalogURLs.contains(trimmed) else { return }
                         privateCatalogURLs.append(trimmed)
                         PrivateCatalogPreferences.urls = privateCatalogURLs
                         newCatalogURL = ""
                     }
-                    .disabled(newCatalogURL.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(
+                        newCatalogURL.trimmingCharacters(in: .whitespaces).isEmpty ||
+                        URL(string: newCatalogURL.trimmingCharacters(in: .whitespaces)) == nil
+                    )
                 }
             }
         }
